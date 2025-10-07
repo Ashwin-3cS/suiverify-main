@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { ChevronLeft, Camera, RotateCcw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import Webcam from 'react-webcam';
-import { colors } from '../brand';
+import { colors } from '@/app/brand';
 
 interface AadhaarData {
   name?: string;

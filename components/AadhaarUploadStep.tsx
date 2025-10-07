@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ChevronLeft, Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { colors } from '../brand';
+import { colors } from '@/app/brand';
 
 interface AadhaarData {
   name?: string;

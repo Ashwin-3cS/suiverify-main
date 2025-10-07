@@ -1,6 +1,6 @@
 import { SuiClient } from '@mysten/sui/client';
 import type { EventId, SuiEvent, SuiEventFilter } from '@mysten/sui/client';
-import { TESTNET_PACKAGE_ID } from '../Contansts';
+import { TESTNET_PACKAGE_ID } from '@/app/constants';
 
 // Sui Configuration
 const fullnode = 'https://fullnode.testnet.sui.io:443';
@@ -38,6 +38,7 @@ export interface VerificationCompletedEventData {
     nautilus_signature: number[];
     signature_timestamp_ms: string;  // Will be converted from number to string
     evidence_hash: number[];         // Byte array from contract
+    nft_id?: string;                 // Optional NFT ID for DIDClaimed events
 }
 
 // Callback function to notify the UI about verification completion
@@ -72,7 +73,7 @@ const handleDIDRegistryEvents = async (events: SuiEvent[], type: string): Promis
 const processDIDEvent = async (event: SuiEvent): Promise<void> => {
     try {
         const eventType = event.type;
-        const eventData = event.parsedJson as any;
+        const eventData = event.parsedJson as VerificationCompletedEventData;
         
         // Handle VerificationCompleted events
         if (eventType.includes('::VerificationCompleted')) {
@@ -141,7 +142,7 @@ const getStatusName = (status: number): string => {
 };
 
 // Custom handler for verification completed events
-const handleVerificationCompleted = async (eventData: any): Promise<void> => {
+const handleVerificationCompleted = async (eventData: VerificationCompletedEventData): Promise<void> => {
     try {
         console.log(`🔄 Processing verification completion for user ${eventData.user_address}`);
         

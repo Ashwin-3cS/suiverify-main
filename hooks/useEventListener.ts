@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useCurrentAccount } from '@mysten/dapp-kit';
-import { startEventListener, setVerificationCallback, stopEventListener, type VerificationCompletedEventData } from '../services/eventListener';
+import { startEventListener, setVerificationCallback, stopEventListener, type VerificationCompletedEventData } from '@/services/eventListener';
 
 export interface VerificationStatus {
     isListening: boolean;
