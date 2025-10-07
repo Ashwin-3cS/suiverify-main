@@ -15,7 +15,7 @@ const DashboardHeader = () => {
     const handleLogout = () => {
         localStorage.removeItem('adminAuthenticated');
         localStorage.removeItem('adminUsername');
-        router.push('/admin/login');
+        router.push('/adminLogin');
     };
     return (
         <div className="relative z-50">

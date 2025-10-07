@@ -11,7 +11,7 @@ const PACKAGE_ID = '0xcfedf4e2445497ba1a5d57349d6fc116b194eca41524f46f593c63a7a7
 const GOVERNMENT_WHITELIST_ID = '0xca700b2604763639ba3fbf0237d4f1ab34470ac509d407d34030621b1a254747';
 
 // Walrus configuration
-const WALRUS_AGGREGATOR_URL = import.meta.env.VITE_WALRUS_AGGREGATOR_URL ;
+const WALRUS_AGGREGATOR_URL = process.env.NEXT_PUBLIC_WALRUS_AGGREGATOR_URL;
 
 // Seal server configurations
 const serverObjectIds = [
