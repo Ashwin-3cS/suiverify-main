@@ -1,15 +1,20 @@
+"use client";
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import LightRays from '@/components/ui/lightRays';
 import LandingHeader from '@/components/ui/landingHeader';
-import { colors } from '../../src/brand';
+import { colors } from '@/app/brand';
+import Image from 'next/image';
+import Seal from "@/public/Seal_logo.png"
+import Walrus from "@/public/walrus.svg"
 
 const LandingPage: React.FC = () => {
-  const navigate = useNavigate();
+//   const navigate = useNavigate();
 
   const handleLaunchApp = () => {
-    navigate('/dashboard');
+    // navigate('/dashboard');
   };
 
   return (
@@ -587,7 +592,7 @@ const LandingPage: React.FC = () => {
                         }}
                         transition={{ duration: 0.6 }}
                       >
-                        <img src="/walrus.svg" alt="Walrus" className="w-8 h-8" />
+                        <Image src={Walrus} alt="Walrus" className="w-8 h-8" />
                       </motion.div>
                       <h4 className="font-bold text-sm mb-1" style={{ color: colors.white }}>Walrus</h4>
                       <p className="text-xs" style={{ color: colors.lightBlue }}>Decentralized Storage</p>
@@ -619,7 +624,7 @@ const LandingPage: React.FC = () => {
                         }}
                         transition={{ duration: 0.8, repeat: Infinity }}
                       >
-                        <img src="/Seal_logo.png" alt="Seal" className="w-8 h-8 object-contain rounded-full" />
+                        <Image src={Seal} alt="Seal" className="w-8 h-8 object-contain rounded-full" />
                       </motion.div>
                       <h4 className="font-bold text-sm mb-1" style={{ color: colors.white }}>Seal</h4>
                       <p className="text-xs" style={{ color: colors.lightBlue }}>Document Encryption</p>

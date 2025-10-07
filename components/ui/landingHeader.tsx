@@ -1,10 +1,12 @@
-import { useNavigate } from "react-router-dom";
+import Image from "next/image";
+// import { useNavigate } from "react-router-dom";
+import Logo from "@/public/logo.svg";
 
 
 const LandingHeader = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const handleLaunchApp = () => {
-    navigate('/dashboard');
+    // navigate('/dashboard');
   };
 
   return (
@@ -14,7 +16,7 @@ const LandingHeader = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img src="/logo.svg" alt="SuiVerify" className="h-auto w-24" />
+            <Image src={Logo} alt="SuiVerify" className="h-auto w-24" />
           </div>
 
           {/* Navigation Links */}
