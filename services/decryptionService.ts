@@ -2,13 +2,14 @@ import { SuiClient } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { SealClient, SessionKey, EncryptedObject } from '@mysten/seal';
 import { fromHex } from '@mysten/sui/utils';
+import { getCurrentPackageId, getCurrentRpcEndpoint, SHARED_OBJECTS } from '@/config/contracts';
 
-// Configuration matching the encryption service
-const SUI_CLIENT = new SuiClient({ url: 'https://fullnode.testnet.sui.io:443' });
-const PACKAGE_ID = '0x6ec40d30e636afb906e621748ee60a9b72bc59a39325adda43deadd28dc89e09';
+// Configuration matching the encryption service - Using centralized contract config
+const SUI_CLIENT = new SuiClient({ url: getCurrentRpcEndpoint() });
+const PACKAGE_ID = getCurrentPackageId();
 
-// Government whitelist ID (should match the deployed whitelist)
-const GOVERNMENT_WHITELIST_ID = '0x5db149489d68ece83a08559773a1d1f898e4fa4b31d9807b7bb24c88dc8ffb26';
+// Government whitelist ID from centralized config
+const GOVERNMENT_WHITELIST_ID = SHARED_OBJECTS.GOVERNMENT_WHITELIST;
 
 // Walrus configuration
 const WALRUS_AGGREGATOR_URL = process.env.NEXT_PUBLIC_WALRUS_AGGREGATOR_URL;

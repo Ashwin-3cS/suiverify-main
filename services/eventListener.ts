@@ -1,13 +1,13 @@
 import { SuiClient } from '@mysten/sui/client';
 import type { EventId, SuiEvent, SuiEventFilter } from '@mysten/sui/client';
-import { TESTNET_PACKAGE_ID } from '@/app/constants';
+import { getCurrentPackageId, getCurrentRpcEndpoint } from '@/config/contracts';
 
-// Sui Configuration
-const fullnode = 'https://fullnode.testnet.sui.io:443';
+// Sui Configuration - Using centralized contract config
+const fullnode = getCurrentRpcEndpoint();
 const client = new SuiClient({ url: fullnode });
 
-// Updated package ID
-const packageId = TESTNET_PACKAGE_ID;
+// Package ID from centralized config
+const packageId = getCurrentPackageId();
 
 // Configuration
 const POLLING_INTERVAL_MS = 2000; // 2 seconds

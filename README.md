@@ -14,6 +14,18 @@ NEXT_PUBLIC_ADMIN_KEY=admin123
 
 **Note:** In Next.js, client-side environment variables must be prefixed with `NEXT_PUBLIC_` to be accessible in the browser.
 
+## Contract Configuration
+
+All contract addresses and blockchain configurations are centralized in `/config/contracts.ts`. This includes:
+
+- **Package IDs**: Smart contract package addresses for different networks
+- **Shared Objects**: Registry, whitelist, and system object IDs  
+- **Network Config**: RPC endpoints and explorer URLs
+- **Contract Functions**: Pre-built function targets for common operations
+- **Gas Configuration**: Standard gas budgets for different operations
+
+To update contract addresses after deployment, simply modify the values in `/config/contracts.ts`.
+
 ## Getting Started
 
 First, run the development server:

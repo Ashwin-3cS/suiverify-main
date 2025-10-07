@@ -14,6 +14,7 @@ import { documentEncryptionService, DocumentEncryptionService } from '@/services
 import { credentialService } from '@/services/credentialService';
 import { NFTClaimSuccessModal } from '@/components/NFTClaimSuccess';
 import { colors } from '@/app/brand';
+import { getCurrentPackageId, SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
 
 interface AadhaarData {
   name?: string;
@@ -69,9 +70,9 @@ function KycPage() {
       }),
   });
 
-  // Contract configuration
-  const PACKAGE_ID = '0x6ec40d30e636afb906e621748ee60a9b72bc59a39325adda43deadd28dc89e09';
-  const CLOCK_ID = '0x0000000000000000000000000000000000000000000000000000000000000006';
+  // Contract configuration from centralized config
+  const PACKAGE_ID = getCurrentPackageId();
+  const CLOCK_ID = SHARED_OBJECTS.CLOCK;
 
 
   const handleNext = () => {
@@ -203,15 +204,15 @@ function KycPage() {
       
       const tx = new Transaction();
       tx.moveCall({
-        target: `${PACKAGE_ID}::did_registry::claim_did_nft`,
+        target: CONTRACT_FUNCTIONS.DID_REGISTRY.CLAIM_DID_NFT,
         arguments: [
-          tx.object('0x2c6962f40c84a7df1d40c74ab05c7f60c9afdbae8129cfe507ced948a02cbdc4'), // registry (updated)
+          tx.object(SHARED_OBJECTS.DID_REGISTRY), // registry
           tx.object(userDidId), // user_did object (from verification event)
           tx.pure.string(encryptionResult.blobId), // blob_id
           tx.object(CLOCK_ID), // clock
         ],
       });
-      tx.setGasBudget(10000000);
+      tx.setGasBudget(GAS_CONFIG.NFT_CLAIM_GAS_BUDGET);
 
       signAndExecute(
         {
@@ -251,7 +252,7 @@ function KycPage() {
                   didType: userDidId || '1',
                   title: 'Age Verification NFT',
                   description: 'Verified above 18 years using Aadhaar document',
-                  suiExplorerUrl: `https://suiscan.xyz/testnet/object/${nftId}`,
+                  suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
                   walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
                   blobId: encryptionResult.blobId,
                   transactionHash: result.digest
