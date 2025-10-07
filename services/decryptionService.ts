@@ -160,8 +160,21 @@ export class DocumentDecryptionService {
 
           // Step 3: Create blob URL for decrypted data
           const mimeType = this.getMimeType(doc.file_name);
+          console.log('🔍 Creating blob with MIME type:', mimeType, 'for file:', doc.file_name);
+          console.log('🔍 Decrypted data length:', decryptedData.length);
+          console.log('🔍 First 10 bytes:', Array.from(decryptedData.slice(0, 10)));
+          
+          // Check if it's a valid JPEG header (FF D8 FF)
+          if (decryptedData[0] === 0xFF && decryptedData[1] === 0xD8) {
+            console.log('✅ Valid JPEG header detected');
+          } else {
+            console.log('⚠️ WARNING: Invalid JPEG header!', decryptedData[0], decryptedData[1]);
+          }
+          
           const blob = new Blob([decryptedData], { type: mimeType });
+          console.log('🔍 Blob created:', blob.size, 'bytes, type:', blob.type);
           const url = URL.createObjectURL(blob);
+          console.log('🔍 Blob URL created:', url);
           decryptedFileUrls.push(url);
 
         } catch (error) {
@@ -177,7 +190,21 @@ export class DocumentDecryptionService {
         };
       }
 
-      onProgress?.(`Successfully decrypted ${decryptedFileUrls.length} of ${documents.length} documents.`);
+      // Add a test image to verify blob URL mechanism works
+      console.log('🧪 Adding test image to verify blob URL mechanism...');
+      try {
+        // Create a simple red pixel test image
+        const testImageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+        const response = await fetch(testImageData);
+        const testBlob = await response.blob();
+        const testUrl = URL.createObjectURL(testBlob);
+        console.log('🧪 Test image URL created:', testUrl);
+        decryptedFileUrls.push(testUrl);
+      } catch (testError) {
+        console.error('🧪 Test image creation failed:', testError);
+      }
+
+      onProgress?.(`Successfully decrypted ${decryptedFileUrls.length - 1} of ${documents.length} documents. (+ 1 test image)`);
 
       return {
         success: true,

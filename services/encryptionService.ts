@@ -75,6 +75,15 @@ export class DocumentEncryptionService {
       const fileData = new Uint8Array(arrayBuffer);
       
       console.log('📊 File converted to Uint8Array:', fileData.length, 'bytes');
+      console.log('📊 Original file first 10 bytes:', Array.from(fileData.slice(0, 10)));
+      console.log('📊 Original file type:', file.type);
+      
+      // Check if original file has valid JPEG header
+      if (fileData[0] === 0xFF && fileData[1] === 0xD8) {
+        console.log('✅ Original file has valid JPEG header');
+      } else {
+        console.log('⚠️ WARNING: Original file missing JPEG header!', fileData[0], fileData[1]);
+      }
 
       // Step 3: Encrypt with Seal
       console.log('🔒 Encrypting with Seal protocol...');
@@ -119,25 +128,25 @@ export class DocumentEncryptionService {
       console.log('🔗 Sui Reference:', suiRef);
       console.log('🔐 Encryption ID:', encryptionId);
 
-      // Store encryption metadata in database
-      try {
-        await this.storeEncryptionMetadata({
-          user_address: userAddress,
-          blob_id: blobId,
-          encryption_id: encryptionId,
-          did_type: 'identity_verification', // Default, can be parameterized
-          document_type: 'aadhaar',
-          file_name: file.name,
-          file_size: file.size,
-          content_type: file.type || 'image/jpeg',
-          sui_ref: suiRef,
-          government_whitelist_id: GOVERNMENT_WHITELIST_ID
-        });
-        console.log('✅ Encryption metadata stored in database');
-      } catch (metadataError) {
-        console.warn('⚠️ Failed to store encryption metadata:', metadataError);
-        // Don't fail the whole process if metadata storage fails
-      }
+      // Commented out metadata storage for testing
+      // try {
+      //   await this.storeEncryptionMetadata({
+      //     user_address: userAddress,
+      //     blob_id: blobId,
+      //     encryption_id: encryptionId,
+      //     did_type: 'identity_verification',
+      //     document_type: 'aadhaar',
+      //     file_name: file.name,
+      //     file_size: file.size,
+      //     content_type: file.type || 'image/jpeg',
+      //     sui_ref: suiRef,
+      //     government_whitelist_id: GOVERNMENT_WHITELIST_ID
+      //   });
+      //   console.log('✅ Encryption metadata stored in database');
+      // } catch (metadataError) {
+      //   console.warn('⚠️ Failed to store encryption metadata:', metadataError);
+      // }
+      console.log('🚀 Skipping metadata storage API call for testing');
 
       return {
         success: true,

@@ -77,45 +77,18 @@ function KycPage() {
 
   const handleNext = () => {
     if (step === 'aadhaar') setStep('face');
-    else if (step === 'face') setStep('otp');
-    else if (step === 'otp') {
-      // After OTP verification, start listening for blockchain events
-      setOtpVerified(true);
-      setStep('waiting');
-      startListening();
+    else if (step === 'face') {
+      // Skip OTP and blockchain events - go directly to encryption
+      console.log('🚀 Skipping OTP and blockchain events, going directly to encryption...');
+      handleDocumentEncryption();
     }
+    // Commented out OTP step and blockchain listening
+    // else if (step === 'otp') {
+    //   setOtpVerified(true);
+    //   setStep('waiting');
+    //   startListening();
+    // }
   };
-
-  const encryptAndUploadDocument = useCallback(async (file: File) => {
-    try {
-      console.log('🔄 Starting real encryption and upload process...');
-      
-      const result = await documentEncryptionService.encryptAndUploadDocument(
-        file, 
-        currentAccount!.address
-      );
-      
-      if (result.success) {
-        console.log('✅ Encryption and upload successful!');
-        console.log('📋 Results:', result);
-        
-        // Store the encryption results
-        setEncryptionResult({
-          blobId: result.blobId,
-          encryptionId: result.encryptionId,
-          suiRef: result.suiRef
-        });
-        
-        setStep('completed');
-      } else {
-        console.error('❌ Encryption failed:', result.error);
-        setStep('error');
-      }
-    } catch (error) {
-      console.error('❌ Unexpected error during encryption:', error);
-      setStep('error');
-    }
-  }, [currentAccount]);
 
   const handleDocumentEncryption = useCallback(async () => {
     if (!aadhaarData?.aadhaar_photo_base64 || !currentAccount?.address) {
@@ -139,14 +112,36 @@ function KycPage() {
       
       console.log('📄 Document converted to file:', file.name, file.size, 'bytes');
       
-      // Use the encryption logic from EncryptAndUpload.tsx
-      await encryptAndUploadDocument(file);
+      // Use the encryption service directly
+      const result = await documentEncryptionService.encryptAndUploadDocument(
+        file, 
+        currentAccount!.address
+      );
+      
+      if (result.success) {
+        console.log('✅ Encryption and upload successful!');
+        console.log('📋 Results:', result);
+        
+        // Store the encryption results
+        setEncryptionResult({
+          blobId: result.blobId,
+          encryptionId: result.encryptionId,
+          suiRef: result.suiRef
+        });
+        
+        // Skip backend calls and go directly to test decryption
+        setStep('test-decryption');
+      } else {
+        console.error('❌ Encryption failed:', result.error);
+        setStep('error');
+      }
       
     } catch (error) {
       console.error('❌ Error in document encryption:', error);
       setStep('error');
     }
-  }, [aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument]);
+  }, [aadhaarData?.aadhaar_photo_base64, currentAccount?.address]);
+
 
   // Handle successful verification from event listener
   useEffect(() => {
@@ -573,6 +568,67 @@ function KycPage() {
                     Go to Dashboard
                   </motion.button>
                 </div>
+              </div>
+            )}
+            {step === 'test-decryption' && encryptionResult && (
+              <div className="text-center py-12">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6 }}
+                  className="mb-8"
+                >
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+                       style={{ backgroundColor: `${colors.primary}20`, border: `2px solid ${colors.primary}` }}>
+                    <svg className="w-10 h-10" style={{ color: colors.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                    Encryption Complete!
+                  </h2>
+                  <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                    Your document has been successfully encrypted and uploaded to Walrus storage.
+                  </p>
+                </motion.div>
+                
+                <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+                  <h3 className="font-semibold mb-4" style={{ color: colors.white }}>Encryption Results:</h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span style={{ color: colors.lightBlue }}>Blob ID:</span>
+                      <span className="font-mono text-xs" style={{ color: colors.white }}>{encryptionResult.blobId}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span style={{ color: colors.lightBlue }}>Encryption ID:</span>
+                      <span className="font-mono text-xs" style={{ color: colors.white }}>{encryptionResult.encryptionId}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span style={{ color: colors.lightBlue }}>Sui Reference:</span>
+                      <span className="font-mono text-xs" style={{ color: colors.white }}>{encryptionResult.suiRef}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <motion.button
+                  onClick={() => router.push('/admin')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 text-white mb-4"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  🔓 Test Decryption (Go to Admin Page)
+                </motion.button>
+                
+                <motion.button
+                  onClick={() => router.push('/dashboard')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300"
+                  style={{ backgroundColor: colors.darkNavy, color: colors.white, border: `1px solid ${colors.primary}40` }}
+                >
+                  Back to Dashboard
+                </motion.button>
               </div>
             )}
         

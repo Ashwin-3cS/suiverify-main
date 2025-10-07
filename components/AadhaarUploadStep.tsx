@@ -63,26 +63,44 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
     setError(null);
     
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Commented out API call for testing - using mock data instead
+      // const formData = new FormData();
+      // formData.append('file', file);
+      // const result = await handleApiCall('/api/aadhaar/extract-aadhaar-data', formData);
       
-      const result = await handleApiCall('/api/aadhaar/extract-aadhaar-data', formData);
+      console.log('🚀 Skipping Aadhaar data extraction API call for testing');
+      console.log('📄 Using uploaded file directly:', file.name, file.size, 'bytes');
       
-      if (result.data) {
-        const data = result.data as AadhaarData;
+      // Convert file to base64 for encryption
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string;
+        const base64Data = base64String.split(',')[1]; // Remove data:image/jpeg;base64, prefix
         
-        // // Check if the message indicates no readable data found
-        // if (result.message && result.message.includes('Image processed but no readable data found')) {
-        //   setError('Please upload a clearer image.');
-        //   setPreviewUrl(null); // Clear the preview
-        //   return;
-        // }
+        // Create mock Aadhaar data with the uploaded image
+        const mockData: AadhaarData = {
+          name: 'Test User',
+          dob: '01/01/1990',
+          gender: 'M',
+          phone_number: '9876543210',
+          address: 'Test Address, Test City',
+          aadhaar_number: '1234 5678 9012',
+          aadhaar_photo_base64: base64Data
+        };
         
-        setAadhaarData(data);
-        onFileUpload(data);
-      } else {
-        setError(result.message || 'Failed to process Aadhaar image.');
-      }
+        console.log('📋 Mock Aadhaar data created:', {
+          ...mockData,
+          aadhaar_photo_base64: `${base64Data.substring(0, 50)}...` // Log only first 50 chars
+        });
+        
+        setAadhaarData(mockData);
+        onFileUpload(mockData);
+      };
+      
+      reader.readAsDataURL(file);
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred while processing the Aadhaar image';
       setError(errorMsg);

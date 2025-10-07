@@ -29,6 +29,9 @@ function GovernmentDecryptionPage() {
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [decryptionProgress, setDecryptionProgress] = useState('');
   const [currentSessionKey, setCurrentSessionKey] = useState<SessionKey | null>(null);
+  const [testMode, setTestMode] = useState(false);
+  const [manualBlobId, setManualBlobId] = useState('');
+  const [manualEncryptionId, setManualEncryptionId] = useState('');
   
   const currentAccount = useCurrentAccount();
   const { mutate: signPersonalMessage } = useSignPersonalMessage();
@@ -52,27 +55,66 @@ function GovernmentDecryptionPage() {
     setError(null);
 
     try {
-      console.log('🔍 Fetching decryption data for user:', userAddress);
-      console.log('🏛️ Government wallet:', currentAccount.address);
-
-      const response = await fetch(
-        buildApiUrl(API_ENDPOINTS.ENCRYPTION_GOVERNMENT_DECRYPTION_DATA(userAddress, currentAccount.address)),
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      if (testMode) {
+        // Manual testing mode - skip API call
+        console.log('🧪 Test mode: Using manual encryption data');
+        console.log('🔍 Manual Blob ID:', manualBlobId);
+        console.log('🔑 Manual Encryption ID:', manualEncryptionId);
+        
+        if (!manualBlobId.trim() || !manualEncryptionId.trim()) {
+          setError('Please enter both Blob ID and Encryption ID for testing');
+          return;
         }
-      );
+        
+        // Create mock decryption data for testing
+        const mockData: DecryptionData = {
+          user_address: userAddress,
+          government_wallet: currentAccount.address,
+          total_documents: 1,
+          documents: [{
+            blob_id: manualBlobId.trim(),
+            encryption_id: manualEncryptionId.trim(),
+            did_type: 'identity_verification',
+            document_type: 'aadhaar',
+            file_name: 'test-aadhaar-document.jpg',
+            created_at: new Date().toISOString(),
+            verification_completed: true,
+            verification_status: 'verified',
+            walrus_url: `https://walrus.site/blob/${manualBlobId.trim()}`,
+            sui_explorer_url: `https://suiscan.xyz/testnet/object/${manualBlobId.trim()}`
+          }]
+        };
+        
+        setDecryptionData(mockData);
+        console.log('📊 Mock decryption data created:', mockData);
+        
+      } else {
+        // Normal mode - API call (commented out for testing)
+        console.log('🔍 Fetching decryption data for user:', userAddress);
+        console.log('🏛️ Government wallet:', currentAccount.address);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to fetch data: ${response.status} - ${errorText}`);
+        // Commented out for testing since metadata storage is disabled
+        // const response = await fetch(
+        //   buildApiUrl(API_ENDPOINTS.ENCRYPTION_GOVERNMENT_DECRYPTION_DATA(userAddress, currentAccount.address)),
+        //   {
+        //     method: 'GET',
+        //     headers: {
+        //       'Content-Type': 'application/json',
+        //     },
+        //   }
+        // );
+
+        // if (!response.ok) {
+        //   const errorText = await response.text();
+        //   throw new Error(`Failed to fetch data: ${response.status} - ${errorText}`);
+        // }
+
+        // const data: DecryptionData = await response.json();
+        // setDecryptionData(data);
+        // console.log('📊 Decryption data loaded:', data);
+        
+        setError('API mode disabled for testing. Please use Test Mode with manual Blob ID and Encryption ID.');
       }
-
-      const data: DecryptionData = await response.json();
-      setDecryptionData(data);
-      console.log('📊 Decryption data loaded:', data);
 
     } catch (error) {
       console.error('❌ Failed to fetch decryption data:', error);
@@ -324,7 +366,23 @@ function GovernmentDecryptionPage() {
             <h3 className="text-2xl font-bold" style={{ color: colors.white }}>User Document Lookup</h3>
           </div>
           
-          <div className="flex gap-4">
+          {/* Test Mode Toggle */}
+          <div className="mb-6">
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={testMode}
+                onChange={(e) => setTestMode(e.target.checked)}
+                className="w-5 h-5 rounded"
+                style={{ accentColor: colors.primary }}
+              />
+              <span className="text-sm font-medium" style={{ color: colors.lightBlue }}>
+                🧪 Test Mode (Manual Blob ID & Encryption ID input)
+              </span>
+            </label>
+          </div>
+
+          <div className="flex gap-4 mb-4">
             <div className="flex-1">
               <label htmlFor="userAddress" className="block text-sm font-medium mb-2" style={{ color: colors.lightBlue }}>
                 User Wallet Address
@@ -342,6 +400,62 @@ function GovernmentDecryptionPage() {
                 }}
               />
             </div>
+          </div>
+
+          {/* Manual Input Fields for Test Mode */}
+          {testMode && (
+            <>
+              <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+                <p className="text-sm" style={{ color: colors.lightBlue }}>
+                  <strong>📋 Testing Instructions:</strong><br/>
+                  1. Complete KYC process to get Blob ID and Encryption ID<br/>
+                  2. Copy the values from the encryption success screen<br/>
+                  3. Paste them here and click "Fetch Documents"<br/>
+                  4. Select the document and click "Decrypt Documents"
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label htmlFor="manualBlobId" className="block text-sm font-medium mb-2" style={{ color: colors.lightBlue }}>
+                    Blob ID (from encryption results)
+                  </label>
+                  <input
+                    type="text"
+                    id="manualBlobId"
+                    value={manualBlobId}
+                    onChange={(e) => setManualBlobId(e.target.value)}
+                    placeholder="Enter Blob ID from KYC encryption..."
+                    className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-opacity-50"
+                    style={{ 
+                      backgroundColor: `${colors.primary}10`,
+                      border: `1px solid ${colors.primary}40`
+                    }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="manualEncryptionId" className="block text-sm font-medium mb-2" style={{ color: colors.lightBlue }}>
+                    Encryption ID (from encryption results)
+                  </label>
+                  <input
+                    type="text"
+                    id="manualEncryptionId"
+                    value={manualEncryptionId}
+                    onChange={(e) => setManualEncryptionId(e.target.value)}
+                    placeholder="Enter Encryption ID from KYC encryption..."
+                    className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-opacity-50"
+                    style={{ 
+                      backgroundColor: `${colors.primary}10`,
+                      border: `1px solid ${colors.primary}40`
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="flex gap-4">
+            <div className="flex-1"></div>
             <div className="flex items-end">
               <button
                 onClick={fetchDecryptionData}
