@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "SuiVerify2024!",
+      "role": "admin"
+    }
+  ],
+  "config": {
+    "sessionTimeout": 3600000,
+    "maxLoginAttempts": 3
+  }
+}

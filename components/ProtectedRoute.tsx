@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,15 +10,22 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    // Don't protect the auth page itself
+    if (pathname === '/auth') {
+      setIsAuthenticated(true);
+      return;
+    }
+
     const checkAuth = () => {
-      // Check if user has valid session from landing page
+      // Check if user has valid session
       const authData = localStorage.getItem('suiverify_auth');
       
       if (!authData) {
-        // No auth data, redirect to landing page
-        window.location.href = 'https://suiverify.xyz';
+        // No auth data, redirect to auth page
+        router.push('/auth');
         return;
       }
 
@@ -31,7 +38,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         if (sessionAge > sessionTimeout) {
           // Session expired, clear and redirect
           localStorage.removeItem('suiverify_auth');
-          window.location.href = 'https://suiverify.xyz';
+          router.push('/auth');
           return;
         }
 
@@ -40,17 +47,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       } catch {
         // Invalid auth data, redirect
         localStorage.removeItem('suiverify_auth');
-        window.location.href = 'https://suiverify.xyz';
+        router.push('/auth');
       }
     };
 
     checkAuth();
-  }, []);
+  }, [router, pathname]);
 
   if (isAuthenticated === null) {
     // Loading state
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#030f1c' }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-300">Verifying authentication...</p>
@@ -62,7 +69,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (!isAuthenticated) {
     // This shouldn't render as we redirect, but just in case
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#030f1c' }}>
         <div className="text-center">
           <p className="text-gray-300">Redirecting to login...</p>
         </div>
