@@ -1,17 +1,21 @@
+"use client";
+
 import { ConnectButton } from "@mysten/dapp-kit";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
+import Image from "next/image";
+import Logo from "@/public/logo.svg";
 
 const DashboardHeader = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
+    const router = useRouter();
+    const pathname = usePathname();
     
-    const isAdminRoute = location.pathname.startsWith('/admin');
+    const isAdminRoute = pathname.startsWith('/admin');
     
     const handleLogout = () => {
         localStorage.removeItem('adminAuthenticated');
         localStorage.removeItem('adminUsername');
-        navigate('/admin/login');
+        router.push('/admin/login');
     };
     return (
         <div className="relative z-50">
@@ -20,7 +24,7 @@ const DashboardHeader = () => {
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center space-x-3">
-                        <img src="/logo.svg" alt="SuiVerify" className=" w-24 h-auto" />
+                        <Image src={Logo} alt="SuiVerify" className="w-24 h-auto" />
                     </div>
 
                     {/* Right Side - Balance and Connect Wallet */}
