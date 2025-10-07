@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, Phone, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useCurrentAccount } from '@mysten/dapp-kit';
-import { colors } from '../brand';
+import { colors } from '@/app/brand';
 
 interface AadhaarData {
   name?: string;
@@ -211,7 +211,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
             </div>
             <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>Send OTP</h3>
             <p className="mb-4" style={{ color: colors.lightBlue }}>
-              We'll send a 6-digit verification code to:
+              We&apos;ll send a 6-digit verification code to:
             </p>
             <p className="text-lg font-semibold mb-6" style={{ color: colors.white }}>{phoneNumber}</p>
 
@@ -238,7 +238,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
                 </svg>
               </div>
               <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>Enter Verification Code</h3>
-              <p className="text-sm mb-4" style={{ color: colors.lightBlue }}>We've sent a 6-digit code to {phoneNumber}</p>
+              <p className="text-sm mb-4" style={{ color: colors.lightBlue }}>We&apos;ve sent a 6-digit code to {phoneNumber}</p>
             </div>
 
             <div>
@@ -294,7 +294,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
                 className="text-sm disabled:opacity-50 hover:opacity-80 transition-opacity"
                 style={{ color: colors.primary }}
               >
-                Didn't receive code? Resend
+                Didn&apos;t receive code? Resend
               </button>
             </div>
           </form>

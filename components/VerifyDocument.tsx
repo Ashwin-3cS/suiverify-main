@@ -18,7 +18,7 @@ const VerifyDocument: React.FC<VerifyDocumentProps> = ({ onNext, onBack }) => {
         </button>
         <div>
           <h2 className="text-xl sm:text-2xl font-semibold mb-2">Verify your ID document</h2>
-          <p className="text-gray-600 text-sm sm:text-base">We'll use this info to confirm your identity and comply with our legal requirements.</p>
+          <p className="text-gray-600 text-sm sm:text-base">We&apos;ll use this info to confirm your identity and comply with our legal requirements.</p>
         </div>
       </div>
       

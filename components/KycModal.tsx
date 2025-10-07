@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Upload, Camera, Check, FileText, RotateCcw, AlertCircle, CheckCircle, Phone, Loader2 } from 'lucide-react';
 import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
+import Image from 'next/image';
 
 type KycStep = 'aadhaar' | 'face' | 'generate-otp' | 'verify-otp' | 'complete';
 
@@ -405,7 +406,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
               ) : (
                 <div className="text-center">
                   <div className="relative inline-block mb-4">
-                    <img
+                    <Image
                       src={previewUrl}
                       alt="Aadhaar preview"
                       className="max-w-full max-h-64 rounded-lg border border-gray-300"
@@ -482,7 +483,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                   </div>
                 ) : (
                   <div className="relative">
-                    <img 
+                    <Image 
                       src={faceImage} 
                       alt="Captured face" 
                       className="w-full rounded-lg border-2 border-gray-300" 
@@ -546,7 +547,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                 </div>
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">Send OTP</h4>
                 <p className="text-gray-600 mb-4">
-                  We'll send a 6-digit verification code to:
+                  We&apos;ll send a 6-digit verification code to:
                 </p>
                 <p className="text-lg font-semibold text-gray-900 mb-6">{phoneNumber}</p>
                 
@@ -580,7 +581,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                     </svg>
                   </div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">Enter Verification Code</h4>
-                  <p className="text-gray-600 text-sm mb-4">We've sent a 6-digit code to {phoneNumber}</p>
+                  <p className="text-gray-600 text-sm mb-4">We&apos;ve sent a 6-digit code to {phoneNumber}</p>
                 </div>
 
                 <div>
@@ -620,7 +621,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                   disabled={isLoading}
                   className="text-[#00BFFF] hover:text-blue-600 text-sm disabled:opacity-50"
                 >
-                  Didn't receive code? Resend
+                  Didn&apos;t receive code? Resend
                 </button>
               </div>
             </div>

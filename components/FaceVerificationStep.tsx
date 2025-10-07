@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { ChevronLeft, Camera, RotateCcw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import Webcam from 'react-webcam';
 import { colors } from '@/app/brand';
+import Image from 'next/image';
 
 interface AadhaarData {
   name?: string;
@@ -180,7 +181,7 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
             </div>
           ) : (
             <div className="relative">
-              <img 
+              <Image 
                 src={faceImage} 
                 alt="Captured face" 
                 className="w-full rounded-2xl border-2" 

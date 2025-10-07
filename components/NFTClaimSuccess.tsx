@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle, ExternalLink, X, Copy } from 'lucide-react';
-import { colors } from '../brand';
+import { colors } from '@/app/brand';
 
 interface NFTClaimSuccessModalProps {
   isOpen: boolean;
