@@ -9,6 +9,8 @@ import { colors } from '@/app/brand';
 import Image from 'next/image';
 import Seal from "@/public/Seal_logo.png"
 import Walrus from "@/public/walrus.svg"
+import Nautilus from "@/public/nautilus.png"
+import SuiLogo from "@/public/suilogo.svg"
 
 const LandingPage: React.FC = () => {
   const router = useRouter();
@@ -446,7 +448,7 @@ const LandingPage: React.FC = () => {
                 <div className="relative z-10">
                   <div className="flex items-center space-x-4 mb-6">
                     <div className="w-16 h-16 rounded-3xl flex items-center justify-center shadow-xl" style={{ background: colors.gradients.primary }}>
-                      <img src="/nautilus.png" alt="Nautilus" className="w-12 h-8 object-contain" />
+                      <Image src={Nautilus} alt="Nautilus" className="w-12 h-8 object-contain" />
                     </div>
                     <h3 className="text-2xl font-bold" style={{ color: colors.white }}>Nautilus</h3>
                   </div>
@@ -463,7 +465,7 @@ const LandingPage: React.FC = () => {
                 <div className="relative z-10">
                   <div className="flex items-center space-x-4 mb-6">
                     <div className="w-16 h-16 rounded-3xl flex items-center justify-center shadow-xl" style={{ backgroundColor: colors.lightBlue }}>
-                      <img src="/Seal_logo.png" alt="Nautilus" className="w-12 rounded-full h-8 object-contain" />
+                      <Image src={Seal} alt="Nautilus" className="w-12 rounded-full h-8 object-contain" />
 
                     </div>
                     <h3 className="text-2xl font-bold" style={{ color: colors.white }}>Seal</h3>
@@ -481,7 +483,7 @@ const LandingPage: React.FC = () => {
                 <div className="relative z-10">
                   <div className="flex items-center space-x-4 mb-6">
                     <div className="w-16 h-16 rounded-3xl flex items-center justify-center shadow-xl" style={{ background: colors.gradients.primary }}>
-                      <img src="/walrus.svg" alt="Nautilus" className="w-12 h-8 object-contain" />
+                      <Image src={Walrus} alt="Nautilus" className="w-12 h-8 object-contain" />
                     </div>
                     <h3 className="text-2xl font-bold" style={{ color: colors.white }}>Walrus</h3>
                   </div>
@@ -510,7 +512,7 @@ const LandingPage: React.FC = () => {
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   >
                     <motion.img
-                      src="/suilogo.svg"
+                      src={SuiLogo}
                       alt="SUI"
                       className="w-12 h-12 filter brightness-0 invert"
                       whileHover={{
@@ -656,7 +658,7 @@ const LandingPage: React.FC = () => {
                         }}
                         transition={{ duration: 1.2, ease: "easeInOut" }}
                       >
-                        <img src="/nautilus.png" alt="Nautilus" className="w-8 h-8 object-contain" />
+                        <Image src={Nautilus} alt="Nautilus" className="w-8 h-8 object-contain" />
                       </motion.div>
                       <h4 className="font-bold text-sm mb-1" style={{ color: colors.white }}>Nautilus</h4>
                       <p className="text-xs" style={{ color: colors.lightBlue }}>Off-chain Compute</p>
