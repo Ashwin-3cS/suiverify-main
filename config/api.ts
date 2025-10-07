@@ -12,6 +12,13 @@ export const buildApiUrl = (endpoint: string): string => {
 
 // Common API endpoints
 export const API_ENDPOINTS = {
+  // Aadhaar endpoints
+  EXTRACT_AADHAAR_DATA: '/api/aadhaar/extract-aadhaar-data',
+  
+  // OTP endpoints
+  GENERATE_OTP: '/api/otp/generate-otp',
+  VERIFY_OTP_ENDPOINT: '/api/otp/verify-otp',
+  
   // Encryption endpoints
   ENCRYPTION_STORE: '/api/encryption/store',
   ENCRYPTION_GOVERNMENT_DECRYPTION_DATA: (userAddress: string, governmentWallet: string) => 

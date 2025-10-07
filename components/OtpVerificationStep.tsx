@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, Loader2, CheckCircle, AlertCircle, Phone } from 'lucide-react';
 import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 interface AadhaarData {
   name?: string;
@@ -77,7 +78,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
       const formData = new FormData();
       formData.append('phone', phoneNumber);
 
-      const result = await handleApiCall('/api/otp/generate-otp', formData);
+      const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.GENERATE_OTP), formData);
 
       if (result.success) {
         setOtpSent(true);
@@ -127,7 +128,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
         formData.append('verification_type', verificationType);
       }
 
-      const result = await handleApiCall('/api/otp/verify-otp', formData);
+      const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.VERIFY_OTP_ENDPOINT), formData);
 
       if (result.success) {
         localStorage.setItem('verificationCompleted', 'true');

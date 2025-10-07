@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Upload, Camera, Phone, CheckCircle, AlertCircle, Loader2, FileText, Check, RotateCcw } from 'lucide-react';
 import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 type KycStep = 'aadhaar' | 'face' | 'generate-otp' | 'verify-otp' | 'complete';
 
@@ -104,7 +105,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
       const formData = new FormData();
       formData.append('file', file);
       
-      const result = await handleApiCall('/api/aadhaar/extract-aadhaar-data', formData);
+      const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.EXTRACT_AADHAAR_DATA), formData);
       
       console.log('API Response:', result);
       
@@ -205,7 +206,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
       const formData = new FormData();
       formData.append('phone', phoneNumber);
       
-      const result = await handleApiCall('/api/otp/generate-otp', formData);
+      const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.GENERATE_OTP), formData);
       
       if (result.success) {
         toast.success('OTP sent successfully!');
@@ -232,7 +233,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
       formData.append('phone', phoneNumber);
       formData.append('otp', otp);
       
-      const result = await handleApiCall('/api/otp/verify-otp', formData);
+      const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.VERIFY_OTP_ENDPOINT), formData);
       
       if (result.success) {
         toast.success('Verification completed successfully!');

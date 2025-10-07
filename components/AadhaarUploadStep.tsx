@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { colors } from '@/app/brand';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 interface AadhaarData {
   name?: string;
@@ -66,7 +67,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
       const formData = new FormData();
       formData.append('file', file);
       
-      const result = await handleApiCall('/api/aadhaar/extract-aadhaar-data', formData);
+      const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.EXTRACT_AADHAAR_DATA), formData);
       
       if (result.data) {
         const data = result.data as AadhaarData;
