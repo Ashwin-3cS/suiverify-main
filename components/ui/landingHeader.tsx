@@ -1,12 +1,15 @@
+"use client";
+
 import Image from "next/image";
-// import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import Logo from "@/public/logo.svg";
 
 
 const LandingHeader = () => {
-  // const navigate = useNavigate();
+  const router = useRouter();
+  
   const handleLaunchApp = () => {
-    // navigate('/dashboard');
+    router.push('/dashboard');
   };
 
   return (

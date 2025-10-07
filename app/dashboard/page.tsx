@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { motion } from 'framer-motion';
 // import DashboardLayout from '../components/DashboardLayout';
@@ -10,7 +12,7 @@ import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';
 
 const User: React.FC = () => {
-    // const navigate = useNavigate();
+    const router = useRouter();
     const currentAccount = useCurrentAccount();
     // const [activeFilter, setActiveFilter] = useState('Active');
     const [activeNav, setActiveNav] = useState('verifications');
@@ -44,12 +46,8 @@ const User: React.FC = () => {
 
     const handleVerificationClick = (verificationType: string, verificationDescription: string) => {
         // Redirect to KYC page for verification with type and description
-        navigate('/kyc', {
-            state: {
-                verificationType,
-                verificationDescription
-            }
-        });
+        // In Next.js, we can pass data through URL params or use a global state management solution
+        router.push(`/kyc?type=${encodeURIComponent(verificationType)}&description=${encodeURIComponent(verificationDescription)}`);
     };
 
     // Fetch credentials from backend

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import LightRays from '@/components/ui/lightRays';
 import LandingHeader from '@/components/ui/landingHeader';
@@ -11,10 +11,10 @@ import Seal from "@/public/Seal_logo.png"
 import Walrus from "@/public/walrus.svg"
 
 const LandingPage: React.FC = () => {
-//   const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLaunchApp = () => {
-    // navigate('/dashboard');
+    router.push('/dashboard');
   };
 
   return (
