@@ -257,7 +257,7 @@ export default function AuthPage() {
           style={{ borderColor: '#4DA2FF40' }}
         >
           <p className="text-xs" style={{ color: '#c0e6ffCC' }}>
-            Don&apos;t have access? <a href="https://suiverify.xyz" className="underline" style={{ color: '#4DA2FF' }}>Request access</a>
+            Don&apos;t have access? <a href="/" className="underline" style={{ color: '#4DA2FF' }}>Request access</a>
           </p>
         </motion.div>
       </motion.div>
