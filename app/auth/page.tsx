@@ -1,16 +1,52 @@
 'use client';
 
+import type { Metadata } from "next";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-
-import accessControl from '../../access-control.json';
+import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react';
+import { colors } from '@/app/brand';
+import accessControlData from '@/access-control.json';
 
 interface AuthResult {
   success: boolean;
-  user?: { username: string; role: string };
+  user?: { name: string; role: string };
   error?: string;
 }
+
+// Authentication function using the JSON data
+const authenticate = (username: string, password: string): AuthResult => {
+  try {
+    const user = accessControlData.users.find((u: { username: string; password: string; role: string }) => u.username === username && u.password === password);
+    
+    if (user) {
+      // Store auth data in localStorage
+      const authData = {
+        username: user.username,
+        role: user.role,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem('suiverify_auth', JSON.stringify(authData));
+      
+      return {
+        success: true,
+        user: { name: user.username, role: user.role }
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Invalid credentials'
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: 'Authentication failed'
+    };
+  }
+};
 
 export default function AuthPage() {
   const [username, setUsername] = useState('');
@@ -24,22 +60,7 @@ export default function AuthPage() {
     // Check if already authenticated
     const authData = localStorage.getItem('suiverify_auth');
     if (authData) {
-      try {
-        const parsed = JSON.parse(authData);
-        const now = Date.now();
-        const sessionAge = now - parsed.timestamp;
-
-        if (sessionAge < accessControl.config.sessionTimeout) {
-          // Valid session, redirect to dashboard
-          router.push('/dashboard');
-          return;
-        } else {
-          // Session expired
-          localStorage.removeItem('suiverify_auth');
-        }
-      } catch {
-        localStorage.removeItem('suiverify_auth');
-      }
+      router.push('/dashboard');
     }
 
     // Get login attempts from localStorage
@@ -51,7 +72,7 @@ export default function AuthPage() {
 
   const authenticate = (username: string, password: string): AuthResult => {
     // Check login attempts
-    if (loginAttempts >= accessControl.config.maxLoginAttempts) {
+    if (loginAttempts >= accessControlData.config.maxLoginAttempts) {
       return {
         success: false,
         error: 'Too many failed login attempts. Please try again later.'
@@ -59,7 +80,7 @@ export default function AuthPage() {
     }
 
     // Find user in access control
-    const user = accessControl.users.find(
+    const user = accessControlData.users.find(
       u => u.username === username && u.password === password
     );
 
@@ -90,7 +111,7 @@ export default function AuthPage() {
     return {
       success: true,
       user: {
-        username: user.username,
+        name: user.username,
         role: user.role
       }
     };
@@ -117,7 +138,7 @@ export default function AuthPage() {
     }
   };
 
-  const isBlocked = loginAttempts >= accessControl.config.maxLoginAttempts;
+  const isBlocked = loginAttempts >= accessControlData.config.maxLoginAttempts;
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#030f1c' }}>
@@ -213,7 +234,7 @@ export default function AuthPage() {
               <p className="text-sm">{error}</p>
               {!isBlocked && loginAttempts > 0 && (
                 <p className="text-xs mt-1">
-                  Attempts: {loginAttempts}/{accessControl.config.maxLoginAttempts}
+                  Attempts: {loginAttempts}/{accessControlData.config.maxLoginAttempts}
                 </p>
               )}
             </motion.div>
@@ -257,7 +278,7 @@ export default function AuthPage() {
           style={{ borderColor: '#4DA2FF40' }}
         >
           <p className="text-xs" style={{ color: '#c0e6ffCC' }}>
-            Don&apos;t have access? <a href="/" className="underline" style={{ color: '#4DA2FF' }}>Request access</a>
+            Don&apos;t have access? <Link href="/" className="underline" style={{ color: '#4DA2FF' }}>Request access</Link>
           </p>
         </motion.div>
       </motion.div>

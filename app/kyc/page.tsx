@@ -14,7 +14,7 @@ import { documentEncryptionService, DocumentEncryptionService } from '@/services
 import { credentialService } from '@/services/credentialService';
 import { NFTClaimSuccessModal } from '@/components/NFTClaimSuccess';
 import { colors } from '@/app/brand';
-import { getCurrentPackageId, SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
+import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
 
 interface AadhaarData {
   name?: string;
@@ -53,7 +53,7 @@ function KycPage() {
   const { verificationStatus, startListening } = useVerificationListener();
   
   // Get verification type from URL parameters or default
-  const verificationType = searchParams.get('type') || 'Verify Above 18';
+  // const verificationType = searchParams.get('type') || 'Verify Above 18'; // Commented out - not used
   const verificationDescription = searchParams.get('description') || 'Verify your age using Aadhaar document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.';
   
   // Sui client and transaction execution
@@ -71,7 +71,7 @@ function KycPage() {
   });
 
   // Contract configuration from centralized config
-  const PACKAGE_ID = getCurrentPackageId();
+  // const PACKAGE_ID = getCurrentPackageId(); // Commented out - not used
   const CLOCK_ID = SHARED_OBJECTS.CLOCK;
 
 

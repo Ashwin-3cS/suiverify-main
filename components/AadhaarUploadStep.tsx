@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { ChevronLeft, Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { colors } from '@/app/brand';
-import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 interface AadhaarData {
   name?: string;
@@ -30,7 +30,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
     try {
       // Add timestamp to prevent caching
       const timestamp = Date.now();
-      const urlWithTimestamp = `${buildApiUrl(url)}?t=${timestamp}`;
+      const urlWithTimestamp = `${url}?t=${timestamp}`;
       
       const response = await fetch(urlWithTimestamp, {
         method: 'POST',
