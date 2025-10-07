@@ -216,7 +216,7 @@ function KycPage() {
 
       signAndExecute(
         {
-          transaction: tx,
+          transaction: tx as unknown as Parameters<typeof signAndExecute>[0]['transaction'], // Type assertion to handle SDK version mismatch
         },
         {
           onSuccess: async (result) => {

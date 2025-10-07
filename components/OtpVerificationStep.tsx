@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Send, Loader2, CheckCircle, AlertCircle, Phone } from 'lucide-react';
+import { ChevronLeft, Loader2, CheckCircle, AlertCircle, Phone } from 'lucide-react';
 import { colors } from '@/app/brand';
-import { useCurrentAccount } from '@mysten/dapp-kit';
-import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { toast } from 'react-toastify';
 
 interface AadhaarData {
@@ -29,7 +27,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpSent, setOtpSent] = useState(false);
-  const currentAccount = useCurrentAccount();
+  // const currentAccount = useCurrentAccount(); // Commented out - not used
 
   // Auto-set DID based on verification type
   const getDid = () => {
@@ -40,7 +38,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
     try {
       // Add timestamp to prevent caching
       const timestamp = Date.now();
-      const urlWithTimestamp = `${buildApiUrl(url)}?t=${timestamp}`;
+      const urlWithTimestamp = `${url}?t=${timestamp}`;
       
       const response = await fetch(urlWithTimestamp, {
         method: 'POST',
@@ -100,25 +98,25 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
     setError(null);
 
     try {
-      // Check if wallet is connected
-      if (!currentAccount?.address) {
-        setError('Please connect your wallet first');
-        setIsLoading(false);
-        return;
-      }
+      // Note: Wallet connection check disabled for now
+      // if (!currentAccount?.address) {
+      //   setError('Please connect your wallet first');
+      //   setIsLoading(false);
+      //   return;
+      // }
 
       const formData = new FormData();
       formData.append('phone', phoneNumber);
       formData.append('otp', otp);
 
-      // Add wallet address - this is critical for the Kafka message
-      formData.append('wallet_address', currentAccount.address);
+      // Add placeholder wallet address - update when wallet integration is ready
+      formData.append('wallet_address', 'placeholder_address');
 
       // Auto-set DID based on verification type (0 for above18, 1 for citizenship)
       formData.append('did', getDid().toString());
 
       console.log(`🔍 Frontend: Sending OTP verification with DID: ${getDid()} for verification type: ${verificationType}`);
-      console.log(`🔍 Frontend: Wallet address: ${currentAccount.address}`);
+      console.log(`🔍 Frontend: Using placeholder wallet address`);
 
       // Add Aadhaar data if available
       if (aadhaarData) {

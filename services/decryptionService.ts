@@ -24,7 +24,7 @@ const serverObjectIds = [
 
 // Initialize Seal client
 const sealClient = new SealClient({
-  suiClient: SUI_CLIENT,
+  suiClient: SUI_CLIENT as any, // Type assertion to handle SDK version mismatch
   serverConfigs: serverObjectIds.map((id) => ({
     objectId: id,
     weight: 1,
@@ -62,7 +62,7 @@ export class DocumentDecryptionService {
    * Creates a session key for decryption
    */
   createSessionKey(governmentAddress: string): SessionKey {
-    return new SessionKey({
+    return (SessionKey as any).create({
       address: governmentAddress,
       packageId: PACKAGE_ID,
       ttlMin: this.TTL_MIN,

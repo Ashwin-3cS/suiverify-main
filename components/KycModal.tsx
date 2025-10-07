@@ -1,9 +1,6 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { X, Upload, Camera, Phone, Send, CheckCircle, AlertCircle, Loader2, FileText, User } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Upload, Camera, Phone, CheckCircle, AlertCircle, Loader2, FileText, Check, RotateCcw } from 'lucide-react';
 import Webcam from 'react-webcam';
-import { colors } from '@/app/brand';
-import { useCurrentAccount } from '@mysten/dapp-kit';
-import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { toast } from 'react-toastify';
 
 type KycStep = 'aadhaar' | 'face' | 'generate-otp' | 'verify-otp' | 'complete';
@@ -76,7 +73,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
     try {
       // Add timestamp to prevent caching
       const timestamp = Date.now();
-      const urlWithTimestamp = `${buildApiUrl(url)}?t=${timestamp}`;
+      const urlWithTimestamp = `${url}?t=${timestamp}`;
       
       const response = await fetch(urlWithTimestamp, {
         method: 'POST',
@@ -152,7 +149,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
       
       const base64Image = capturedImage.includes(',') ? capturedImage.split(',')[1] : capturedImage;
       
-      const response = await fetch(buildApiUrl('/api/face/verify-face'), {
+      const response = await fetch('/api/face/verify-face', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -416,7 +413,8 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
               ) : (
                 <div className="text-center">
                   <div className="relative inline-block mb-4">
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={previewUrl}
                       alt="Aadhaar preview"
                       className="max-w-full max-h-64 rounded-lg border border-gray-300"
@@ -493,7 +491,8 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                   </div>
                 ) : (
                   <div className="relative">
-                    <Image 
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
                       src={faceImage} 
                       alt="Captured face" 
                       className="w-full rounded-lg border-2 border-gray-300" 

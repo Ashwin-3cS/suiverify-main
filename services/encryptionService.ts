@@ -25,7 +25,7 @@ const serverObjectIds = [
 ];
 
 const sealClient = new SealClient({
-  suiClient: SUI_CLIENT,
+  suiClient: SUI_CLIENT as any, // Type assertion to handle SDK version mismatch
   serverConfigs: serverObjectIds.map((id) => ({
     objectId: id,
     weight: 1,
