@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { X, Upload, Camera, Check, FileText, RotateCcw, AlertCircle, CheckCircle, Phone, Loader2 } from 'lucide-react';
+import React, { useState, useRef, useCallback } from 'react';
+import { X, Upload, Camera, Phone, Send, CheckCircle, AlertCircle, Loader2, FileText, User } from 'lucide-react';
 import Webcam from 'react-webcam';
+import { colors } from '@/app/brand';
+import { useCurrentAccount } from '@mysten/dapp-kit';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { toast } from 'react-toastify';
-import Image from 'next/image';
 
 type KycStep = 'aadhaar' | 'face' | 'generate-otp' | 'verify-otp' | 'complete';
 
@@ -54,9 +56,6 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
   const webcamRef = useRef<Webcam>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // API Configuration
-  const API_BASE = 'http://localhost:8000';
-
   // Reset modal state when closed
   const handleClose = () => {
     setStep('aadhaar');
@@ -75,8 +74,17 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
   // API call helper
   const handleApiCall = async (url: string, formData: FormData): Promise<ApiResponse> => {
     try {
-      const response = await fetch(`${API_BASE}${url}`, {
+      // Add timestamp to prevent caching
+      const timestamp = Date.now();
+      const urlWithTimestamp = `${buildApiUrl(url)}?t=${timestamp}`;
+      
+      const response = await fetch(urlWithTimestamp, {
         method: 'POST',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
         body: formData,
       });
       
@@ -87,7 +95,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
       return await response.json();
     } catch (err) {
       console.error('API call failed:', err);
-      throw new Error('Network error: Please ensure the backend server is running on localhost:8000');
+      throw new Error('Network error: Please ensure the backend server is running');
     }
   };
 
@@ -144,7 +152,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
       
       const base64Image = capturedImage.includes(',') ? capturedImage.split(',')[1] : capturedImage;
       
-      const response = await fetch(`${API_BASE}/api/face/verify-face`, {
+      const response = await fetch(buildApiUrl('/api/face/verify-face'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,8 +199,10 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
 
   // Generate OTP
   const generateOtp = async () => {
+    // Reset all states to prevent caching issues
     setIsLoading(true);
     setError(null);
+    setOtp('');
     
     try {
       const formData = new FormData();
@@ -581,7 +591,15 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                     </svg>
                   </div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">Enter Verification Code</h4>
-                  <p className="text-gray-600 text-sm mb-4">We&apos;ve sent a 6-digit code to {phoneNumber}</p>
+                  <p className="text-gray-600 text-sm mb-2">We&apos;ve sent a 6-digit code to {phoneNumber}</p>
+                  <button
+                    type="button"
+                    onClick={generateOtp}
+                    disabled={isLoading}
+                    className="text-[#00BFFF] hover:text-blue-600 text-sm font-medium disabled:opacity-50"
+                  >
+                    {isLoading ? 'Resending...' : 'Resend OTP'}
+                  </button>
                 </div>
 
                 <div>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Phone, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { useCurrentAccount } from '@mysten/dapp-kit';
+import { ChevronLeft, Send, Loader2, CheckCircle, AlertCircle, Phone } from 'lucide-react';
 import { colors } from '@/app/brand';
+import { useCurrentAccount } from '@mysten/dapp-kit';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { toast } from 'react-toastify';
 
 interface AadhaarData {
   name?: string;
@@ -35,12 +36,19 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
     return verificationType === 'above18' ? 0 : 1;
   };
 
-  const API_BASE = 'http://localhost:8000';
-
   const handleApiCall = async (url: string, formData: FormData) => {
     try {
-      const response = await fetch(`${API_BASE}${url}`, {
+      // Add timestamp to prevent caching
+      const timestamp = Date.now();
+      const urlWithTimestamp = `${buildApiUrl(url)}?t=${timestamp}`;
+      
+      const response = await fetch(urlWithTimestamp, {
         method: 'POST',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
         body: formData,
       });
 
@@ -54,15 +62,18 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
     } catch (err) {
       console.error('API call failed:', err);
       if (err instanceof TypeError && err.message.includes('fetch')) {
-        throw new Error('Network error: Please ensure the backend server is running on localhost:8000');
+        throw new Error('Network error: Please ensure the backend server is running');
       }
       throw err;
     }
   };
 
   const generateOtp = async () => {
+    // Reset all states to prevent caching issues
     setIsLoading(true);
     setError(null);
+    setOtpSent(false);
+    setOtp('');
 
     try {
       const formData = new FormData();

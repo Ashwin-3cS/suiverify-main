@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';
 import { documentDecryptionService, DocumentDecryptionService, type DocumentMetadata } from '@/services/decryptionService';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 interface DecryptionData {
   user_address: string;
@@ -55,7 +56,7 @@ function GovernmentDecryptionPage() {
       console.log('🏛️ Government wallet:', currentAccount.address);
 
       const response = await fetch(
-        `http://localhost:8000/api/encryption/government/decryption-data/${userAddress}?government_wallet=${currentAccount.address}`,
+        buildApiUrl(API_ENDPOINTS.ENCRYPTION_GOVERNMENT_DECRYPTION_DATA(userAddress, currentAccount.address)),
         {
           method: 'GET',
           headers: {

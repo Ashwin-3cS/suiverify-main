@@ -5,10 +5,10 @@ import { fromHex } from '@mysten/sui/utils';
 
 // Configuration matching the encryption service
 const SUI_CLIENT = new SuiClient({ url: 'https://fullnode.testnet.sui.io:443' });
-const PACKAGE_ID = '0xcfedf4e2445497ba1a5d57349d6fc116b194eca41524f46f593c63a7a70a8eab';
+const PACKAGE_ID = '0x6ec40d30e636afb906e621748ee60a9b72bc59a39325adda43deadd28dc89e09';
 
 // Government whitelist ID (should match the deployed whitelist)
-const GOVERNMENT_WHITELIST_ID = '0xca700b2604763639ba3fbf0237d4f1ab34470ac509d407d34030621b1a254747';
+const GOVERNMENT_WHITELIST_ID = '0x5db149489d68ece83a08559773a1d1f898e4fa4b31d9807b7bb24c88dc8ffb26';
 
 // Walrus configuration
 const WALRUS_AGGREGATOR_URL = process.env.NEXT_PUBLIC_WALRUS_AGGREGATOR_URL;

@@ -70,7 +70,7 @@ function KycPage() {
   });
 
   // Contract configuration
-  const PACKAGE_ID = '0x3611276dabf733007d7975e17989e505eb93e11f4998f93d5c74c3a44231833d';
+  const PACKAGE_ID = '0x6ec40d30e636afb906e621748ee60a9b72bc59a39325adda43deadd28dc89e09';
   const CLOCK_ID = '0x0000000000000000000000000000000000000000000000000000000000000006';
 
 
@@ -205,7 +205,7 @@ function KycPage() {
       tx.moveCall({
         target: `${PACKAGE_ID}::did_registry::claim_did_nft`,
         arguments: [
-          tx.object('0xea43902e5184fc2cbbc194e63c236321d7cd4aebd006b2d4a7c76f8f03f194b9'), // registry (updated)
+          tx.object('0x2c6962f40c84a7df1d40c74ab05c7f60c9afdbae8129cfe507ced948a02cbdc4'), // registry (updated)
           tx.object(userDidId), // user_did object (from verification event)
           tx.pure.string(encryptionResult.blobId), // blob_id
           tx.object(CLOCK_ID), // clock

@@ -1,3 +1,5 @@
+import { API_CONFIG } from '@/config/api';
+
 export interface CredentialData {
     id: string;
     title: string;
@@ -23,7 +25,7 @@ export interface CredentialData {
   }
   
   class CredentialService {
-    private baseUrl = 'http://localhost:8000/api';
+    private baseUrl = `${API_CONFIG.BASE_URL}/api`;
   
     /**
      * Fetch user credentials from backend

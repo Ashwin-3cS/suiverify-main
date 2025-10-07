@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { ChevronLeft, Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { colors } from '@/app/brand';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 interface AadhaarData {
   name?: string;
@@ -25,12 +26,19 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
   const [error, setError] = useState<string | null>(null);
   const [aadhaarData, setAadhaarData] = useState<AadhaarData | null>(null);
 
-  const API_BASE = 'http://localhost:8000';
-
   const handleApiCall = async (url: string, formData: FormData) => {
     try {
-      const response = await fetch(`${API_BASE}${url}`, {
+      // Add timestamp to prevent caching
+      const timestamp = Date.now();
+      const urlWithTimestamp = `${buildApiUrl(url)}?t=${timestamp}`;
+      
+      const response = await fetch(urlWithTimestamp, {
         method: 'POST',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
         body: formData,
       });
       
@@ -44,7 +52,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
     } catch (err) {
       console.error('API call failed:', err);
       if (err instanceof TypeError && err.message.includes('fetch')) {
-        throw new Error('Network error: Please ensure the backend server is running on localhost:8000');
+        throw new Error('Network error: Please ensure the backend server is running');
       }
       throw err;
     }
