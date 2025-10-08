@@ -3,6 +3,7 @@ import { ChevronLeft, Loader2, CheckCircle, AlertCircle, Phone } from 'lucide-re
 import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 
 interface AadhaarData {
   name?: string;
@@ -28,7 +29,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpSent, setOtpSent] = useState(false);
-  // const currentAccount = useCurrentAccount(); // Commented out - not used
+  const currentAccount = useCurrentAccount(); // Commented out - not used
 
   // Auto-set DID based on verification type
   const getDid = () => {
@@ -111,7 +112,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
       formData.append('otp', otp);
 
       // Add placeholder wallet address - update when wallet integration is ready
-      formData.append('wallet_address', 'placeholder_address');
+      formData.append('wallet_address', currentAccount?.address || 'placeholder_address');
 
       // Auto-set DID based on verification type (0 for above18, 1 for citizenship)
       formData.append('did', getDid().toString());
