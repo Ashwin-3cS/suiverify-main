@@ -4,9 +4,7 @@ import { fromHex, toHex } from '@mysten/sui/utils';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { getCurrentPackageId, getCurrentRpcEndpoint, SHARED_OBJECTS } from '@/config/contracts';
 
-// Configuration for Walrus and Seal - using working service from main frontend
-const WALRUS_PUBLISHER_URL = process.env.NEXT_PUBLIC_WALRUS_PUBLISHER_URL;
-const WALRUS_AGGREGATOR_URL = process.env.NEXT_PUBLIC_WALRUS_AGGREGATOR_URL;
+// Configuration for Walrus and Seal
 const NUM_EPOCH = 1;
 
 // Sui configuration - Using centralized contract config
@@ -15,6 +13,55 @@ const PACKAGE_ID = getCurrentPackageId();
 
 // Government whitelist ID from centralized config
 const GOVERNMENT_WHITELIST_ID = SHARED_OBJECTS.GOVERNMENT_WHITELIST;
+
+// HTTPS-only Walrus publishers (for production use)
+const WALRUS_PUBLISHERS = [
+  'https://publisher.testnet.walrus.atalma.io',
+  'https://publisher.walrus-01.tududes.com',
+  'https://publisher.walrus-testnet.h2o-nodes.com',
+  'https://publisher.walrus-testnet.walrus.space',
+  'https://publisher.walrus.banansen.dev',
+  'https://sm1-walrus-testnet-publisher.stakesquid.com',
+  'https://sui-walrus-testnet-publisher.bwarelabs.com',
+  'https://suiftly-testnet-pub.mhax.io',
+  'https://testnet-publisher-walrus.kiliglab.io',
+  'https://testnet-publisher.walrus.graphyte.dev',
+  'https://testnet.publisher.walrus.silentvalidator.com',
+  'https://wal-publisher-testnet.staketab.org',
+  'https://walrus-publish-testnet.chainode.tech:9003',
+  'https://walrus-publisher-testnet.n1stake.com',
+  'https://walrus-publisher-testnet.staking4all.org',
+  'https://walrus-publisher.rubynodes.io',
+  'https://walrus-publisher.thcloud.dev',
+  'https://walrus-testnet-published.luckyresearch.org',
+  'https://walrus-testnet-publisher-1.zkv.xyz',
+  'https://walrus-testnet-publisher.chainbase.online',
+  'https://walrus-testnet-publisher.crouton.digital',
+  'https://walrus-testnet-publisher.dzdaic.com',
+  'https://walrus-testnet-publisher.everstake.one',
+  'https://walrus-testnet-publisher.nami.cloud',
+  'https://walrus-testnet-publisher.natsai.xyz',
+  'https://walrus-testnet-publisher.nodeinfra.com',
+  'https://walrus-testnet-publisher.nodes.guru',
+  'https://walrus-testnet-publisher.redundex.com',
+  'https://walrus-testnet-publisher.rpc101.org',
+  'https://walrus-testnet-publisher.stakecraft.com',
+  'https://walrus-testnet-publisher.stakeengine.co.uk',
+  'https://walrus-testnet-publisher.stakely.io',
+  'https://walrus-testnet-publisher.stakeme.pro',
+  'https://walrus-testnet-publisher.stakingdefenseleague.com',
+  'https://walrus-testnet-publisher.starduststaking.com',
+  'https://walrus-testnet-publisher.trusted-point.com',
+  'https://walrus-testnet.blockscope.net:11444',
+  'https://walrus-testnet.validators.services.kyve.network/publish',
+  'https://walrus.testnet.publisher.stakepool.dev.br'
+];
+
+// Fallback aggregator URLs
+const WALRUS_AGGREGATORS = [
+  'https://aggregator.walrus-testnet.walrus.space',
+  'https://wal-aggregator-testnet.staketab.org'
+];
 
 // Seal server configurations
 const serverObjectIds = [
@@ -25,7 +72,7 @@ const serverObjectIds = [
 ];
 
 const sealClient = new SealClient({
-  suiClient: SUI_CLIENT as any, // Type assertion to handle SDK version mismatch
+  suiClient: SUI_CLIENT as any,
   serverConfigs: serverObjectIds.map((id) => ({
     objectId: id,
     weight: 1,
@@ -39,6 +86,7 @@ export interface EncryptionResult {
   encryptionId?: string;
   suiRef?: string;
   error?: string;
+  publisherUsed?: string;
 }
 
 interface EncryptionMetadataPayload {
@@ -55,6 +103,52 @@ interface EncryptionMetadataPayload {
 }
 
 export class DocumentEncryptionService {
+  private async tryPublisher(publisherUrl: string, encryptedData: Uint8Array): Promise<any> {
+    const url = `${publisherUrl}/v1/blobs?epochs=${NUM_EPOCH}`;
+    console.log(`📤 Trying publisher: ${publisherUrl}`);
+    
+    const response = await fetch(url, {
+      method: 'PUT',
+      body: encryptedData,
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(30000) // 30 second timeout
+    });
+
+    if (response.status === 200) {
+      const result = await response.json();
+      console.log(`✅ Success with publisher: ${publisherUrl}`);
+      return { info: result, publisherUsed: publisherUrl };
+    } else {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+  }
+
+  private async storeBlob(encryptedData: Uint8Array): Promise<any> {
+    console.log(`📤 Uploading ${encryptedData.length} bytes to Walrus with fallback...`);
+    
+    let lastError: Error | null = null;
+    
+    // Try each publisher until one succeeds
+    for (const publisher of WALRUS_PUBLISHERS) {
+      try {
+        const result = await this.tryPublisher(publisher, encryptedData);
+        console.log(`🎉 Successfully uploaded using: ${publisher}`);
+        return result;
+      } catch (error) {
+        console.warn(`⚠️ Publisher ${publisher} failed:`, error instanceof Error ? error.message : String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // Continue to next publisher
+        continue;
+      }
+    }
+    
+    // If all publishers failed, throw the last error
+    console.error('❌ All publishers failed');
+    throw new Error(`All Walrus publishers failed. Last error: ${lastError?.message || 'Unknown error'}`);
+  }
+
   async encryptAndUploadDocument(file: File, userAddress: string): Promise<EncryptionResult> {
     try {
       console.log('🔐 Starting document encryption process...');
@@ -68,7 +162,6 @@ export class DocumentEncryptionService {
       const encryptionId = toHex(new Uint8Array([...policyObjectBytes, ...nonce]));
       
       console.log('🔑 Generated Encryption ID:', encryptionId);
-      console.log('🔄 Encryption ID format: [whitelist_id][nonce]');
 
       // Step 2: Convert file to ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
@@ -88,17 +181,17 @@ export class DocumentEncryptionService {
       console.log('✅ Document encrypted successfully');
       console.log('📦 Encrypted data size:', encryptedBytes.length, 'bytes');
 
-      // Step 4: Upload to Walrus
-      console.log('☁️ Uploading to Walrus storage...');
+      // Step 4: Upload to Walrus with fallback
+      console.log('☁️ Uploading to Walrus storage with fallback...');
       const storageInfo = await this.storeBlob(encryptedBytes);
       
       if (!storageInfo) {
-        throw new Error('Failed to upload to Walrus storage');
+        throw new Error('Failed to upload to any Walrus publisher');
       }
 
       console.log('🎉 Upload completed successfully!');
       
-      // Step 5: Extract blob information using the same logic as EncryptAndUpload.tsx
+      // Step 5: Extract blob information
       let blobId: string;
       let suiRef: string;
       
@@ -118,6 +211,7 @@ export class DocumentEncryptionService {
       console.log('🆔 Blob ID:', blobId);
       console.log('🔗 Sui Reference:', suiRef);
       console.log('🔐 Encryption ID:', encryptionId);
+      console.log('📡 Publisher Used:', storageInfo.publisherUsed);
 
       // Store encryption metadata in database
       try {
@@ -125,7 +219,7 @@ export class DocumentEncryptionService {
           user_address: userAddress,
           blob_id: blobId,
           encryption_id: encryptionId,
-          did_type: 'identity_verification', // Default, can be parameterized
+          did_type: 'identity_verification',
           document_type: 'aadhaar',
           file_name: file.name,
           file_size: file.size,
@@ -136,14 +230,14 @@ export class DocumentEncryptionService {
         console.log('✅ Encryption metadata stored in database');
       } catch (metadataError) {
         console.warn('⚠️ Failed to store encryption metadata:', metadataError);
-        // Don't fail the whole process if metadata storage fails
       }
 
       return {
         success: true,
         blobId,
         encryptionId,
-        suiRef
+        suiRef,
+        publisherUsed: storageInfo.publisherUsed
       };
 
     } catch (error) {
@@ -155,36 +249,15 @@ export class DocumentEncryptionService {
     }
   }
 
-  private async storeBlob(encryptedData: Uint8Array): Promise<any> {
-    try {
-      console.log('📤 Uploading', encryptedData.length, 'bytes to Walrus...');
-      
-      // Use the same URL pattern as the working EncryptAndUpload.tsx
-      const url = `${WALRUS_PUBLISHER_URL}/v1/blobs?epochs=${NUM_EPOCH}`;
-      console.log('📤 Publishing blob to URL:', url);
-      
-      const response = await fetch(url, {
-        method: 'PUT',
-        body: encryptedData,
-      });
-
-      if (response.status === 200) {
-        const result = await response.json();
-        console.log('📨 Walrus response:', result);
-        return { info: result };
-      } else {
-        const errorText = await response.text();
-        throw new Error(`Walrus upload failed: ${response.status} - ${errorText}`);
-      }
-    } catch (error) {
-      console.error('❌ Walrus upload error:', error);
-      throw error;
-    }
+  // Helper method to get the aggregator URL for a blob with fallback
+  static getBlobUrl(blobId: string, aggregatorIndex: number = 0): string {
+    const aggregator = WALRUS_AGGREGATORS[aggregatorIndex] || WALRUS_AGGREGATORS[0];
+    return `${aggregator}/v1/blobs/${blobId}`;
   }
 
-  // Helper method to get the aggregator URL for a blob
-  static getBlobUrl(blobId: string): string {
-    return `${WALRUS_AGGREGATOR_URL}/v1/blobs/${blobId}`;
+  // Get all possible blob URLs for redundancy
+  static getAllBlobUrls(blobId: string): string[] {
+    return WALRUS_AGGREGATORS.map(aggregator => `${aggregator}/v1/blobs/${blobId}`);
   }
 
   // Store encryption metadata in backend database
