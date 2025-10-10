@@ -13,8 +13,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Don't protect the auth page itself
-    if (pathname === '/auth') {
+    // Don't protect the auth page and adminLogin page
+    if (pathname === '/auth' || pathname === '/adminLogin' || pathname === '/admin') {
       setIsAuthenticated(true);
       return;
     }
