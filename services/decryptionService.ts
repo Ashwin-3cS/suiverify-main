@@ -61,11 +61,12 @@ export class DocumentDecryptionService {
   /**
    * Creates a session key for decryption
    */
-  createSessionKey(governmentAddress: string): SessionKey {
-    return (SessionKey as any).create({
+  async createSessionKey(governmentAddress: string): Promise<SessionKey> {
+    return await SessionKey.create({
       address: governmentAddress,
       packageId: PACKAGE_ID,
       ttlMin: this.TTL_MIN,
+      suiClient: SUI_CLIENT as any,
     });
   }
 
@@ -160,7 +161,7 @@ export class DocumentDecryptionService {
 
           // Step 3: Create blob URL for decrypted data
           const mimeType = this.getMimeType(doc.file_name);
-          const blob = new Blob([decryptedData], { type: mimeType });
+          const blob = new Blob([decryptedData as any], { type: mimeType });
           const url = URL.createObjectURL(blob);
           decryptedFileUrls.push(url);
 

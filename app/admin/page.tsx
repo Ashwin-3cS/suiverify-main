@@ -141,7 +141,7 @@ function GovernmentDecryptionPage() {
         console.log('🔑 Creating new session key...');
         setDecryptionProgress('Creating session key for decryption...');
         
-        const sessionKey = documentDecryptionService.createSessionKey(currentAccount.address);
+        const sessionKey = await documentDecryptionService.createSessionKey(currentAccount.address);
         
         // Request personal message signature
         signPersonalMessage(
