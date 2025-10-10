@@ -202,41 +202,110 @@ export class DocumentDecryptionService {
     blobId: string,
     onProgress?: (progress: string) => void
   ): Promise<ArrayBuffer | null> {
+    // Comprehensive list of Walrus testnet aggregators for maximum reliability
     const reliableAggregators = [
-      WALRUS_AGGREGATOR_URL,
+      WALRUS_AGGREGATOR_URL, // Primary aggregator from env
+      // HTTPS aggregators
+      'https://agg.test.walrus.eosusa.io',
+      'https://aggregator.testnet.walrus.atalma.io',
+      'https://aggregator.testnet.walrus.mirai.cloud',
+      'https://aggregator.walrus-01.tududes.com',
+      'https://aggregator.walrus-testnet.h2o-nodes.com',
       'https://aggregator.walrus-testnet.walrus.space',
-      'https://wal-aggregator-testnet.staketab.org',
       'https://aggregator.walrus.banansen.dev',
+      'https://aggregator.walrus.testnet.mozcomputing.dev',
+      'https://sm1-walrus-testnet-aggregator.stakesquid.com',
+      'https://sui-walrus-tn-aggregator.bwarelabs.com',
       'https://suiftly-testnet-agg.mhax.io',
-      'https://sui-walrus-tn-aggregator.bwarelabs.com'
-    ];
+      'https://testnet-aggregator-walrus.kiliglab.io',
+      'https://testnet-aggregator.walrus.graphyte.dev',
+      'https://testnet-walrus.globalstake.io',
+      'https://testnet.aggregator.walrus.silentvalidator.com',
+      'https://wal-aggregator-testnet.staketab.org',
+      'https://walrus-agg-test.bucketprotocol.io',
+      'https://walrus-agg-testnet.chainode.tech:9002',
+      'https://walrus-agg.testnet.obelisk.sh',
+      'https://walrus-aggregator-testnet.cetus.zone',
+      'https://walrus-aggregator-testnet.haedal.xyz',
+      'https://walrus-aggregator-testnet.n1stake.com',
+      'https://walrus-aggregator-testnet.staking4all.org',
+      'https://walrus-aggregator-testnet.suisec.tech',
+      'https://walrus-aggregator.thcloud.dev',
+      'https://walrus-test-aggregator.thepassivetrust.com',
+      'https://walrus-testnet-aggregator-1.zkv.xyz',
+      'https://walrus-testnet-aggregator.brightlystake.com',
+      'https://walrus-testnet-aggregator.chainbase.online',
+      'https://walrus-testnet-aggregator.chainflow.io',
+      'https://walrus-testnet-aggregator.crouton.digital',
+      'https://walrus-testnet-aggregator.dzdaic.com',
+      'https://walrus-testnet-aggregator.everstake.one',
+      'https://walrus-testnet-aggregator.luckyresearch.org',
+      'https://walrus-testnet-aggregator.natsai.xyz',
+      'https://walrus-testnet-aggregator.nodeinfra.com',
+      'https://walrus-testnet-aggregator.nodes.guru',
+      'https://walrus-testnet-aggregator.redundex.com',
+      'https://walrus-testnet-aggregator.rpc101.org',
+      'https://walrus-testnet-aggregator.rubynodes.io',
+      'https://walrus-testnet-aggregator.stakecraft.com',
+      'https://walrus-testnet-aggregator.stakeengine.co.uk',
+      'https://walrus-testnet-aggregator.stakely.io',
+      'https://walrus-testnet-aggregator.stakeme.pro',
+      'https://walrus-testnet-aggregator.stakin-nodes.com',
+      'https://walrus-testnet-aggregator.stakingdefenseleague.com',
+      'https://walrus-testnet-aggregator.starduststaking.com',
+      'https://walrus-testnet-aggregator.talentum.id',
+      'https://walrus-testnet-aggregator.trusted-point.com',
+      'https://walrus-testnet.blockscope.net',
+      'https://walrus-testnet.lionscraft.blockscape.network:9000',
+      'https://walrus-testnet.validators.services.kyve.network/aggregate',
+      'https://walrus-testnet.veera.com',
+      'https://walrus-tn.juicystake.io:9443',
+      'https://walrus.testnet.aggregator.stakepool.dev.br',
+      'https://walrusagg.testnet.pops.one'
+    ].filter(Boolean); // Remove any undefined/null values
 
-    for (const aggregatorBase of reliableAggregators) {
+    console.log(`📡 Trying ${reliableAggregators.length} aggregators for blob ${blobId}`);
+    
+    for (let i = 0; i < reliableAggregators.length; i++) {
+      const aggregatorBase = reliableAggregators[i];
+      
+      // Skip if aggregatorBase is undefined/null
+      if (!aggregatorBase) continue;
+      
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
+        const timeout = setTimeout(() => controller.abort(), 15000); // Increased timeout
         
         const aggregatorUrl = `${aggregatorBase}/v1/blobs/${blobId}`;
-        console.log(`Attempting download from ${aggregatorBase}`);
+        console.log(`[${i + 1}/${reliableAggregators.length}] Attempting download from ${aggregatorBase}`);
+        onProgress?.(`Trying aggregator ${i + 1}/${reliableAggregators.length}: ${aggregatorBase}`);
         
         const response = await fetch(aggregatorUrl, { 
           signal: controller.signal,
-          mode: 'cors'
+          mode: 'cors',
+          headers: {
+            'Accept': 'application/octet-stream, */*'
+          }
         });
         
         clearTimeout(timeout);
         
         if (response.ok) {
-          console.log(`✅ Successfully downloaded from ${aggregatorBase}`);
+          console.log(`✅ Successfully downloaded from ${aggregatorBase} (${response.status})`);
+          onProgress?.(`✅ Download successful from ${aggregatorBase}`);
           return await response.arrayBuffer();
+        } else {
+          console.log(`❌ Failed from ${aggregatorBase}: ${response.status} ${response.statusText}`);
         }
       } catch (err) {
-        console.log(`Failed from ${aggregatorBase}:`, err);
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.log(`❌ Failed from ${aggregatorBase}: ${errorMsg}`);
         continue;
       }
     }
 
-    console.error(`All download attempts failed for blob ${blobId}`);
+    console.error(`❌ All ${reliableAggregators.length} download attempts failed for blob ${blobId}`);
+    onProgress?.(`❌ All ${reliableAggregators.length} aggregators failed for blob ${blobId}`);
     return null;
   }
 
