@@ -13,7 +13,7 @@ suiverify.xyz/adminLogin        → Admin Login
 **All routes on the same domain with landing page as the homepage!**
 
 ---
-
+..
 ## 🏗️ **Implementation Strategy**
 
 ### **Option 1: Vercel Rewrites (Recommended)**
