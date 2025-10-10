@@ -27,7 +27,7 @@ All contract addresses and blockchain configurations are centralized in `/config
 To update contract addresses after deployment, simply modify the values in `/config/contracts.ts`.
 
 ## Getting Started
-
+..
 First, run the development server:
 
 ```bash
