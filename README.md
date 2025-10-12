@@ -3,7 +3,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## Environment Variables
 
 Create a `.env.local` file in the root directory with the following variables:
-
+..
 ```bash
 NEXT_PUBLIC_WALRUS_PUBLISHER_URL=your_walrus_publisher_url_here
 NEXT_PUBLIC_WALRUS_AGGREGATOR_URL=your_walrus_aggregator_url_here
