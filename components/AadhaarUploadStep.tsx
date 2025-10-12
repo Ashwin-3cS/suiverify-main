@@ -62,25 +62,54 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
   const handleAadhaarUpload = async (file: File) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
+      console.log('📄 Processing file:', file.name, file.size, 'bytes');
+      
+      // STEP 1: Convert uploaded file to base64 (full size) - run in parallel with API call
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onload = (e) => {
+          const base64String = e.target?.result as string;
+          const base64Data = base64String.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+          console.log('📊 Full image base64 created:', base64Data.length, 'characters');
+          console.log('📊 Full image decoded size:', Math.floor(base64Data.length * 0.75), 'bytes');
+          resolve(base64Data);
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      // STEP 2: Call backend API to extract Aadhaar text data (name, DOB, etc.)
+      console.log('🔍 Calling backend API to extract Aadhaar data...');
       const formData = new FormData();
       formData.append('file', file);
-      
       const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.EXTRACT_AADHAAR_DATA), formData);
+      
+      // STEP 3: Wait for full image base64 to complete
+      const fullImageBase64 = await base64Promise;
+      
+      console.log('✅ Backend API returned extracted data');
+      console.log('🔄 Replacing backend image with full-size uploaded image');
       
       if (result.data) {
         const data = result.data as AadhaarData;
         
-        // // Check if the message indicates no readable data found
-        // if (result.message && result.message.includes('Image processed but no readable data found')) {
-        //   setError('Please upload a clearer image.');
-        //   setPreviewUrl(null); // Clear the preview
-        //   return;
-        // }
+        // Use backend's extracted text data BUT replace with full-size image
+        const completeData: AadhaarData = {
+          ...data,  // Use real extracted name, DOB, address, etc. from backend
+          aadhaar_photo_base64: fullImageBase64  // Replace with full-size image!
+        };
         
-        setAadhaarData(data);
-        onFileUpload(data);
+        console.log('📋 Complete Aadhaar data prepared:', {
+          name: completeData.name,
+          dob: completeData.dob,
+          phone_number: completeData.phone_number,
+          aadhaar_number: completeData.aadhaar_number,
+          image_size: `${fullImageBase64.length} chars (${Math.floor(fullImageBase64.length * 0.75)} bytes)`
+        });
+        
+        setAadhaarData(completeData);
+        onFileUpload(completeData);
       } else {
         setError(result.message || 'Failed to process Aadhaar image.');
       }

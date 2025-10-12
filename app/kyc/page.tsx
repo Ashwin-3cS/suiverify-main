@@ -129,15 +129,23 @@ function KycPage() {
       
       // Convert base64 to File object for encryption
       const base64Data = aadhaarData.aadhaar_photo_base64;
+      console.log('📊 Base64 data received:', base64Data.length, 'characters');
+      
       const byteCharacters = atob(base64Data);
+      console.log('📊 Decoded byte characters:', byteCharacters.length, 'bytes');
+      
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
+      console.log('📊 Byte array created:', byteArray.length, 'bytes');
+      console.log('📊 First 20 bytes (should be JPEG signature):', Array.from(byteArray.slice(0, 20)));
+      
       const file = new File([byteArray], 'aadhaar-document.jpg', { type: 'image/jpeg' });
       
       console.log('📄 Document converted to file:', file.name, file.size, 'bytes');
+      console.log('✅ Ready to encrypt FULL size image:', file.size, 'bytes');
       
       // Use the encryption logic from EncryptAndUpload.tsx
       await encryptAndUploadDocument(file);
