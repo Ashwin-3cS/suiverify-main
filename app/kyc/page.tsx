@@ -6,7 +6,11 @@ import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from '@
 import { Transaction } from '@mysten/sui/transactions';
 import { motion } from 'framer-motion';
 import LightRays from '@/components/ui/lightRays';
+import CountrySelectionStep from '@/components/CountrySelectionStep';
+import DocumentTypeSelectionStep from '@/components/DocumentTypeSelectionStep';
 import AadhaarUploadStep from '@/components/AadhaarUploadStep';
+import PANUploadStep from '@/components/PANUploadStep';
+import PANVerificationStep from '@/components/PANVerificationStep';
 import FaceVerificationStep from '@/components/FaceVerificationStep';
 import OtpVerificationStep from '@/components/OtpVerificationStep';
 import { useVerificationListener } from '@/hooks/useEventListener';
@@ -15,6 +19,21 @@ import { credentialService } from '@/services/credentialService';
 import { NFTClaimSuccessModal } from '@/components/NFTClaimSuccess';
 import { colors } from '@/app/brand';
 import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
+
+interface Country {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+interface DocumentType {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  features: string[];
+  available: boolean;
+}
 
 interface AadhaarData {
   name?: string;
@@ -26,9 +45,20 @@ interface AadhaarData {
   aadhaar_photo_base64?: string;
 }
 
+interface PANData {
+  pan_number?: string;
+  name?: string;
+  father_name?: string;
+  dob?: string;
+  pan_photo_base64?: string;
+}
+
 function KycPage() {
-  const [step, setStep] = useState('aadhaar');
+  const [step, setStep] = useState('country');
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType | null>(null);
   const [aadhaarData, setAadhaarData] = useState<AadhaarData | null>(null);
+  const [panData, setPanData] = useState<PANData | null>(null);
   const [otpVerified, setOtpVerified] = useState(false);
   const [encryptionResult, setEncryptionResult] = useState<{
     blobId?: string;
@@ -77,13 +107,42 @@ function KycPage() {
 
   const handleNext = () => {
     if (step === 'aadhaar') setStep('face');
-    else if (step === 'face') setStep('otp');
+    else if (step === 'pan') setStep('face');
+    else if (step === 'face') {
+      // For PAN, go to PAN verification (no OTP)
+      if (selectedDocumentType?.id === 'pan') {
+        setStep('pan-verification');
+      } else {
+        setStep('otp');
+      }
+    }
+    else if (step === 'pan-verification') {
+      // After PAN verification, start listening for blockchain events
+      setOtpVerified(true);
+      setStep('waiting');
+      startListening();
+    }
     else if (step === 'otp') {
       // After OTP verification, start listening for blockchain events
       setOtpVerified(true);
       setStep('waiting');
       startListening();
     }
+  };
+
+  const handleCountrySelect = (country: Country) => {
+    setSelectedCountry(country);
+    setStep('document-type');
+  };
+
+  const handleDocumentTypeSelect = (documentType: DocumentType) => {
+    setSelectedDocumentType(documentType);
+    if (documentType.id === 'aadhaar') {
+      setStep('aadhaar');
+    } else if (documentType.id === 'pan') {
+      setStep('pan');
+    }
+    // Add more document types as needed
   };
 
   const encryptAndUploadDocument = useCallback(async (file: File) => {
@@ -118,7 +177,12 @@ function KycPage() {
   }, [currentAccount]);
 
   const handleDocumentEncryption = useCallback(async () => {
-    if (!aadhaarData?.aadhaar_photo_base64 || !currentAccount?.address) {
+    const documentData = selectedDocumentType?.id === 'pan' ? panData : aadhaarData;
+    const photoBase64 = selectedDocumentType?.id === 'pan' 
+      ? panData?.pan_photo_base64 
+      : aadhaarData?.aadhaar_photo_base64;
+    
+    if (!photoBase64 || !currentAccount?.address) {
       console.error('Missing document data or wallet address');
       return;
     }
@@ -128,7 +192,7 @@ function KycPage() {
       setStep('encrypting');
       
       // Convert base64 to File object for encryption
-      const base64Data = aadhaarData.aadhaar_photo_base64;
+      const base64Data = photoBase64;
       console.log('📊 Base64 data received:', base64Data.length, 'characters');
       
       const byteCharacters = atob(base64Data);
@@ -142,7 +206,8 @@ function KycPage() {
       console.log('📊 Byte array created:', byteArray.length, 'bytes');
       console.log('📊 First 20 bytes (should be JPEG signature):', Array.from(byteArray.slice(0, 20)));
       
-      const file = new File([byteArray], 'aadhaar-document.jpg', { type: 'image/jpeg' });
+      const fileName = selectedDocumentType?.id === 'pan' ? 'pan-document.jpg' : 'aadhaar-document.jpg';
+      const file = new File([byteArray], fileName, { type: 'image/jpeg' });
       
       console.log('📄 Document converted to file:', file.name, file.size, 'bytes');
       console.log('✅ Ready to encrypt FULL size image:', file.size, 'bytes');
@@ -154,7 +219,7 @@ function KycPage() {
       console.error('❌ Error in document encryption:', error);
       setStep('error');
     }
-  }, [aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument]);
+  }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument]);
 
   // Handle successful verification from event listener
   useEffect(() => {
@@ -296,13 +361,23 @@ function KycPage() {
   };
 
   const handleBack = () => {
-    if (step === 'face') setStep('aadhaar');
+    if (step === 'document-type') setStep('country');
+    else if (step === 'aadhaar' || step === 'pan') setStep('document-type');
+    else if (step === 'face') {
+      if (selectedDocumentType?.id === 'aadhaar') setStep('aadhaar');
+      else if (selectedDocumentType?.id === 'pan') setStep('pan');
+    }
+    else if (step === 'pan-verification') setStep('face');
     else if (step === 'otp') setStep('face');
-    else if (step === 'aadhaar') router.push("/dashboard")
+    else if (step === 'country') router.push("/dashboard");
   };
 
   const handleAadhaarUpload = (data: AadhaarData) => {
     setAadhaarData(data);
+  };
+
+  const handlePANUpload = (data: PANData) => {
+    setPanData(data);
   };
 
   return (
@@ -362,6 +437,31 @@ function KycPage() {
               className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border max-w-2xl mx-auto"
               style={{ borderColor: `${colors.primary}30` }}
             >
+            {step === 'country' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <CountrySelectionStep
+                  onNext={handleCountrySelect}
+                  onBack={handleBack}
+                />
+              </motion.div>
+            )}
+            {step === 'document-type' && selectedCountry && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <DocumentTypeSelectionStep
+                  country={selectedCountry}
+                  onNext={handleDocumentTypeSelect}
+                  onBack={handleBack}
+                />
+              </motion.div>
+            )}
             {step === 'aadhaar' && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -375,11 +475,39 @@ function KycPage() {
                 />
               </motion.div>
             )}
-            {step === 'face' && aadhaarData && (
+            {step === 'pan' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <PANUploadStep
+                  onNext={handleNext}
+                  onBack={handleBack}
+                  onFileUpload={handlePANUpload}
+                />
+              </motion.div>
+            )}
+            {step === 'face' && (aadhaarData || panData) && (
               <FaceVerificationStep
                 onNext={handleNext}
                 onBack={handleBack}
-                aadhaarData={aadhaarData}
+                aadhaarData={aadhaarData || { 
+                  name: panData?.name, 
+                  dob: panData?.dob,
+                  gender: undefined,
+                  phone_number: undefined,
+                  address: undefined,
+                  aadhaar_number: undefined,
+                  aadhaar_photo_base64: panData?.pan_photo_base64
+                }}
+              />
+            )}
+            {step === 'pan-verification' && panData && (
+              <PANVerificationStep
+                onNext={handleNext}
+                onBack={handleBack}
+                panData={panData}
               />
             )}
             {step === 'otp' && aadhaarData && (

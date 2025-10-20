@@ -15,9 +15,14 @@ export const API_ENDPOINTS = {
   // Aadhaar endpoints
   EXTRACT_AADHAAR_DATA: '/api/aadhaar/extract-aadhaar-data',
   
-  // OTP endpoints
-  GENERATE_OTP: '/api/otp/generate-otp',
-  VERIFY_OTP_ENDPOINT: '/api/otp/verify-otp',
+  // PAN endpoints
+  EXTRACT_PAN_DATA: '/api/pan/extract-pan-data',
+  CORRECT_PAN_DATA: '/api/pan/correct-pan-data',
+  VERIFY_PAN: '/api/pan/verify-pan',
+  
+  // OTP endpoints (COMMENTED OUT)
+  // GENERATE_OTP: '/api/otp/generate-otp',
+  // VERIFY_OTP_ENDPOINT: '/api/otp/verify-otp',
   
   // Encryption endpoints
   ENCRYPTION_STORE: '/api/encryption/store',
@@ -26,7 +31,7 @@ export const API_ENDPOINTS = {
   
   // Verification endpoints
   VERIFY_AADHAAR: '/api/verify-aadhaar',
-  VERIFY_OTP: '/api/verify-otp',
+  // VERIFY_OTP: '/api/verify-otp', // COMMENTED OUT
   
   // Credential endpoints
   CREDENTIALS: '/api/credentials',
