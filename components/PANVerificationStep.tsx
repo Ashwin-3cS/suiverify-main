@@ -151,7 +151,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
               )}
               {panData.father_name && (
                 <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>Father's Name:</span>
+                  <span style={{ color: colors.primary }}>Father&apos;s Name:</span>
                   <span style={{ color: colors.lightBlue }}>{panData.father_name}</span>
                 </div>
               )}

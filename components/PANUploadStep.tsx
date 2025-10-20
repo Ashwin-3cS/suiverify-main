@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle, Edit3 } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, Edit3, Save, X, CheckCircle } from 'lucide-react';
 import { colors } from '@/app/brand';
+import { toast } from 'react-toastify';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 interface PANData {
@@ -161,7 +161,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
       });
       
       if (response.ok) {
-        const result = await response.json();
+        await response.json();
         setPanData(editedData);
         onFileUpload(editedData);
         setIsEditing(false);
@@ -284,7 +284,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
               {/* Father's Name */}
               <div>
                 <label className="block text-sm font-medium mb-1" style={{ color: colors.primary }}>
-                  Father's Name
+                  Father&apos;s Name
                 </label>
                 {isEditing ? (
                   <input
@@ -393,17 +393,15 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
                 className="max-w-full mx-auto max-h-48 rounded-2xl border-2"
                 style={{ borderColor: `${colors.primary}40` }}
               />
+              <button
+                type="button"
+                onClick={() => {setPreviewUrl(null); setPanData(null); setError(null); setIsEditing(false);}}
+                className="text-sm transition-colors hover:opacity-80 mt-2"
+                style={{ color: colors.primary }}
+              >
+                Upload Different Image
+              </button>
             </div>
-            <p className="font-medium mb-2" style={{ color: colors.primary }}></p>
-            
-            <button
-              type="button"
-              onClick={() => {setPreviewUrl(null); setPanData(null); setError(null); setIsEditing(false);}}
-              className="text-sm transition-colors hover:opacity-80"
-              style={{ color: colors.primary }}
-            >
-              Upload Different Image
-            </button>
           </div>
         )}
 

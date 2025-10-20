@@ -177,7 +177,6 @@ function KycPage() {
   }, [currentAccount]);
 
   const handleDocumentEncryption = useCallback(async () => {
-    const documentData = selectedDocumentType?.id === 'pan' ? panData : aadhaarData;
     const photoBase64 = selectedDocumentType?.id === 'pan' 
       ? panData?.pan_photo_base64 
       : aadhaarData?.aadhaar_photo_base64;
@@ -219,7 +218,7 @@ function KycPage() {
       console.error('❌ Error in document encryption:', error);
       setStep('error');
     }
-  }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument]);
+  }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument, aadhaarData, panData]);
 
   // Handle successful verification from event listener
   useEffect(() => {
