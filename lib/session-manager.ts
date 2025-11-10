@@ -50,8 +50,9 @@ export class SessionManager {
 
   /**
    * Get cached proof data if valid
+   * NOTE: Returns partial data (address only) - sensitive fields are in React context
    */
-  static getCachedProof(): CachedProofData | null {
+  static getCachedProof(): Partial<CachedProofData> | null {
     if (typeof window === "undefined") return null;
 
     if (!this.isCacheValid()) {
@@ -63,7 +64,9 @@ export class SessionManager {
     if (!cached) return null;
 
     try {
-      return JSON.parse(cached) as CachedProofData;
+      const data = JSON.parse(cached);
+      // Return what we have (address and proof) - context has the rest
+      return data as Partial<CachedProofData>;
     } catch {
       this.clearProofCache();
       return null;
@@ -72,19 +75,23 @@ export class SessionManager {
 
   /**
    * Save proof data to cache with 24h TTL
+   * NOTE: We only store ADDRESS (non-sensitive) to maintain logged-in state
+   * Sensitive data (jwtToken, privateKey) stays in React context only
    */
   static cacheProof(data: Omit<CachedProofData, "createdAt" | "expiresAt">): void {
     if (typeof window === "undefined") return;
 
     const now = Date.now();
-    const cacheData: CachedProofData = {
-      ...data,
+    // Only cache the address and basic proof info, NOT sensitive keys
+    const minimalCacheData = {
+      address: data.address,
+      zkProof: data.zkProof,
       createdAt: now,
       expiresAt: now + CACHE_TTL,
     };
 
-    localStorage.setItem(PROOF_CACHE_KEY, JSON.stringify(cacheData));
-    console.log("✅ Proof cached successfully (expires in 24h)");
+    localStorage.setItem(PROOF_CACHE_KEY, JSON.stringify(minimalCacheData));
+    console.log("✅ Address cached (non-sensitive data only) - expires in 24h");
   }
 
   /**

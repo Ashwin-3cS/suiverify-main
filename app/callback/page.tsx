@@ -1,17 +1,26 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ZkLoginService } from '@/lib/zklogin';
 import { SessionManager } from '@/lib/session-manager';
+import { useAuth } from '@/hooks/useAuth';
 
 function CallbackContent() {
   const router = useRouter();
+  const { setAuthData, checkAuth } = useAuth();
   const [status, setStatus] = useState('Processing OAuth callback...');
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
+  const hasProcessedRef = useRef(false);
 
   useEffect(() => {
+    if (hasProcessedRef.current) {
+      console.log('⏭️ Callback already processed - skipping second StrictMode run.');
+      return;
+    }
+    hasProcessedRef.current = true;
+
     const handleCallback = async () => {
       try {
         console.log('🔄 Processing OAuth callback...');
@@ -40,19 +49,24 @@ function CallbackContent() {
         console.log('📍 Address:', result.address);
         console.log(`👤 User type: ${result.isNewUser ? 'NEW' : 'EXISTING'}`);
 
-        // Check cache
-        const cachedProof = SessionManager.getCachedProof();
-        if (cachedProof) {
-          console.log(`⏰ Proof cached until: ${SessionManager.getFormattedTTL()}`);
-        }
+        // Store auth data in React context (not localStorage)
+        setAuthData({
+          address: result.address,
+          zkProof: result.zkProof,
+          jwtToken: result.jwtToken,
+          userSalt: result.userSalt,
+          ephemeralPrivateKey: result.ephemeralPrivateKey,
+          maxEpoch: result.maxEpoch,
+          randomness: result.randomness,
+        });
 
-        // Update status
+        checkAuth();
         setStatus('Authentication successful! Redirecting...');
 
-        // Redirect to home page after a short delay
+        // Redirect to dashboard after a short delay
         setTimeout(() => {
-          router.push('/');
-        }, 1000);
+          router.replace('/dashboard');
+        }, 1200);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         console.error('❌ Callback error:', errorMessage);
@@ -71,7 +85,7 @@ function CallbackContent() {
 
     // Use Suspense boundary to handle searchParams
     handleCallback();
-  }, [router]);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-transparent">

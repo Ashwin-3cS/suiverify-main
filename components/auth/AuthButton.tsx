@@ -38,12 +38,12 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
     setIsModalOpen(false);
   };
 
-  // Get button size classes - match Connect Wallet button style
-  const sizeClasses = size === 'sm' ? 'text-xs sm:text-sm px-3 sm:px-4 py-2' :
-                      size === 'lg' ? 'text-base px-6 py-3' :
-                      'text-sm px-4 py-2';
+  // Modern button design: white background, black text, larger size
+  const sizeClasses = size === 'sm' ? 'text-sm px-5 py-2.5' :
+                      size === 'lg' ? 'text-base px-8 py-4' :
+                      'text-sm px-6 py-3';
 
-  const baseButtonClasses = `flex items-center gap-2 bg-[#00BFFF] text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed ${sizeClasses}`;
+  const baseButtonClasses = `flex items-center gap-2 min-w-[160px] justify-center bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 shadow-sm hover:shadow-md ${sizeClasses}`;
 
   // Show loading state
   if (isLoading) {
@@ -66,6 +66,16 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
           disabled={isLoggingIn}
           className={`${baseButtonClasses} ${className}`}
         >
+          {isLoggingIn && (
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          )}
           {isLoggingIn ? 'Signing In...' : 'Sign In'}
         </button>
       </>
@@ -80,6 +90,9 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
         className={`${baseButtonClasses} ${className}`}
         title="Click to view your address"
       >
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+        </svg>
         {address ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` : 'Account'}
       </button>
 

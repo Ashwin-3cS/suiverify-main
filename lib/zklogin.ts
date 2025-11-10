@@ -339,7 +339,7 @@ export class ZkLoginService {
     // Create a simpler, bounded hash
     let hash = 0;
     for (let i = 0; i < emailBytes.length; i++) {
-      hash = ((hash << 5) - hash) + emailBytes[i];
+      hash = (hash << 5) - hash + emailBytes[i];
       hash = hash & hash; // Keep it within 32-bit bounds
     }
 
@@ -364,6 +364,11 @@ export class ZkLoginService {
     zkProof: any;
     session: ZkLoginSession;
     isNewUser: boolean;
+    jwtToken: string;
+    userSalt: string;
+    ephemeralPrivateKey: string;
+    maxEpoch: number;
+    randomness: string;
   }> {
     console.log("=== Starting Streamlined zkLogin Flow ===");
 
@@ -376,21 +381,34 @@ export class ZkLoginService {
 
     // ✅ CHECK 1: Is this user already logged in (cached proof exists)?
     const cachedProof = SessionManager.getCachedProof();
-    if (cachedProof && cachedProof.userSalt === emailDerivedSalt) {
+    if (
+      cachedProof &&
+      cachedProof.userSalt === emailDerivedSalt &&
+      cachedProof.ephemeralPrivateKey &&
+      cachedProof.randomness
+    ) {
       console.log("👤 EXISTING USER - Using cached data");
-      console.log("✅ Cached proof still valid (", SessionManager.getFormattedTTL() + ")");
+      console.log(
+        "✅ Cached proof still valid (",
+        SessionManager.getFormattedTTL() + ")"
+      );
       console.log("📧 Same email → Same address:", cachedProof.address);
 
       return {
-        address: cachedProof.address,
+        address: cachedProof.address!,
         zkProof: cachedProof.zkProof,
         session: {
           ephemeralPrivateKey: cachedProof.ephemeralPrivateKey,
           randomness: cachedProof.randomness,
-          maxEpoch: cachedProof.maxEpoch.toString(),
+          maxEpoch: (cachedProof.maxEpoch ?? 0).toString(),
           userSalt: cachedProof.userSalt,
         },
-        isNewUser: false,  // ← Existing user
+        isNewUser: false, // ← Existing user
+        jwtToken,
+        userSalt: cachedProof.userSalt,
+        ephemeralPrivateKey: cachedProof.ephemeralPrivateKey,
+        maxEpoch: cachedProof.maxEpoch!,
+        randomness: cachedProof.randomness,
       };
     }
 
@@ -405,7 +423,7 @@ export class ZkLoginService {
         ephemeralPrivateKey: initResult.ephemeralKeyPair.getSecretKey(),
         randomness: initResult.randomness,
         maxEpoch: initResult.maxEpoch.toString(),
-        userSalt: emailDerivedSalt,  // ← Use email-derived salt for new user!
+        userSalt: emailDerivedSalt, // ← Use email-derived salt for new user!
         nonce: initResult.nonce,
       };
       SessionManager.saveSession(session);
@@ -455,7 +473,12 @@ export class ZkLoginService {
       address,
       zkProof,
       session,
-      isNewUser: true,  // ← New user
+      isNewUser: true, // ← New user
+      jwtToken,
+      userSalt: session.userSalt,
+      ephemeralPrivateKey: session.ephemeralPrivateKey,
+      maxEpoch: parseInt(session.maxEpoch),
+      randomness: session.randomness,
     };
   }
 
@@ -473,12 +496,14 @@ export class ZkLoginService {
     // Use cached data if requested
     if (params.useCache) {
       const cached = SessionManager.getCachedProof();
-      if (!cached) {
-        throw new Error("No cached proof available");
+      if (!cached || !cached.jwtToken || !cached.userSalt) {
+        throw new Error(
+          "No cached proof available or missing JWT token/userSalt"
+        );
       }
       return this.createSignature({
         zkProof: cached.zkProof,
-        maxEpoch: cached.maxEpoch,
+        maxEpoch: cached.maxEpoch!,
         ephemeralSignature: params.ephemeralSignature,
         jwtToken: cached.jwtToken,
         userSalt: cached.userSalt,
@@ -486,7 +511,12 @@ export class ZkLoginService {
     }
 
     // Use provided data
-    if (!params.zkProof || !params.maxEpoch || !params.jwtToken || !params.userSalt) {
+    if (
+      !params.zkProof ||
+      !params.maxEpoch ||
+      !params.jwtToken ||
+      !params.userSalt
+    ) {
       throw new Error("Missing required parameters for signature creation");
     }
 
