@@ -75,23 +75,25 @@ export class SessionManager {
 
   /**
    * Save proof data to cache with 24h TTL
-   * NOTE: We only store ADDRESS (non-sensitive) to maintain logged-in state
-   * Sensitive data (jwtToken, privateKey) stays in React context only
+   * NOTE: We only store ADDRESS (non-sensitive) to maintain logged-in state persistence
+   * Sensitive data (jwtToken, ephemeralPrivateKey, userSalt, etc) stays in React context ONLY
+   * This ensures the address survives page refreshes without exposing secrets
    */
   static cacheProof(data: Omit<CachedProofData, "createdAt" | "expiresAt">): void {
     if (typeof window === "undefined") return;
 
     const now = Date.now();
-    // Only cache the address and basic proof info, NOT sensitive keys
+    // ⚠️ IMPORTANT: Only store ADDRESS - it never changes per user
+    // Sensitive data must be retrieved from React context or re-derived from email
     const minimalCacheData = {
       address: data.address,
-      zkProof: data.zkProof,
+      // DO NOT store: jwtToken, ephemeralPrivateKey, userSalt, randomness, maxEpoch, zkProof
       createdAt: now,
       expiresAt: now + CACHE_TTL,
     };
 
     localStorage.setItem(PROOF_CACHE_KEY, JSON.stringify(minimalCacheData));
-    console.log("✅ Address cached (non-sensitive data only) - expires in 24h");
+    console.log("✅ User address cached for persistence (non-sensitive) - expires in 24h");
   }
 
   /**
@@ -108,7 +110,7 @@ export class SessionManager {
    */
   static getCacheTTL(): number {
     const cached = this.getCachedProof();
-    if (!cached) return 0;
+    if (!cached || !cached.expiresAt) return 0;
 
     const remaining = cached.expiresAt - Date.now();
     return remaining > 0 ? remaining : 0;

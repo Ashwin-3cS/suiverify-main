@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState, Suspense, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ZkLoginService } from '@/lib/zklogin';
-import { SessionManager } from '@/lib/session-manager';
 import { useAuth } from '@/hooks/useAuth';
 
 function CallbackContent() {
@@ -85,6 +84,7 @@ function CallbackContent() {
 
     // Use Suspense boundary to handle searchParams
     handleCallback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -58,23 +58,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (isAuth) {
         const cachedProof = SessionManager.getCachedProof();
-        if (cachedProof) {
-          console.log('✅ User is authenticated (cached proof valid)');
+        if (cachedProof && cachedProof.address) {
+          console.log('✅ User is authenticated (cached address valid)');
           console.log('📍 Address:', cachedProof.address);
+          console.log('⚠️ Note: Sensitive data (JWT, keys) must be in React context');
 
+          // ⚠️ IMPORTANT: Only restore address from cache
+          // Sensitive data (jwtToken, ephemeralPrivateKey, userSalt, etc)
+          // MUST be retrieved from React context on the callback page
+          // or re-derived from email on next login
           setAddress(cachedProof.address);
-          setZkProof(cachedProof.zkProof);
-          setJwtToken(cachedProof.jwtToken);
+          setZkProof(null); // Don't load from cache - context only
+          setJwtToken(null); // Don't load from cache - context only
+          setUserSalt(null); // Don't load from cache - context only
+          setEphemeralPrivateKey(null); // Don't load from cache - context only
+          setMaxEpoch(null); // Don't load from cache - context only
+          setRandomness(null); // Don't load from cache - context only
           setIsAuthenticated(true);
 
           // Log cache TTL for debugging
-          console.log(`⏰ Cache valid for: ${SessionManager.getFormattedTTL()}`);
+          console.log(`⏰ Address cache valid for: ${SessionManager.getFormattedTTL()}`);
         }
       } else {
-        console.log('❌ User is not authenticated (no valid cached proof)');
+        console.log('❌ User is not authenticated (no valid cached address)');
         setAddress(null);
         setZkProof(null);
         setJwtToken(null);
+        setUserSalt(null);
+        setEphemeralPrivateKey(null);
+        setMaxEpoch(null);
+        setRandomness(null);
         setIsAuthenticated(false);
       }
     } catch (error) {

@@ -328,11 +328,7 @@ export class ZkLoginService {
     const decodedJWT = this.decodeJWT(jwtToken);
     console.log("📧 Deriving salt from email:", decodedJWT.email);
 
-    // Create a deterministic hash from email
-    // This approach uses the randomness generator which is cryptographically sound
-    const emailSalt = generateRandomness();
-
-    // Better approach: use email to seed the salt in a bounded way
+    // Use email to seed the salt in a deterministic way
     // Convert email to a number that's safe for BN254 field
     const emailBytes = new TextEncoder().encode(decodedJWT.email);
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { buildExplorerUrl } from '@/config/contracts';
 
 interface AddressModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
     onClose();
   };
 
-  const explorerUrl = `https://suiscan.xyz/mainnet/account/${address}`;
+  const explorerUrl = `${buildExplorerUrl(address, 'object')}`;
 
   return (
     <AnimatePresence>
