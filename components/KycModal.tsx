@@ -286,52 +286,54 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-primary/40 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#F8FAFC] rounded-2xl md:p-8 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border-[3px] border-primary outfit">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{verificationType}</h2>
-            <p className="text-sm text-gray-600">Complete your identity verification</p>
+            <h2 className="text-2xl font-bold mb-2 text-charcoal-text">
+              {verificationType}
+            </h2>
+            <p className="text-sm text-charcoal-text/70">Complete your identity verification</p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="absolute md:top-4 top-2 right-4 text-charcoal-text/60 hover:text-charcoal-text transition-colors"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Progress Indicator */}
-        <div className="px-6 py-4 bg-gray-50">
+        <div className="px-6 py-4 mb-6 bg-primary/10 rounded-xl">
           <div className="flex items-center justify-center">
             <div className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                step === 'aadhaar' ? 'bg-[#00BFFF]' : 'bg-green-500'
+                step === 'aadhaar' ? 'bg-primary' : 'bg-success'
               }`}>
                 {step === 'aadhaar' ? '1' : '✓'}
               </div>
               <div className={`w-16 h-1 mx-2 ${
-                ['face', 'generate-otp', 'verify-otp', 'complete'].includes(step) ? 'bg-green-500' : 'bg-gray-300'
+                ['face', 'generate-otp', 'verify-otp', 'complete'].includes(step) ? 'bg-success' : 'bg-light-gray'
               }`}></div>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                step === 'face' ? 'bg-[#00BFFF]' : ['generate-otp', 'verify-otp', 'complete'].includes(step) ? 'bg-green-500' : 'bg-gray-300'
+                step === 'face' ? 'bg-primary' : ['generate-otp', 'verify-otp', 'complete'].includes(step) ? 'bg-success' : 'bg-light-gray'
               }`}>
                 {step === 'face' ? '2' : ['generate-otp', 'verify-otp', 'complete'].includes(step) ? '✓' : '2'}
               </div>
               <div className={`w-16 h-1 mx-2 ${
-                ['generate-otp', 'verify-otp', 'complete'].includes(step) ? 'bg-green-500' : 'bg-gray-300'
+                ['generate-otp', 'verify-otp', 'complete'].includes(step) ? 'bg-success' : 'bg-light-gray'
               }`}></div>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                step === 'generate-otp' ? 'bg-[#00BFFF]' : ['verify-otp', 'complete'].includes(step) ? 'bg-green-500' : 'bg-gray-300'
+                step === 'generate-otp' ? 'bg-primary' : ['verify-otp', 'complete'].includes(step) ? 'bg-success' : 'bg-light-gray'
               }`}>
                 {step === 'generate-otp' ? '3' : ['verify-otp', 'complete'].includes(step) ? '✓' : '3'}
               </div>
               <div className={`w-16 h-1 mx-2 ${
-                ['verify-otp', 'complete'].includes(step) ? 'bg-green-500' : 'bg-gray-300'
+                ['verify-otp', 'complete'].includes(step) ? 'bg-success' : 'bg-light-gray'
               }`}></div>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                step === 'verify-otp' ? 'bg-[#00BFFF]' : step === 'complete' ? 'bg-green-500' : 'bg-gray-300'
+                step === 'verify-otp' ? 'bg-primary' : step === 'complete' ? 'bg-success' : 'bg-light-gray'
               }`}>
                 {step === 'verify-otp' ? '4' : step === 'complete' ? '✓' : '4'}
               </div>
@@ -340,43 +342,43 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
         </div>
 
         {/* Modal Content */}
-        <div className="p-6">
+        <div>
           {/* Error Display */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="mb-6 p-4 bg-error/10 border border-error/30 rounded-lg flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
+              <p className="text-charcoal-text text-sm">{error}</p>
             </div>
           )}
           {/* Step 1: Aadhaar Upload */}
           {step === 'aadhaar' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Aadhaar Card</h3>
+              <h3 className="text-lg font-semibold text-charcoal-text mb-4">Upload Aadhaar Card</h3>
               
               {/* Aadhaar Data Display */}
               {aadhaarData && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="mb-6 p-4 bg-success/10 border border-success/30 rounded-lg">
                   <div className="flex items-center gap-2 mb-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <h4 className="font-semibold text-green-800">Aadhaar Data Extracted</h4>
+                    <CheckCircle className="w-5 h-5 text-success" />
+                    <h4 className="font-semibold text-charcoal-text">Aadhaar Data Extracted</h4>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     {aadhaarData.aadhaar_number && (
                       <div>
-                        <span className="text-green-600 font-medium">Aadhaar Number:</span>
-                        <p className="text-green-800">{aadhaarData.aadhaar_number}</p>
+                        <span className="text-success font-medium">Aadhaar Number:</span>
+                        <p className="text-charcoal-text">{aadhaarData.aadhaar_number}</p>
                       </div>
                     )}
                     {aadhaarData.phone_number && (
                       <div>
-                        <span className="text-green-600 font-medium">Phone Number:</span>
-                        <p className="text-green-800">{aadhaarData.phone_number}</p>
+                        <span className="text-success font-medium">Phone Number:</span>
+                        <p className="text-charcoal-text">{aadhaarData.phone_number}</p>
                       </div>
                     )}
                     {aadhaarData.dob && (
                       <div>
-                        <span className="text-green-600 font-medium">Date of Birth:</span>
-                        <p className="text-green-800">{aadhaarData.dob}</p>
+                        <span className="text-success font-medium">Date of Birth:</span>
+                        <p className="text-charcoal-text">{aadhaarData.dob}</p>
                       </div>
                     )}
                   </div>
@@ -384,15 +386,15 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
               )}
 
               {!previewUrl ? (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <FileText className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">Upload Aadhaar Card</h4>
-                  <p className="text-gray-600 mb-6">Choose a clear image of your Aadhaar card</p>
+                <div className="border-2 border-dashed border-primary/30 rounded-lg p-8 text-center">
+                  <FileText className="w-12 h-12 text-primary mx-auto mb-4" />
+                  <h4 className="text-lg font-medium text-charcoal-text mb-2">Upload Aadhaar Card</h4>
+                  <p className="text-charcoal-text/70 mb-6">Choose a clear image of your Aadhaar card</p>
                   
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isLoading}
-                    className="flex items-center gap-2 bg-[#00BFFF] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 mx-auto"
+                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 mx-auto border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                   >
                     {isLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -420,11 +422,11 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                       alt="Aadhaar preview"
                       className="max-w-full max-h-64 rounded-lg border border-gray-300"
                     />
-                    <div className="absolute top-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <div className="absolute top-2 right-2 w-8 h-8 bg-success rounded-full flex items-center justify-center">
                       <Check className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <p className="text-green-600 mb-4">✓ Aadhaar card uploaded successfully</p>
+                  <p className="text-success mb-4">✓ Aadhaar card uploaded successfully</p>
                 </div>
               )}
             </div>
@@ -432,35 +434,33 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
           {/* Step 2: Face Verification */}
           {step === 'face' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Face Verification</h3>
+              <h3 className="text-lg font-semibold text-charcoal-text mb-4">Face Verification</h3>
               
               {/* Face Verification Result */}
               {faceResult && (
                 <div className={`mb-6 p-4 border rounded-lg ${
-                  faceResult.match ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  faceResult.match ? 'bg-success/10 border-success/30' : 'bg-error/10 border-error/30'
                 }`}>
                   <div className="flex items-center gap-2 mb-2">
                     {faceResult.match ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-success" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-red-600" />
+                      <AlertCircle className="w-5 h-5 text-error" />
                     )}
-                    <h4 className={`font-semibold ${
-                      faceResult.match ? 'text-green-800' : 'text-red-800'
-                    }`}>
+                    <h4 className={`font-semibold text-charcoal-text`}>
                       {faceResult.match ? 'Face Verification Successful' : 'Face Verification Failed'}
                     </h4>
                   </div>
                   <div className="text-sm space-y-1">
-                    <p className={faceResult.match ? 'text-green-700' : 'text-red-700'}>
+                    <p className="text-charcoal-text">
                       Confidence: {faceResult.confidence.toFixed(1)}%
                     </p>
                     {faceResult.face_distance && (
-                      <p className={faceResult.match ? 'text-green-700' : 'text-red-700'}>
+                      <p className="text-charcoal-text">
                         Face Distance: {faceResult.face_distance.toFixed(3)}
                       </p>
                     )}
-                    <p className={faceResult.match ? 'text-green-700' : 'text-red-700'}>
+                    <p className="text-charcoal-text">
                       {faceResult.message}
                     </p>
                   </div>
@@ -468,8 +468,8 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
               )}
 
               <div className="text-center mb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Live Face Capture</h4>
-                <p className="text-gray-600 text-sm">Position your face in the center and take a clear photo</p>
+                <h4 className="text-lg font-semibold text-charcoal-text mb-2">Live Face Capture</h4>
+                <p className="text-charcoal-text/70 text-sm">Position your face in the center and take a clear photo</p>
               </div>
 
               <div className="relative max-w-md mx-auto mb-6">
@@ -479,7 +479,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                       audio={false}
                       ref={webcamRef}
                       screenshotFormat="image/jpeg"
-                      className="w-full rounded-lg border-2 border-gray-300"
+                      className="w-full rounded-lg border-2 border-primary/30"
                       videoConstraints={{
                         width: 640,
                         height: 480,
@@ -487,7 +487,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                       }}
                     />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-48 h-60 border-2 border-[#00BFFF] rounded-full opacity-50"></div>
+                      <div className="w-48 h-60 border-2 border-primary rounded-full opacity-50"></div>
                     </div>
                   </div>
                 ) : (
@@ -496,12 +496,12 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                     <img 
                       src={faceImage} 
                       alt="Captured face" 
-                      className="w-full rounded-lg border-2 border-gray-300" 
+                      className="w-full rounded-lg border-2 border-primary/30" 
                     />
                     {isProcessing && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
                         <div className="text-center text-white">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00BFFF] mx-auto mb-2"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
                           <p className="text-sm">Verifying face...</p>
                         </div>
                       </div>
@@ -514,7 +514,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                   <button
                     onClick={capturePhoto}
                     disabled={isLoading}
-                    className="flex-1 bg-[#00BFFF] text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50 border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                   >
                     {isLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -528,7 +528,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                     <button
                       onClick={() => {setFaceImage(null); setError(null); setFaceResult(null);}}
                       disabled={isLoading}
-                      className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="flex-1 bg-charcoal-text text-white py-3 px-6 rounded-lg font-medium hover:bg-charcoal-text/80 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 border-[3px] border-charcoal-text shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                     >
                       <RotateCcw className="w-5 h-5" />
                       Retake
@@ -536,7 +536,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                     <button
                       onClick={() => faceResult?.match && setStep('generate-otp')}
                       disabled={isProcessing || !faceResult?.match}
-                      className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                      className="flex-1 bg-success text-white py-3 px-6 rounded-lg font-medium hover:bg-success/80 transition-colors disabled:opacity-50 border-[3px] border-success shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                     >
                       {isProcessing ? 'Verifying...' : 'Next: Generate OTP'}
                     </button>
@@ -549,22 +549,22 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
           {/* Step 3: Generate OTP */}
           {step === 'generate-otp' && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Generate OTP</h3>
+              <h3 className="text-lg font-semibold text-charcoal-text mb-4">Generate OTP</h3>
               
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Phone className="w-8 h-8 text-[#00BFFF]" />
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Phone className="w-8 h-8 text-primary" />
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Send OTP</h4>
-                <p className="text-gray-600 mb-4">
+                <h4 className="text-lg font-semibold text-charcoal-text mb-2">Send OTP</h4>
+                <p className="text-charcoal-text/70 mb-4">
                   We&apos;ll send a 6-digit verification code to:
                 </p>
-                <p className="text-lg font-semibold text-gray-900 mb-6">{phoneNumber}</p>
+                <p className="text-lg font-semibold text-charcoal-text mb-6">{phoneNumber}</p>
                 
                 <button
                   onClick={generateOtp}
                   disabled={isLoading}
-                  className="bg-[#00BFFF] text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
+                  className="bg-primary text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -581,36 +581,36 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
           {step === 'verify-otp' && (
             <>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Verify OTP</h3>
+              <h3 className="text-lg font-semibold text-charcoal-text mb-4">Verify OTP</h3>
               
               <form onSubmit={handleOtpSubmit} className="space-y-6">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-[#00BFFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Enter Verification Code</h4>
-                  <p className="text-gray-600 text-sm mb-2">We&apos;ve sent a 6-digit code to {phoneNumber}</p>
+                  <h4 className="text-lg font-semibold text-charcoal-text mb-2">Enter Verification Code</h4>
+                  <p className="text-charcoal-text/70 text-sm mb-2">We&apos;ve sent a 6-digit code to {phoneNumber}</p>
                   <button
                     type="button"
                     onClick={generateOtp}
                     disabled={isLoading}
-                    className="text-[#00BFFF] hover:text-blue-600 text-sm font-medium disabled:opacity-50"
+                    className="text-primary hover:text-primary-dark text-sm font-medium disabled:opacity-50"
                   >
                     {isLoading ? 'Resending...' : 'Resend OTP'}
                   </button>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-charcoal-text mb-2">
                     6-Digit OTP
                   </label>
                   <input
                     type="text"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-center text-2xl font-mono tracking-widest focus:ring-2 focus:ring-[#00BFFF] focus:border-[#00BFFF]"
+                    className="w-full px-4 py-3 bg-white border border-primary/30 rounded-lg text-center text-2xl font-mono tracking-widest focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="000000"
                     maxLength={6}
                     required
@@ -620,7 +620,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                 <button
                   type="submit"
                   disabled={otp.length !== 6 || isLoading}
-                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-success text-white py-3 px-6 rounded-lg font-medium hover:bg-success/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border-[3px] border-success shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                 >
                   {isLoading ? (
                     <>
@@ -637,7 +637,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                 <button 
                   onClick={generateOtp}
                   disabled={isLoading}
-                  className="text-[#00BFFF] hover:text-blue-600 text-sm disabled:opacity-50"
+                  className="text-primary hover:text-primary-dark text-sm disabled:opacity-50"
                 >
                   Didn&apos;t receive code? Resend
                 </button>
@@ -649,14 +649,14 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
           {/* Step 5: Complete */}
           {step === 'complete' && (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Verification Complete!</h3>
-              <p className="text-gray-600 mb-4">Your credential NFT has been minted and added to your dashboard.</p>
-              <div className="animate-pulse text-[#00BFFF]">Updating dashboard...</div>
+              <h3 className="text-xl font-semibold text-charcoal-text mb-2">Verification Complete!</h3>
+              <p className="text-charcoal-text/70 mb-4">Your credential NFT has been minted and added to your dashboard.</p>
+              <div className="animate-pulse text-primary">Updating dashboard...</div>
             </div>
           )}
         </div>

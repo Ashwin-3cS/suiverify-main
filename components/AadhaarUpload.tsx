@@ -88,7 +88,7 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
         {/* Progress Indicator */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-[#00BFFF] rounded-full flex items-center justify-center text-white text-sm font-medium">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
               1
             </div>
             <div className="w-16 h-1 bg-gray-300 mx-2"></div>
@@ -109,7 +109,7 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 bg-[#00BFFF] text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+                  className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition-colors border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                 >
                   <Upload className="w-5 h-5" />
                   Choose File
@@ -140,19 +140,19 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
                   alt="Aadhaar preview"
                   className="max-w-full max-h-64 rounded-lg border border-gray-300"
                 />
-                <div className="absolute top-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <div className="absolute top-2 right-2 w-8 h-8 bg-success rounded-full flex items-center justify-center">
                   <Check className="w-5 h-5 text-white" />
                 </div>
               </div>
               
-              <p className="text-green-600 mb-4">✓ Aadhaar card uploaded successfully</p>
+              <p className="text-success mb-4">✓ Aadhaar card uploaded successfully</p>
               
               <button
                 onClick={() => {
                   setUploadedFile(null);
                   setPreviewUrl(null);
                 }}
-                className="text-[#00BFFF] hover:text-blue-400 text-sm"
+                className="text-primary hover:text-primary-dark text-sm"
               >
                 Upload different image
               </button>
@@ -175,7 +175,7 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
               <div className="flex gap-4">
                 <button
                   onClick={captureImage}
-                  className="flex-1 bg-[#00BFFF] text-white py-3 rounded-lg hover:bg-blue-600 transition-colors"
+                  className="flex-1 bg-primary text-white py-3 rounded-lg hover:bg-primary-dark transition-colors border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                 >
                   Capture
                 </button>
@@ -208,7 +208,7 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
           <button
             onClick={handleSubmit}
             disabled={!uploadedFile}
-            className="flex-1 bg-[#00BFFF] text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
           >
             Next: Face Verification
           </button>

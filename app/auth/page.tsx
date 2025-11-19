@@ -141,13 +141,12 @@ export default function AuthPage() {
   const isBlocked = loginAttempts >= accessControlData.config.maxLoginAttempts;
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#030f1c' }}>
+    <div className="min-h-screen flex items-center justify-center outfit" style={{ backgroundColor: colors.darkerNavy }}>
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl mx-4"
-        style={{ backgroundColor: '#011829', border: '2px solid #4DA2FF' }}
+        className="bg-[#F8FAFC] rounded-2xl p-8 max-w-md w-full shadow-2xl mx-4 border-[3px] border-primary"
       >
         {/* Header */}
         <div className="text-center mb-8">
@@ -155,12 +154,11 @@ export default function AuthPage() {
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl font-bold mb-2"
-            style={{ color: '#ffffff' }}
+            className="text-3xl font-bold mb-2 text-charcoal-text"
           >
-            <span style={{ color: '#4DA2FF' }}>Sui</span>Verify
+            <span className="text-primary">Sui</span>Verify
           </motion.h1>
-          <p className="text-sm" style={{ color: '#c0e6ff' }}>
+          <p className="text-sm text-charcoal-text/70">
             Enter your credentials to access the dashboard
           </p>
         </div>
@@ -173,7 +171,7 @@ export default function AuthPage() {
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <label htmlFor="username" className="block text-sm font-medium mb-2" style={{ color: '#c0e6ff' }}>
+            <label htmlFor="username" className="block text-sm font-medium mb-2 text-charcoal-text">
               Username
             </label>
             <input
@@ -181,12 +179,7 @@ export default function AuthPage() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: '#030f1c',
-                borderColor: '#4DA2FF40',
-                color: '#ffffff'
-              }}
+              className="w-full px-4 py-3 rounded-xl border-2 border-primary/30 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-charcoal-text"
               placeholder="Enter your username"
               required
               disabled={isLoading || isBlocked}
@@ -199,7 +192,7 @@ export default function AuthPage() {
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: '#c0e6ff' }}>
+            <label htmlFor="password" className="block text-sm font-medium mb-2 text-charcoal-text">
               Password
             </label>
             <input
@@ -207,12 +200,7 @@ export default function AuthPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: '#030f1c',
-                borderColor: '#4DA2FF40',
-                color: '#ffffff'
-              }}
+              className="w-full px-4 py-3 rounded-xl border-2 border-primary/30 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-charcoal-text"
               placeholder="Enter your password"
               required
               disabled={isLoading || isBlocked}
@@ -224,16 +212,11 @@ export default function AuthPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-3 rounded-lg border"
-              style={{
-                backgroundColor: '#fee2e2',
-                borderColor: '#fecaca',
-                color: '#dc2626'
-              }}
+              className="p-3 rounded-lg border bg-error/10 border-error/30"
             >
-              <p className="text-sm">{error}</p>
+              <p className="text-sm text-charcoal-text">{error}</p>
               {!isBlocked && loginAttempts > 0 && (
-                <p className="text-xs mt-1">
+                <p className="text-xs mt-1 text-charcoal-text/70">
                   Attempts: {loginAttempts}/{accessControlData.config.maxLoginAttempts}
                 </p>
               )}
@@ -249,12 +232,7 @@ export default function AuthPage() {
             disabled={isLoading || isBlocked}
             whileHover={{ scale: isLoading || isBlocked ? 1 : 1.02 }}
             whileTap={{ scale: isLoading || isBlocked ? 1 : 0.98 }}
-            className="w-full font-bold px-6 py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              background: isLoading || isBlocked ? '#4DA2FF80' : '#4DA2FF',
-              color: '#ffffff',
-              border: '2px solid #4DA2FF'
-            }}
+            className="w-full font-bold px-6 py-3 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-white border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] active:translate-x-[0.05em] active:translate-y-[0.05em] active:shadow-[0.05em_0.05em_0_0_rgb(0_0_0)]"
           >
             {isLoading ? (
               <div className="flex items-center justify-center space-x-2">
@@ -274,11 +252,10 @@ export default function AuthPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center pt-6 mt-6 border-t"
-          style={{ borderColor: '#4DA2FF40' }}
+          className="text-center pt-6 mt-6 border-t border-primary/40"
         >
-          <p className="text-xs" style={{ color: '#c0e6ffCC' }}>
-            Don&apos;t have access? <Link href="/" className="underline" style={{ color: '#4DA2FF' }}>Request access</Link>
+          <p className="text-xs text-charcoal-text/60">
+            Don&apos;t have access? <Link href="/" className="underline text-primary hover:text-primary-dark">Request access</Link>
           </p>
         </motion.div>
       </motion.div>

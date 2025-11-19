@@ -42,7 +42,7 @@ const DashboardHeader = () => {
 
                         <ConnectButton
                             connectText="Connect Wallet"
-                            className="flex items-center gap-2 bg-[#00BFFF] text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                            className="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors font-medium border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                         />
 
                         {/* Mobile Menu Button */}
