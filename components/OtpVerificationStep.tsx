@@ -141,8 +141,8 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
           localStorage.setItem('userData', JSON.stringify(result.data.user_data));
 
           // Show success toast for database save
-          toast.success('🎉 Verification completed! Your data has been saved successfully.', {
-            position: "top-right",
+          toast.success('Verification completed! Your data has been saved successfully.', {
+            position: "bottom-right",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -151,8 +151,8 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
           });
         } else {
           // Show success toast for OTP verification only
-          toast.success('✅ OTP verified successfully!', {
-            position: "top-right",
+          toast.success('OTP verified successfully!', {
+            position: "bottom-right",
             autoClose: 3000,
             hideProgressBar: false,
             closeOnClick: true,

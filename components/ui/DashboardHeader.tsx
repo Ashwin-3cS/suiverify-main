@@ -1,17 +1,64 @@
 "use client";
 
-import { ConnectButton } from "@mysten/dapp-kit";
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import Image from "next/image";
 import Logo from "@/public/head_logo.png";
 import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from "react";
+import { toast } from "react-toastify";
 
 const DashboardHeader = () => {
     const router = useRouter();
     const pathname = usePathname();
+    const currentAccount = useCurrentAccount();
+    const previousAddressRef = useRef<string | null>(null);
     
     const isAdminRoute = pathname.startsWith('/admin');
+    
+    // Show toast notification when wallet connects/disconnects
+    useEffect(() => {
+        const currentAddress = currentAccount?.address || null;
+        
+        // Wallet connected
+        if (currentAddress && previousAddressRef.current === null) {
+            const shortAddress = `${currentAddress.slice(0, 6)}...${currentAddress.slice(-4)}`;
+            toast.success(`Wallet connected: ${shortAddress}`, {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+        }
+        // Wallet disconnected
+        else if (!currentAddress && previousAddressRef.current !== null) {
+            toast.info('Wallet disconnected', {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+        }
+        // Wallet changed
+        else if (currentAddress && previousAddressRef.current !== null && currentAddress !== previousAddressRef.current) {
+            const shortAddress = `${currentAddress.slice(0, 6)}...${currentAddress.slice(-4)}`;
+            toast.info(`Wallet changed: ${shortAddress}`, {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+        }
+        
+        previousAddressRef.current = currentAddress;
+    }, [currentAccount?.address]);
     
     const handleLogout = () => {
         localStorage.removeItem('adminAuthenticated');

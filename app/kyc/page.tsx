@@ -21,6 +21,7 @@ import { colors } from '@/app/brand';
 import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
 import StepIndicator from '@/components/ui/StepIndicator';
 import { Button } from '@/components/ui/button';
+import { toast } from 'react-toastify';
 
 interface Country {
   code: string;
@@ -167,13 +168,38 @@ function KycPage() {
           suiRef: result.suiRef
         });
         
+        toast.success('Document encrypted and uploaded successfully! Ready to claim NFT.', {
+          position: "bottom-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        
         setStep('completed');
       } else {
-        console.error('❌ Encryption failed:', result.error);
+        console.error('Encryption failed:', result.error);
+        toast.error('Document encryption failed. Please try again.', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
         setStep('error');
       }
     } catch (error) {
-      console.error('❌ Unexpected error during encryption:', error);
+      console.error('Unexpected error during encryption:', error);
+      toast.error('An unexpected error occurred. Please try again.', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       setStep('error');
     }
   }, [currentAccount]);
@@ -317,6 +343,16 @@ function KycPage() {
                 transactionHash: result.digest,
                 userAddress: currentAccount.address
               };
+              
+              // Show success notification for NFT claim
+              toast.success('DID NFT claimed successfully! Your identity is now verified on the blockchain.', {
+                position: "bottom-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+              });
               
               // Save NFT credential to backend
               try {

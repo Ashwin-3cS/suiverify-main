@@ -505,6 +505,92 @@ code {
   color: white !important;
 }
 
+/* Toast Notification Styling */
+.Toastify__toast-container {
+  font-family: 'Outfit', sans-serif !important;
+  padding: 1rem !important;
+}
+
+.Toastify__toast {
+  border-radius: 0.75rem !important;
+  border: 3px solid !important;
+  box-shadow: 0.1em 0.1em 0 0 rgb(0 0 0) !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 600 !important;
+  padding: 1rem !important;
+  min-height: auto !important;
+  margin-bottom: 0.75rem !important;
+  background-color: white !important;
+}
+
+.Toastify__toast:hover {
+  box-shadow: 0.15em 0.15em 0 0 rgb(0 0 0) !important;
+  transform: translate(-0.05em, -0.05em) !important;
+  transition: all 0.15s ease-out !important;
+}
+
+.Toastify__toast--success {
+  background-color: white !important;
+  border-color: var(--color-success) !important;
+  color: var(--color-dark) !important;
+}
+
+.Toastify__toast--success .Toastify__toast-icon {
+  color: var(--color-success) !important;
+}
+
+.Toastify__toast--error {
+  background-color: white !important;
+  border-color: var(--color-error) !important;
+  color: var(--color-dark) !important;
+}
+
+.Toastify__toast--error .Toastify__toast-icon {
+  color: var(--color-error) !important;
+}
+
+.Toastify__toast--info {
+  background-color: white !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-dark) !important;
+}
+
+.Toastify__toast--info .Toastify__toast-icon {
+  color: var(--color-primary) !important;
+}
+
+.Toastify__toast--warning {
+  background-color: white !important;
+  border-color: var(--color-warning) !important;
+  color: var(--color-dark) !important;
+}
+
+.Toastify__toast--warning .Toastify__toast-icon {
+  color: var(--color-warning) !important;
+}
+
+.Toastify__progress-bar {
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary)) !important;
+  height: 3px !important;
+}
+
+.Toastify__close-button {
+  color: var(--color-dark) !important;
+  opacity: 0.7 !important;
+  font-size: 1.25rem !important;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1 !important;
+}
+
+.Toastify__toast-body {
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
 @media (min-width: 640px) {
   .connect-button-wrapper button,
   .connect-button-wrapper button[data-state],
