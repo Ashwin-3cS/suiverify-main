@@ -59,6 +59,7 @@ function KycPage() {
   const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType | null>(null);
   const [aadhaarData, setAadhaarData] = useState<AadhaarData | null>(null);
   const [panData, setPanData] = useState<PANData | null>(null);
+  const [panCardImage, setPanCardImage] = useState<File | null>(null);
   const [otpVerified, setOtpVerified] = useState(false);
   const [encryptionResult, setEncryptionResult] = useState<{
     blobId?: string;
@@ -375,8 +376,11 @@ function KycPage() {
     setAadhaarData(data);
   };
 
-  const handlePANUpload = (data: PANData) => {
+  const handlePANUpload = (data: PANData, file?: File) => {
     setPanData(data);
+    if (file) {
+      setPanCardImage(file);
+    }
   };
 
   return (
@@ -491,15 +495,14 @@ function KycPage() {
               <FaceVerificationStep
                 onNext={handleNext}
                 onBack={handleBack}
-                aadhaarData={aadhaarData || { 
-                  name: panData?.name, 
-                  dob: panData?.dob,
-                  gender: undefined,
-                  phone_number: undefined,
-                  address: undefined,
-                  aadhaar_number: undefined,
-                  aadhaar_photo_base64: panData?.pan_photo_base64
+                panData={panData || {
+                  name: aadhaarData?.name,
+                  dob: aadhaarData?.dob,
+                  father_name: undefined,
+                  pan_number: undefined,
+                  pan_photo_base64: aadhaarData?.aadhaar_photo_base64
                 }}
+                panCardImage={panCardImage}
               />
             )}
             {step === 'pan-verification' && panData && (

@@ -15,7 +15,7 @@ interface PANData {
 interface PANUploadStepProps {
   onNext: () => void;
   onBack: () => void;
-  onFileUpload: (data: PANData) => void;
+  onFileUpload: (data: PANData, file?: File) => void;
 }
 
 const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpload }) => {
@@ -24,6 +24,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [panData, setPanData] = useState<PANData | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState<PANData>({});
 
@@ -110,7 +111,8 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
         
         setPanData(completeData);
         setEditedData(completeData);
-        onFileUpload(completeData);
+        setUploadedFile(file);
+        onFileUpload(completeData, file);
         
         // Show success message
         toast.success('PAN card data extracted successfully!');
@@ -163,7 +165,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
       if (response.ok) {
         await response.json();
         setPanData(editedData);
-        onFileUpload(editedData);
+        onFileUpload(editedData, uploadedFile || undefined);
         setIsEditing(false);
         toast.success('PAN data corrected successfully!');
       } else {

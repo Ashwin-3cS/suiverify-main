@@ -20,6 +20,9 @@ export const API_ENDPOINTS = {
   CORRECT_PAN_DATA: '/api/pan/correct-pan-data',
   VERIFY_PAN: '/api/pan/verify-pan',
   
+  // Face verification endpoints
+  VERIFY_PAN_FACE: '/api/face/verify-pan-face-yolo',
+  
   // OTP endpoints (for Aadhaar flow only)
   GENERATE_OTP: '/api/otp/generate-otp',
   VERIFY_OTP_ENDPOINT: '/api/otp/verify-otp',

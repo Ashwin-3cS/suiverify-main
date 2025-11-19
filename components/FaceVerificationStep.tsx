@@ -2,114 +2,115 @@ import React, { useRef, useState } from 'react';
 import { ChevronLeft, Camera, RotateCcw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import Webcam from 'react-webcam';
 import { colors } from '@/app/brand';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
-interface AadhaarData {
+interface PANData {
   name?: string;
   dob?: string;
-  gender?: string;
-  phone_number?: string;
-  address?: string;
-  aadhaar_number?: string;
-  aadhaar_photo_base64?: string;
+  father_name?: string;
+  pan_number?: string;
+  pan_photo_base64?: string;
+  raw_text?: string;
 }
 
-interface FaceMatchResult {
-  match: boolean;
+interface FaceVerificationResult {
+  verified: boolean;
   confidence: number;
   message: string;
   face_distance?: number;
+  verification_status: string;
+  threshold?: number;
+  validation?: {
+    pan_photo: {
+      reason: string;
+      detection_method: string;
+    };
+    live_image: {
+      reason: string;
+      detection_method: string;
+    };
+  };
 }
 
 interface FaceVerificationStepProps {
   onNext: () => void;
   onBack: () => void;
-  aadhaarData: AadhaarData;
+  panData: PANData;
+  panCardImage?: File | null;
 }
 
-const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onBack }) => {
+const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onBack, panData, panCardImage }) => {
   const webcamRef = useRef<Webcam>(null);
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [faceResult, setFaceResult] = useState<FaceMatchResult | null>(null);
+  const [faceResult, setFaceResult] = useState<FaceVerificationResult | null>(null);
 
-  // const API_BASE = 'http://localhost:8000';
-
-  // const handleFaceVerification = async () => {
-  //   setIsLoading(true);
-  //   setError(null);
+  const handleFaceVerification = async (liveImageBase64: string) => {
+    setIsLoading(true);
+    setError(null);
     
-  //   try {
-  //     if (!aadhaarData?.aadhaar_photo_base64) {
-  //       setError('Aadhaar photo not found. Please upload Aadhaar card first.');
-  //       return;
-  //     }
+    try {
+      if (!panCardImage) {
+        setError('PAN card image not found. Please upload PAN card first.');
+        return;
+      }
 
-  //     if (!aadhaarData?.phone_number) {
-  //       setError('Phone number not found in Aadhaar data. Cannot proceed with verification.');
-  //       return;
-  //     }
+      // Create FormData for the API call
+      const formData = new FormData();
+      formData.append('pan_card_image', panCardImage);
       
-  //     const base64Image = capturedImage.includes(',') ? capturedImage.split(',')[1] : capturedImage;
+      // Convert base64 to blob for live image
+      const base64Data = liveImageBase64.includes(',') ? liveImageBase64.split(',')[1] : liveImageBase64;
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const liveImageBlob = new Blob([byteArray], { type: 'image/jpeg' });
+      formData.append('live_image', liveImageBlob, 'live_image.jpg');
       
-  //     const response = await fetch(`${API_BASE}/api/face/verify-face`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         aadhaar_photo_base64: aadhaarData.aadhaar_photo_base64,
-  //         live_photo_base64: base64Image,
-  //         phone_number: aadhaarData.phone_number
-  //       }),
-  //     });
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.VERIFY_PAN_FACE), {
+        method: 'POST',
+        body: formData
+      });
       
-  //     const result = await response.json();
+      const result = await response.json();
       
-  //     if (!response.ok) {
-  //       const errorMessage = result.detail || result.message || `HTTP error! status: ${response.status}`;
-  //       setError(errorMessage);
-  //       return;
-  //     }
+      if (!response.ok) {
+        const errorMessage = result.detail || result.message || `HTTP error! status: ${response.status}`;
+        setError(errorMessage);
+        return;
+      }
       
-  //     if (result.success) {
-  //       if (result.data && result.data.match) {
-  //         setFaceResult(result.data);
-  //         // Auto proceed to next step after successful face match
-  //         setTimeout(() => {
-  //           onNext();
-  //         }, 2000);
-  //       } else {
-  //         // Handle face mismatch case
-  //         const failureMessage = result.data?.message || result.message || 'Face verification failed. The faces do not match with sufficient confidence.';
-  //         setError(`Face verification failed: ${failureMessage}`);
-  //       }
-  //     } else {
-  //       setError(result.message || 'Face comparison failed. Please try again.');
-  //     }
-  //   } catch (err) {
-  //     const errorMsg = err instanceof Error ? err.message : 'Face verification failed';
-  //     setError(errorMsg);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+      if (result.success && result.data) {
+        setFaceResult(result.data);
+        
+        // Auto proceed to next step after successful face verification
+        if (result.data.verified && result.data.verification_status === 'SUCCESS') {
+          setTimeout(() => {
+            onNext();
+          }, 2000);
+        }
+      } else {
+        const failureMessage = result.data?.message || result.message || 'Face verification failed.';
+        setError(`Face verification failed: ${failureMessage}`);
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Face verification failed';
+      setError(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const capturePhoto = () => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
       setFaceImage(imageSrc);
-      // Simulate successful face verification
-      setIsLoading(true);
-      setTimeout(() => {
-        setFaceResult({
-          match: true,
-          confidence: 95.5,
-          message: 'Face verification successful',
-          face_distance: 0.25
-        });
-        setIsLoading(false);
-      }, 1500);
+      // Trigger actual face verification
+      handleFaceVerification(imageSrc);
     }
   };
 
@@ -145,7 +146,7 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
         )}
 
         {/* Success Display */}
-        {faceResult && faceResult.match && (
+        {faceResult && faceResult.verified && (
           <div className="p-4 rounded-2xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #10b981` }}>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5" style={{ color: '#10b981' }} />
@@ -186,8 +187,8 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
                 alt="Captured face" 
                 className="w-full rounded-2xl border-2" 
                 style={{ 
-                  borderColor: faceResult?.match ? '#10b981' : `${colors.primary}40`,
-                  borderWidth: faceResult?.match ? '3px' : '2px'
+                  borderColor: faceResult?.verified ? '#10b981' : `${colors.primary}40`,
+                  borderWidth: faceResult?.verified ? '3px' : '2px'
                 }}
               />
               {isLoading && (
@@ -198,7 +199,7 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
                   </div>
                 </div>
               )}
-              {faceResult?.match && (
+              {faceResult?.verified && (
                 <div className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#10b981' }}>
                   <CheckCircle className="w-5 h-5 text-white" />
                 </div>
@@ -228,13 +229,13 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
                 <RotateCcw className="w-5 h-5" />
                 Retake
               </button>
-              {faceResult?.match && (
+              {faceResult?.verified && (
                 <button
                   onClick={onNext}
                   className="flex-1 py-3 px-6 rounded-xl font-medium transition-colors text-white"
                   style={{ background: colors.gradients.primary }}
                 >
-                  Next: OTP Verification
+                  Next: PAN Verification
                 </button>
               )}
             </>
