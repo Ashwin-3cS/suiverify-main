@@ -233,7 +233,7 @@ const User: React.FC = () => {
                                                     {verification.description}
                                                 </p>
                                                 <button
-                                                    className="w-full py-2.5 px-4 rounded-lg font-bold text-sm transition-all bg-primary text-white border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                                                    className="w-full py-2.5 px-4 rounded-lg font-bold text-sm transition-all bg-primary text-white border-[3px] border-primary hover:bg-primary-dark shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                                                 >
                                                     Start Verification
                                                 </button>
