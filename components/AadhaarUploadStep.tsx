@@ -142,53 +142,53 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
       onSubmit={handleSubmit}
       className="w-full"
     >
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-8">
         <button 
           type="button" 
           onClick={onBack} 
-          className="p-2 rounded-full transition-colors"
-          style={{ backgroundColor: `${colors.primary}20` }}
+          className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          Upload Aadhaar Card
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">Upload Aadhaar Card</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">Upload a clear image of your Aadhaar card</p>
+        </div>
       </div>
 
       <div className="space-y-6">
         {/* Error Display */}
         {error && (
-          <div className="p-4 rounded-2xl flex items-center gap-3" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-sm" style={{ color: colors.white }}>{error}</p>
+          <div className="p-4 rounded-lg flex items-center gap-3 bg-error/10 border border-error/30">
+            <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
+            <p className="text-sm text-charcoal-text">{error}</p>
           </div>
         )}
 
         {/* Success Display */}
         {aadhaarData && !error && (
-          <div className="p-4 rounded-2xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle className="w-5 h-5" style={{ color: colors.primary }} />
-              <h4 className="font-semibold" style={{ color: colors.white }}>Aadhaar Data Extracted</h4>
+          <div className="p-5 rounded-lg bg-success/10 border border-success/30">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle className="w-5 h-5 text-success" />
+              <h4 className="font-semibold text-charcoal-text">Aadhaar Data Extracted Successfully</h4>
             </div>
-            <div className="grid grid-cols-1 gap-2 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               {aadhaarData.aadhaar_number && (
-                <div>
-                  <span className="font-medium" style={{ color: colors.primary }}>Aadhaar Number:</span>
-                  <span className="ml-2" style={{ color: colors.lightBlue }}>{aadhaarData.aadhaar_number}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="font-semibold text-charcoal-text/70 block mb-1 text-xs">Aadhaar Number</span>
+                  <span className="text-charcoal-text font-medium">{aadhaarData.aadhaar_number}</span>
                 </div>
               )}
               {aadhaarData.phone_number && (
-                <div>
-                  <span className="font-medium" style={{ color: colors.primary }}>Phone Number:</span>
-                  <span className="ml-2" style={{ color: colors.lightBlue }}>{aadhaarData.phone_number}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="font-semibold text-charcoal-text/70 block mb-1 text-xs">Phone Number</span>
+                  <span className="text-charcoal-text font-medium">{aadhaarData.phone_number}</span>
                 </div>
               )}
               {aadhaarData.dob && (
-                <div>
-                  <span className="font-medium" style={{ color: colors.primary }}>Date of Birth:</span>
-                  <span className="ml-2" style={{ color: colors.lightBlue }}>{aadhaarData.dob}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="font-semibold text-charcoal-text/70 block mb-1 text-xs">Date of Birth</span>
+                  <span className="text-charcoal-text font-medium">{aadhaarData.dob}</span>
                 </div>
               )}
             </div>
@@ -197,27 +197,32 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
 
         {/* Upload Area */}
         {!previewUrl ? (
-          <div className="border-2 border-dashed rounded-2xl p-8 text-center transition-colors"
-               style={{ 
-                 borderColor: error ? '#ef4444' : `${colors.primary}40`,
-                 backgroundColor: error ? '#ef444410' : `${colors.primary}05`
-               }}>
-            <FileText className="w-12 h-12 mx-auto mb-4" style={{ color: error ? '#ef4444' : colors.primary }} />
-            <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>Upload Aadhaar Card</h3>
-            <p className="mb-6" style={{ color: colors.lightBlue }}>Choose a clear image of your Aadhaar card (JPG, PNG)</p>
+          <div className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
+            error ? 'border-error/50 bg-error/5' : 'border-primary/30 bg-primary/5 hover:border-primary/50'
+          }`}>
+            <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
+              <FileText className={`w-10 h-10 ${error ? 'text-error' : 'text-primary'}`} />
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-charcoal-text">Upload Aadhaar Card</h3>
+            <p className="mb-8 text-charcoal-text/70">Choose a clear image of your Aadhaar card (JPG, PNG)</p>
             
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="inline-flex items-center underline underline-offset-2 gap-2 px-6 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 text-white"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-bold text-base transition-all disabled:opacity-50 text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
               ) : (
-                <Upload className="w-4 h-4" />
+                <>
+                  <Upload className="w-5 h-5" />
+                  Choose File
+                </>
               )}
-              {isLoading ? 'Processing...' : 'Choose File'}
             </button>
             
             <input
@@ -231,35 +236,54 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
           </div>
         ) : (
           <div className="text-center">
-            <div className="relative inline-block mx-auto">
-              <img
-                src={previewUrl}
-                alt="Aadhaar preview"
-                className="max-w-full mx-auto max-h-48 rounded-2xl border-2"
-                style={{ borderColor: `${colors.primary}40` }}
-              />
+            <div className="relative inline-block mx-auto mb-4">
+              <div className="relative">
+                <img
+                  src={previewUrl}
+                  alt="Aadhaar preview"
+                  className="max-w-full mx-auto max-h-64 rounded-lg border-2 border-primary/30 shadow-lg"
+                />
+                <div className="absolute top-2 right-2 w-8 h-8 bg-success rounded-full flex items-center justify-center shadow-lg">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+              </div>
             </div>
-            <p className="font-medium mb-2" style={{ color: colors.primary }}></p>
+            <p className="text-success font-semibold mb-4">✓ Aadhaar card uploaded successfully</p>
             
             <button
               type="button"
               onClick={() => {setPreviewUrl(null); setAadhaarData(null); setError(null);}}
-              className="text-sm transition-colors hover:opacity-80"
-              style={{ color: colors.primary }}
+              className="text-sm font-medium text-primary hover:text-primary-dark transition-colors underline underline-offset-2"
             >
               Upload Different Image
             </button>
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={!aadhaarData || isLoading}
-          className="w-full py-3 px-6 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-          style={{ background: colors.gradients.primary }}
-        >
-         {isLoading ? "Extracting  data..." : "Next"}
-        </button>
+        {/* Action Buttons */}
+        <div className="flex gap-4 pt-4">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex-1 py-3 px-6 rounded-lg font-medium transition-all text-charcoal-text bg-white border-2 border-primary/30 hover:border-primary/50"
+          >
+            Back
+          </button>
+          <button
+            type="submit"
+            disabled={!aadhaarData || isLoading}
+            className="flex-1 py-3.5 px-6 rounded-lg font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Extracting data...
+              </span>
+            ) : (
+              'Next: Face Verification'
+            )}
+          </button>
+        </div>
       </div>
     </form>
   );

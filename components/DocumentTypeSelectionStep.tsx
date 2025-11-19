@@ -112,26 +112,25 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
         <button 
           type="button" 
           onClick={onBack} 
-          className="p-2 rounded-full transition-colors"
-          style={{ backgroundColor: `${colors.primary}20` }}
+          className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          Select Document Type
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">Select Document Type</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">Choose the document you want to verify</p>
+        </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 mt-8">
         {/* Country Header */}
-        <div className="flex items-center gap-3 p-3 rounded-xl" 
-             style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/30">
           <span className="text-2xl">{country.flag}</span>
           <div>
-            <h3 className="font-semibold" style={{ color: colors.white }}>
+            <h3 className="font-semibold text-charcoal-text">
               {country.name}
             </h3>
-            <p className="text-sm" style={{ color: colors.lightBlue }}>
+            <p className="text-sm text-charcoal-text/70">
               Select document type for verification
             </p>
           </div>
@@ -139,32 +138,24 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
 
         {/* Document Type Cards */}
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold" style={{ color: colors.white }}>
+          <h4 className="text-lg font-semibold text-charcoal-text">
             Valid government issued documents:
           </h4>
           
           {documentTypes.map((docType) => (
             <motion.div
               key={docType.id}
-              whileHover={{ scale: docType.available ? 1.02 : 1 }}
-              whileTap={{ scale: docType.available ? 0.98 : 1 }}
-              className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+              whileHover={{ scale: docType.available ? 1.01 : 1, y: docType.available ? -2 : 0 }}
+              whileTap={{ scale: docType.available ? 0.99 : 1 }}
+              className={`p-5 rounded-lg border-2 transition-all cursor-pointer ${
                 selectedDocument?.id === docType.id 
-                  ? 'border-opacity-100' 
-                  : 'border-opacity-30'
+                  ? 'border-primary shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] bg-primary/10' 
+                  : 'border-primary/30 bg-white hover:border-primary/50'
               } ${
                 !docType.available 
                   ? 'opacity-50 cursor-not-allowed' 
-                  : 'hover:border-opacity-60'
+                  : ''
               }`}
-              style={{ 
-                backgroundColor: selectedDocument?.id === docType.id 
-                  ? `${colors.primary}15` 
-                  : `${colors.primary}05`,
-                borderColor: selectedDocument?.id === docType.id 
-                  ? colors.primary 
-                  : `${colors.primary}30`
-              }}
               onClick={() => {
                 if (docType.available) {
                   setSelectedDocument(docType);
@@ -175,16 +166,12 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
                 {/* Radio Button */}
                 <div className="flex-shrink-0 mt-1">
                   <div 
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedDocument?.id === docType.id ? 'border-opacity-100' : 'border-opacity-50'
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      selectedDocument?.id === docType.id ? 'border-primary' : 'border-primary/50'
                     }`}
-                    style={{ borderColor: colors.primary }}
                   >
                     {selectedDocument?.id === docType.id && (
-                      <div 
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: colors.primary }}
-                      />
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                     )}
                   </div>
                 </div>
@@ -192,29 +179,28 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
                 {/* Document Info */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <div style={{ color: colors.primary }}>
+                    <div className="text-primary">
                       {docType.icon}
                     </div>
-                    <h5 className="font-semibold" style={{ color: colors.white }}>
+                    <h5 className="font-semibold text-charcoal-text">
                       {docType.name}
                       {!docType.available && (
-                        <span className="ml-2 text-xs px-2 py-1 rounded-full" 
-                              style={{ backgroundColor: '#6b7280', color: colors.white }}>
+                        <span className="ml-2 text-xs px-2 py-1 rounded-full bg-charcoal-text/20 text-charcoal-text/60">
                           Coming Soon
                         </span>
                       )}
                     </h5>
                   </div>
                   
-                  <p className="text-sm mb-3" style={{ color: colors.lightBlue }}>
+                  <p className="text-sm mb-3 text-charcoal-text/70">
                     {docType.description}
                   </p>
                   
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     {docType.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <Check className="w-3 h-3" style={{ color: colors.primary }} />
-                        <span className="text-xs" style={{ color: colors.lightBlue }}>
+                        <Check className="w-3.5 h-3.5 text-success flex-shrink-0" />
+                        <span className="text-xs text-charcoal-text/70">
                           {feature}
                         </span>
                       </div>
@@ -230,8 +216,7 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
         <button
           type="submit"
           disabled={!selectedDocument || !selectedDocument.available}
-          className="w-full py-3 px-6 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-          style={{ background: colors.gradients.primary }}
+          className="w-full py-3.5 px-6 rounded-lg font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] active:translate-x-[0.05em] active:translate-y-[0.05em] active:shadow-[0.05em_0.05em_0_0_rgb(0_0_0)]"
         >
           {selectedDocument && !selectedDocument.available 
             ? 'Coming Soon' 
@@ -240,9 +225,8 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
         </button>
 
         {/* Info Note */}
-        <div className="p-3 rounded-xl" 
-             style={{ backgroundColor: `${colors.primary}05`, border: `1px solid ${colors.primary}20` }}>
-          <p className="text-xs" style={{ color: colors.lightBlue }}>
+        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+          <p className="text-xs text-charcoal-text/70 leading-relaxed">
             💡 More document types will be added soon. Currently supporting {country.name} documents with government API integration.
           </p>
         </div>

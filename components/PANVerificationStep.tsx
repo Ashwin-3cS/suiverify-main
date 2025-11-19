@@ -93,72 +93,72 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
 
   return (
     <div className="w-full">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-8">
         <button 
           type="button" 
           onClick={onBack} 
-          className="p-2 rounded-full transition-colors"
-          style={{ backgroundColor: `${colors.primary}20` }}
+          className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          PAN Verification
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">PAN Verification</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">Verify your PAN with government databases</p>
+        </div>
       </div>
 
       <div className="space-y-6">
         {/* Error Display */}
         {error && (
-          <div className="p-4 rounded-2xl flex items-center gap-3" 
-               style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-sm" style={{ color: colors.white }}>{error}</p>
+          <div className="p-4 rounded-lg flex items-center gap-3 bg-error/10 border border-error/30">
+            <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
+            <p className="text-sm text-charcoal-text">{error}</p>
           </div>
         )}
 
         {/* PAN Verification Info */}
         <div className="text-center mb-8">
-          <CreditCard className="w-16 h-16 mx-auto mb-4" style={{ color: colors.primary }} />
-          <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>
+          <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
+            <CreditCard className="w-10 h-10 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold mb-3 text-charcoal-text">
             Ready for Government Verification
           </h3>
-          <p className="text-sm" style={{ color: colors.lightBlue }}>
+          <p className="text-sm text-charcoal-text/70">
             Your PAN details will be verified with government databases through our secure enclave
           </p>
         </div>
 
         {/* PAN Data Summary */}
         {panData && (
-          <div className="p-4 rounded-xl" 
-               style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle className="w-5 h-5" style={{ color: colors.primary }} />
-              <h4 className="font-semibold" style={{ color: colors.white }}>PAN Details to Verify</h4>
+          <div className="p-5 rounded-lg bg-primary/10 border border-primary/30">
+            <div className="flex items-center gap-3 mb-4">
+              <CheckCircle className="w-6 h-6 text-primary" />
+              <h4 className="font-bold text-lg text-charcoal-text">PAN Details to Verify</h4>
             </div>
-            <div className="space-y-2 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {panData.pan_number && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>PAN Number:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.pan_number}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">PAN Number</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.pan_number}</span>
                 </div>
               )}
               {panData.name && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>Name:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.name}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">Name</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.name}</span>
                 </div>
               )}
               {panData.father_name && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>Father&apos;s Name:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.father_name}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">Father&apos;s Name</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.father_name}</span>
                 </div>
               )}
               {panData.dob && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>Date of Birth:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.dob}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">Date of Birth</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.dob}</span>
                 </div>
               )}
             </div>
@@ -166,14 +166,25 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         )}
 
         {/* Verification Process Info */}
-        <div className="p-4 rounded-xl" 
-             style={{ backgroundColor: `${colors.primary}05`, border: `1px solid ${colors.primary}20` }}>
-          <h4 className="font-semibold mb-2" style={{ color: colors.white }}>Verification Process:</h4>
-          <div className="space-y-2 text-sm" style={{ color: colors.lightBlue }}>
-            <p>🔐 Secure enclave processes your data</p>
-            <p>🏛️ Government database verification</p>
-            <p>⛓️ Blockchain attestation recording</p>
-            <p>🎯 DID NFT ready for claiming</p>
+        <div className="p-5 rounded-lg bg-primary/5 border border-primary/20">
+          <h4 className="font-bold mb-4 text-charcoal-text">Verification Process:</h4>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🔐</span>
+              <span className="text-charcoal-text/70">Secure enclave processes your data</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🏛️</span>
+              <span className="text-charcoal-text/70">Government database verification</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xl">⛓️</span>
+              <span className="text-charcoal-text/70">Blockchain attestation recording</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🎯</span>
+              <span className="text-charcoal-text/70">DID NFT ready for claiming</span>
+            </div>
           </div>
         </div>
 
@@ -181,12 +192,11 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         <button
           onClick={handleProceed}
           disabled={isLoading || !panData}
-          className="w-full py-3 px-6 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-          style={{ background: colors.gradients.primary }}
+          className="w-full py-3.5 px-6 rounded-lg font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
               Initiating Verification...
             </div>
           ) : (
@@ -195,9 +205,8 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         </button>
 
         {/* Info Note */}
-        <div className="p-3 rounded-xl text-center" 
-             style={{ backgroundColor: `${colors.primary}05`, border: `1px solid ${colors.primary}20` }}>
-          <p className="text-xs" style={{ color: colors.lightBlue }}>
+        <div className="p-4 rounded-lg text-center bg-primary/5 border border-primary/20">
+          <p className="text-xs text-charcoal-text/70 leading-relaxed">
             💡 No OTP required for PAN verification. Government database verification happens automatically.
           </p>
         </div>

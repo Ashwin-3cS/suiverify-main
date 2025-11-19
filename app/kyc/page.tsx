@@ -19,6 +19,7 @@ import { credentialService } from '@/services/credentialService';
 import { NFTClaimSuccessModal } from '@/components/NFTClaimSuccess';
 import { colors } from '@/app/brand';
 import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
+import StepIndicator from '@/components/ui/StepIndicator';
 
 interface Country {
   code: string;
@@ -435,6 +436,36 @@ function KycPage() {
               transition={{ duration: 0.6 }}
               className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] max-w-2xl mx-auto"
             >
+            {/* Step Indicator */}
+            {!['waiting', 'encrypting', 'completed', 'error', 'nft-claimed'].includes(step) && (
+              <div className="mb-8 pb-8 border-b border-primary/20">
+                <StepIndicator
+                  steps={(() => {
+                    const baseSteps = [
+                      { id: 'country', label: 'Country', description: 'Select country' },
+                      { id: 'document-type', label: 'Document', description: 'Choose type' },
+                    ];
+                    
+                    if (selectedDocumentType?.id === 'pan') {
+                      return [
+                        ...baseSteps,
+                        { id: 'pan', label: 'Upload', description: 'Upload PAN' },
+                        { id: 'face', label: 'Face', description: 'Face verify' },
+                        { id: 'pan-verification', label: 'Verify', description: 'Final step' },
+                      ];
+                    } else {
+                      return [
+                        ...baseSteps,
+                        { id: 'aadhaar', label: 'Upload', description: 'Upload Aadhaar' },
+                        { id: 'face', label: 'Face', description: 'Face verify' },
+                        { id: 'otp', label: 'OTP', description: 'Verify OTP' },
+                      ];
+                    }
+                  })()}
+                  currentStep={step}
+                />
+              </div>
+            )}
             {step === 'country' && (
               <motion.div
                 initial={{ opacity: 0 }}
