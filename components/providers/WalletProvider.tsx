@@ -44,7 +44,11 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
         testnet: { url: getFullnodeUrl('testnet') },
         mainnet: { url: getFullnodeUrl('mainnet') },
       }} defaultNetwork="testnet">
-        <SuiWalletProvider>
+        <SuiWalletProvider
+          storageKey="sui-wallet-kit"
+          storage={typeof window !== 'undefined' ? window.localStorage : undefined}
+          autoConnect={true}
+        >
           <WalletContext.Provider value={{}}>
             {children}
           </WalletContext.Provider>

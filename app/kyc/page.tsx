@@ -133,12 +133,54 @@ function KycPage() {
     }
   };
 
+  // Check wallet connection on mount and when account changes
+  useEffect(() => {
+    // If wallet disconnects while in verification flow, reset to country selection
+    if (!currentAccount?.address && step !== 'country') {
+      toast.error('Please connect wallet to continue verification', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setStep('country');
+    }
+  }, [currentAccount?.address, step]);
+
   const handleCountrySelect = (country: Country) => {
+    // Check wallet connection before proceeding
+    if (!currentAccount?.address) {
+      toast.error('Please connect wallet', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+    
     setSelectedCountry(country);
     setStep('document-type');
   };
 
   const handleDocumentTypeSelect = (documentType: DocumentType) => {
+    // Check wallet connection before proceeding
+    if (!currentAccount?.address) {
+      toast.error('Please connect wallet', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+    
     setSelectedDocumentType(documentType);
     if (documentType.id === 'aadhaar') {
       setStep('aadhaar');
@@ -509,6 +551,13 @@ function KycPage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
+                {!currentAccount?.address && (
+                  <div className="mb-4 p-4 rounded-lg bg-warning/10 border-2 border-warning/30">
+                    <p className="text-sm font-semibold text-charcoal-text text-center">
+                      Please connect your wallet to start verification
+                    </p>
+                  </div>
+                )}
                 <CountrySelectionStep
                   onNext={handleCountrySelect}
                   onBack={handleBack}

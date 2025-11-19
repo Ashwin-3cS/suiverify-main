@@ -11,6 +11,7 @@ import { Shield, FileText, CheckCircle, Clock, AlertCircle, Calendar, Users } fr
 import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';
 import { Button } from '@/components/ui/button';
+import { toast } from 'react-toastify';
 
 const User: React.FC = () => {
     const router = useRouter();
@@ -46,8 +47,20 @@ const User: React.FC = () => {
     ];
 
     const handleVerificationClick = (verificationType: string, verificationDescription: string) => {
+        // Check if wallet is connected before starting verification
+        if (!currentAccount?.address) {
+            toast.error('Please connect wallet', {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+            return;
+        }
+        
         // Redirect to KYC page for verification with type and description
-        // In Next.js, we can pass data through URL params or use a global state management solution
         router.push(`/kyc?type=${encodeURIComponent(verificationType)}&description=${encodeURIComponent(verificationDescription)}`);
     };
 
