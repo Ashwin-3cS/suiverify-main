@@ -201,7 +201,7 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
         {/* Continue Button */}
         <Button
           type="submit"
-          variant="primary"
+          variant="secondary"
           disabled={!selectedDocument || !selectedDocument.available}
           className="w-full"
           size="lg"

@@ -522,7 +522,7 @@ function KycPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary/20 shadow-[0.2em_0.2em_0_0_rgb(124_58_237)] max-w-4xl mx-auto"
+              className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary/20 max-w-4xl mx-auto"
             >
             {/* Step Indicator */}
             {!['waiting', 'encrypting', 'completed', 'error', 'nft-claimed'].includes(step) && (
