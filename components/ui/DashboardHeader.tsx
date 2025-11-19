@@ -4,7 +4,7 @@ import { ConnectButton } from "@mysten/dapp-kit";
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import Image from "next/image";
-import Logo from "@/public/logo.svg";
+import Logo from "@/public/head_logo.png";
 
 const DashboardHeader = () => {
     const router = useRouter();
@@ -24,7 +24,7 @@ const DashboardHeader = () => {
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center space-x-3">
-                        <Image src={Logo} alt="SuiVerify" className="w-24 h-auto" />
+                        <Image src={Logo} alt="SuiVerify" className="w-12 h-auto" />
                     </div>
 
                     {/* Right Side - Balance and Connect Wallet */}
