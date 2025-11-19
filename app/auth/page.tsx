@@ -141,7 +141,7 @@ export default function AuthPage() {
   const isBlocked = loginAttempts >= accessControlData.config.maxLoginAttempts;
 
   return (
-    <div className="min-h-screen flex items-center justify-center outfit" style={{ backgroundColor: colors.darkerNavy }}>
+    <div className="min-h-screen flex items-center justify-center outfit bg-ghost-white">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

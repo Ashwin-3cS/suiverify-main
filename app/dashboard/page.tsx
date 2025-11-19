@@ -76,25 +76,25 @@ const User: React.FC = () => {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'verified':
-                return <CheckCircle className="w-5 h-5" style={{ color: colors.primary }} />;
+                return <CheckCircle className="w-5 h-5 text-success" />;
             case 'pending':
-                return <Clock className="w-5 h-5" style={{ color: colors.lightBlue }} />;
+                return <Clock className="w-5 h-5 text-warning" />;
             case 'expired':
-                return <AlertCircle className="w-5 h-5 text-red-500" />;
+                return <AlertCircle className="w-5 h-5 text-error" />;
             default:
-                return <Clock className="w-5 h-5 text-gray-500" />;
+                return <Clock className="w-5 h-5 text-charcoal-text/40" />;
         }
     };
 
     return (
-        <div className="w-full" style={{ backgroundColor: colors.darkerNavy, position: 'relative', minHeight: '100vh' }}>
+        <div className="w-full bg-ghost-white outfit" style={{ position: 'relative', minHeight: '100vh' }}>
             {/* Grid Pattern Background */}
             <div
                 className="fixed inset-0 z-0"
                 style={{
                     backgroundImage: `
-            linear-gradient(to right, ${colors.primary}20 1px, transparent 1px),
-            linear-gradient(to bottom, ${colors.primary}20 1px, transparent 1px)
+            linear-gradient(to right, #DEE2E6 1px, transparent 1px),
+            linear-gradient(to bottom, #DEE2E6 1px, transparent 1px)
           `,
                     backgroundSize: "20px 30px",
                     WebkitMaskImage:
@@ -123,16 +123,15 @@ const User: React.FC = () => {
                                 transition={{ duration: 0.8, delay: 0.2 }}
                                 className="text-4xl md:text-6xl font-bold mb-4"
                             >
-                                <motion.span style={{ color: colors.primary }}>Identity</motion.span>
-                                <motion.span style={{ color: colors.white }}> Dashboard</motion.span>
+                                <motion.span className="text-primary">Identity</motion.span>
+                                <motion.span className="text-charcoal-text"> Dashboard</motion.span>
                             </motion.h1>
 
                             <motion.p
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.4 }}
-                                className="text-xl"
-                                style={{ color: colors.lightBlue }}
+                                className="text-xl text-charcoal-text/70"
                             >
                                 View and manage identities stored in your wallet
                             </motion.p>
@@ -140,7 +139,7 @@ const User: React.FC = () => {
                     </div>
                 </div>
                 {/* Main Content Section */}
-                <div className="relative z-10" style={{ backgroundColor: colors.darkerNavy, minHeight: '100vh' }}>
+                <div className="relative z-10 min-h-screen">
                     <div className="max-w-5xl mx-auto px-6 pb-20">
                         {/* Stats Cards */}
                         <motion.div
@@ -151,34 +150,30 @@ const User: React.FC = () => {
                         >
                             <motion.div
                                 whileHover={{ y: -5, scale: 1.02 }}
-                                className="relative p-6 rounded-3xl transition-all duration-300 overflow-hidden"
-                                style={{ backgroundColor: colors.darkNavy }}
+                                className="relative p-6 rounded-2xl sm:rounded-3xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] border border-primary/20"
                             >
-                                <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at center, ${colors.primary} 0%, transparent 70%)` }}></div>
                                 <div className="relative z-10 flex items-center">
-                                    <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-                                        <CheckCircle className="w-6 h-6" style={{ color: colors.primary }} />
+                                    <div className="p-3 rounded-2xl bg-primary/20">
+                                        <CheckCircle className="w-6 h-6 text-primary" />
                                     </div>
                                     <div className="ml-4">
-                                        <p className="text-sm font-medium" style={{ color: colors.lightBlue }}>Total Credentials</p>
-                                        <p className="text-2xl font-bold" style={{ color: colors.white }}>{loading ? '...' : stats.total}</p>
+                                        <p className="text-sm font-medium text-charcoal-text/70">Total Credentials</p>
+                                        <p className="text-2xl font-bold text-charcoal-text">{loading ? '...' : stats.total}</p>
                                     </div>
                                 </div>
                             </motion.div>
 
                             <motion.div
                                 whileHover={{ y: -5, scale: 1.02 }}
-                                className="relative p-6 rounded-3xl transition-all duration-300 overflow-hidden"
-                                style={{ backgroundColor: colors.darkNavy }}
+                                className="relative p-6 rounded-2xl sm:rounded-3xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-secondary/10 to-secondary/5 shadow-[0.1em_0.1em_0_0_rgb(20_184_166)] hover:shadow-[0.15em_0.15em_0_0_rgb(20_184_166)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] border border-secondary/20"
                             >
-                                <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at center, ${colors.primary} 0%, transparent 70%)` }}></div>
                                 <div className="relative z-10 flex items-center">
-                                    <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-                                        <Shield className="w-6 h-6" style={{ color: colors.primary }} />
+                                    <div className="p-3 rounded-2xl bg-secondary/20">
+                                        <Shield className="w-6 h-6 text-secondary" />
                                     </div>
                                     <div className="ml-4">
-                                        <p className="text-sm font-medium" style={{ color: colors.lightBlue }}>Verified Credentials</p>
-                                        <p className="text-2xl font-bold" style={{ color: colors.white }}>{loading ? '...' : stats.verified}</p>
+                                        <p className="text-sm font-medium text-charcoal-text/70">Verified Credentials</p>
+                                        <p className="text-2xl font-bold text-charcoal-text">{loading ? '...' : stats.verified}</p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -189,8 +184,7 @@ const User: React.FC = () => {
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
-                            className="bg-white/10 backdrop-blur-sm rounded-2xl p-2 mb-8 border"
-                            style={{ borderColor: `${colors.primary}30` }}
+                            className="bg-white rounded-2xl p-2 mb-8 border border-primary/20 shadow-soft"
                         >
                             <nav className="flex space-x-2">
                                 {['verifications', 'credentials'].map((tab) => (
@@ -198,12 +192,9 @@ const User: React.FC = () => {
                                         key={tab}
                                         onClick={() => setActiveNav(tab)}
                                         className={`flex-1 py-3 px-6 rounded-xl font-medium text-sm capitalize transition-all duration-300 ${activeNav === tab
-                                            ? 'text-white shadow-lg'
-                                            : 'text-gray-400 hover:text-white'
+                                            ? 'text-white shadow-lg bg-primary'
+                                            : 'text-charcoal-text/70 hover:text-charcoal-text bg-transparent'
                                             }`}
-                                        style={{
-                                            backgroundColor: activeNav === tab ? colors.primary : 'transparent'
-                                        }}
                                     >
                                         {tab}
                                     </button>
@@ -219,8 +210,8 @@ const User: React.FC = () => {
                                 transition={{ duration: 0.6 }}
                             >
                                 <div className="mb-8">
-                                    <h2 className="text-2xl font-bold mb-2" style={{ color: colors.white }}>Identity Verifications</h2>
-                                    <p className="text-sm" style={{ color: colors.lightBlue }}>Complete these verifications to unlock full platform access</p>
+                                    <h2 className="text-2xl font-bold mb-2 text-charcoal-text">Identity Verifications</h2>
+                                    <p className="text-sm text-charcoal-text/70">Complete these verifications to unlock full platform access</p>
                                 </div>
 
                                 {/* Verification Cards */}
@@ -239,73 +230,18 @@ const User: React.FC = () => {
                                                     transition: { duration: 0.3 }
                                                 }}
                                                 onClick={() => handleVerificationClick(verification.title, verification.description)}
-                                                className="group relative overflow-hidden rounded-3xl p-8 transition-all duration-500 transform-gpu cursor-pointer"
-                                                style={{
-                                                    background: `linear-gradient(135deg, ${colors.darkNavy} 0%, ${colors.darkerNavy} 100%)`,
-                                                    border: `1px solid ${colors.primary}40`
-                                                }}
+                                                className="group relative overflow-hidden rounded-2xl sm:rounded-3xl p-6 sm:p-8 transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary/10 to-primary/5 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] border border-primary/20"
                                             >
-                                                {/* Animated Background Gradient */}
-                                                <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-                                                    style={{
-                                                        background: `radial-gradient(circle at 50% 50%, ${colors.primary}60 0%, transparent 70%)`
-                                                    }}></div>
-
-                                                {/* Floating Particles Effect */}
-                                                <div className="absolute inset-0 overflow-hidden">
-                                                    {[...Array(4)].map((_, i) => (
-                                                        <motion.div
-                                                            key={i}
-                                                            className="absolute w-1 h-1 rounded-full opacity-30"
-                                                            style={{
-                                                                backgroundColor: colors.primary, left: `${20 + i * 20}%`,
-                                                                top: `${30 + i * 10}%`
-                                                            }}
-                                                            animate={{
-                                                                x: [0, 100, 0],
-                                                                y: [0, -50, 0],
-                                                                opacity: [0.3, 0.8, 0.3],
-                                                                scale: [0.5, 1.2, 0.5]
-                                                            }}
-                                                            transition={{
-                                                                duration: 4 + i * 0.5,
-                                                                repeat: Infinity,
-                                                                delay: i * 0.3,
-                                                                ease: "easeInOut"
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </div>
-
                                                 <div className="relative z-10">
-                                                    {/* Icon with Glow Effect */}
+                                                    {/* Icon */}
                                                     <motion.div
                                                         initial={{ scale: 0, rotate: -180 }}
                                                         whileInView={{ scale: 1, rotate: 0 }}
                                                         transition={{ duration: 0.8, delay: verification.delay + 0.2, type: "spring", stiffness: 150 }}
                                                         className="relative mb-6"
                                                     >
-                                                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto relative overflow-hidden"
-                                                            style={{
-                                                                background: `linear-gradient(135deg, ${colors.primary}20, ${colors.primary}40)`,
-                                                                boxShadow: `0 0 30px ${colors.primary}40`
-                                                            }}>
-                                                            <motion.div
-                                                                className="absolute inset-0 rounded-2xl"
-                                                                style={{ background: `linear-gradient(135deg, ${colors.primary}60, transparent)` }}
-                                                                animate={{
-                                                                    opacity: [0.3, 0.8, 0.3],
-                                                                    scale: [1, 1.1, 1]
-                                                                }}
-                                                                transition={{
-                                                                    duration: 2,
-                                                                    repeat: Infinity,
-                                                                    ease: "easeInOut"
-                                                                }}
-                                                            />
-                                                            <div className="relative z-10" style={{ color: colors.primary }}>
-                                                                <IconComponent className="w-8 h-8" />
-                                                            </div>
+                                                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                                                            <IconComponent className="w-8 h-8 text-primary" />
                                                         </div>
                                                     </motion.div>
 
@@ -315,44 +251,24 @@ const User: React.FC = () => {
                                                         whileInView={{ opacity: 1, y: 0 }}
                                                         transition={{ delay: verification.delay + 0.4, duration: 0.6 }}
                                                     >
-                                                        <h3 className="text-xl font-bold mb-3 text-center bg-gradient-to-r bg-clip-text text-transparent"
-                                                            style={{
-                                                                backgroundImage: `linear-gradient(135deg, ${colors.white}, ${colors.lightBlue})`
-                                                            }}>
+                                                        <h3 className="text-xl font-bold mb-3 text-center text-charcoal-text">
                                                             {verification.title}
                                                         </h3>
-                                                        <p className="text-sm leading-relaxed text-center opacity-80 mb-4" style={{ color: colors.lightBlue }}>
+                                                        <p className="text-sm leading-relaxed text-center text-charcoal-text/80 mb-4">
                                                             {verification.description}
                                                         </p>
 
                                                         <motion.button
                                                             whileHover={{ scale: 1.05 }}
                                                             whileTap={{ scale: 0.95 }}
-                                                            className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300"
-                                                            style={{
-                                                                background: colors.gradients.primary,
-                                                                color: colors.white
-                                                            }}
+                                                            className="w-full py-3 px-6 rounded-lg font-medium transition-all duration-300 bg-primary text-white border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                                                         >
                                                             Start Verification
                                                         </motion.button>
-                                                        <p className="text-xs text-center mt-3" style={{ color: colors.lightBlue, fontWeight: '500' }}>
-                                                            Accepted by <span style={{ color: colors.primary }}>Alphafi</span> and <span style={{ color: colors.primary }}>Suilend</span>
+                                                        <p className="text-xs text-center mt-3 text-charcoal-text/60 font-medium">
+                                                            Accepted by <span className="text-primary">Alphafi</span> and <span className="text-primary">Suilend</span>
                                                         </p>
                                                     </motion.div>
-                                                </div>
-
-                                                <div className="absolute top-4 left-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-r-0 border-b-0 rounded-tl-lg" style={{ borderColor: colors.primary }}></div>
-                                                </div>
-                                                <div className="absolute top-4 right-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-l-0 border-b-0 rounded-tr-lg" style={{ borderColor: colors.primary }}></div>
-                                                </div>
-                                                <div className="absolute bottom-4 left-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-r-0 border-t-0 rounded-bl-lg" style={{ borderColor: colors.primary }}></div>
-                                                </div>
-                                                <div className="absolute bottom-4 right-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-l-0 border-t-0 rounded-br-lg" style={{ borderColor: colors.primary }}></div>
                                                 </div>
                                             </motion.div>
                                         );
@@ -370,8 +286,8 @@ const User: React.FC = () => {
                             >
                                 <div className="flex items-center justify-between mb-8">
                                     <div>
-                                        <h2 className="text-2xl font-bold mb-2" style={{ color: colors.white }}>Credentials</h2>
-                                        <p className="text-sm" style={{ color: colors.lightBlue }}>View and manage credentials stored in your identity wallet</p>
+                                        <h2 className="text-2xl font-bold mb-2 text-charcoal-text">Credentials</h2>
+                                        <p className="text-sm text-charcoal-text/70">View and manage credentials stored in your identity wallet</p>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <input
@@ -379,10 +295,7 @@ const User: React.FC = () => {
                                             placeholder="Search credentials..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="px-4 py-2 bg-white/10 border rounded-lg focus:ring-2 focus:ring-opacity-50 text-white placeholder-gray-400 text-sm backdrop-blur-sm"
-                                            style={{
-                                                borderColor: `${colors.primary}40`
-                                            }}
+                                            className="px-4 py-2 bg-white border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-charcoal-text placeholder-charcoal-text/40 text-sm"
                                         />
                                     </div>
                                 </div>
@@ -392,11 +305,11 @@ const User: React.FC = () => {
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 backdrop-blur-sm"
+                                        className="bg-error/10 border border-error/30 rounded-lg p-4 mb-6"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <AlertCircle className="w-5 h-5 text-red-400" />
-                                            <p className="text-red-200 font-medium">{error}</p>
+                                            <AlertCircle className="w-5 h-5 text-error" />
+                                            <p className="text-charcoal-text font-medium">{error}</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -404,17 +317,17 @@ const User: React.FC = () => {
                                 {/* Loading State */}
                                 {loading && (
                                     <div className="text-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: colors.primary }}></div>
-                                        <p style={{ color: colors.lightBlue }}>Loading credentials...</p>
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                                        <p className="text-charcoal-text/70">Loading credentials...</p>
                                     </div>
                                 )}
 
                                 {/* Empty State */}
                                 {!loading && !error && credentials.length === 0 && (
                                     <div className="text-center py-12">
-                                        <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: colors.lightBlue }} />
-                                        <p className="text-lg mb-2" style={{ color: colors.white }}>No credentials found</p>
-                                        <p className="text-sm" style={{ color: colors.lightBlue }}>Complete identity verifications to see your credentials here</p>
+                                        <FileText className="w-16 h-16 mx-auto mb-4 text-charcoal-text/40" />
+                                        <p className="text-lg mb-2 text-charcoal-text">No credentials found</p>
+                                        <p className="text-sm text-charcoal-text/70">Complete identity verifications to see your credentials here</p>
                                     </div>
                                 )}
 
@@ -428,21 +341,13 @@ const User: React.FC = () => {
                                                 whileInView={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.6, delay: index * 0.1 }}
                                                 whileHover={{ y: -8, scale: 1.02 }}
-                                                className="group relative overflow-hidden rounded-3xl p-6 transition-all duration-300"
-                                                style={{
-                                                    backgroundColor: colors.darkNavy,
-                                                    border: `1px solid ${colors.primary}30`
-                                                }}
+                                                className="group relative overflow-hidden rounded-2xl sm:rounded-3xl p-6 transition-all duration-300 bg-gradient-to-br from-primary/10 to-primary/5 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] border border-primary/20"
                                             >
-                                                {/* Subtle Background Pattern */}
-                                                <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
-                                                    style={{ background: `radial-gradient(circle at center, ${colors.primary} 0%, transparent 70%)` }}></div>
-
                                                 <div className="relative z-10">
                                                     <div className="flex items-start justify-between mb-4">
                                                         <div>
-                                                            <h3 className="font-bold text-lg mb-1" style={{ color: colors.white }}>{credential.title}</h3>
-                                                            <p className="text-sm" style={{ color: colors.lightBlue }}>{credential.description}</p>
+                                                            <h3 className="font-bold text-lg mb-1 text-charcoal-text">{credential.title}</h3>
+                                                            <p className="text-sm text-charcoal-text/70">{credential.description}</p>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             {getStatusIcon(credential.status)}
@@ -450,22 +355,21 @@ const User: React.FC = () => {
                                                     </div>
 
                                                     <div className="mb-4">
-                                                        <p className="text-xs" style={{ color: colors.lightBlue }}>Exp: {credential.expiryDate}</p>
+                                                        <p className="text-xs text-charcoal-text/60">Exp: {credential.expiryDate}</p>
                                                     </div>
 
-                                                    <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: `${colors.primary}20` }}>
+                                                    <div className="flex items-center justify-between pt-4 border-t border-primary/20">
                                                         <div className="flex items-center gap-4">
                                                             <div className="text-center">
-                                                                <div className="text-2xl font-bold" style={{ color: colors.primary }}>{index + 1}</div>
+                                                                <div className="text-2xl font-bold text-primary">{index + 1}</div>
                                                             </div>
-                                                            <div className="text-xs" style={{ color: colors.lightBlue }}>
+                                                            <div className="text-xs text-charcoal-text/60">
                                                                 Issued on: {credential.issuedDate}
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             {credential.type === 'nft' && (
-                                                                <span className="px-2 py-1 text-xs font-medium rounded"
-                                                                    style={{ backgroundColor: `${colors.primary}20`, color: colors.primary }}>NFT</span>
+                                                                <span className="px-2 py-1 text-xs font-medium rounded bg-primary/20 text-primary">NFT</span>
                                                             )}
                                                         </div>
                                                     </div>
