@@ -677,8 +677,8 @@ code {
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.4;
+  filter: blur(100px);
+  opacity: 0.25;
   pointer-events: none;
   z-index: 0;
   will-change: transform;

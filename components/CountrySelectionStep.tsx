@@ -128,26 +128,6 @@ const CountrySelectionStep: React.FC<CountrySelectionStepProps> = ({ onNext, onB
           )}
         </div>
 
-        {/* Selected Country Preview */}
-        {selectedCountry && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-lg bg-primary/10 border border-primary/30"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{selectedCountry.flag}</span>
-              <div>
-                <h4 className="font-semibold text-charcoal-text">
-                  {selectedCountry.name}
-                </h4>
-                <p className="text-sm text-charcoal-text/70">
-                  Documents from this country will be verified
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Continue Button */}
         <Button

@@ -12,10 +12,20 @@ export default function Home() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
-        <p className="mt-4 text-gray-300">Redirecting to dashboard...</p>
+    <div className="min-h-screen flex items-center justify-center bg-ghost-white outfit relative overflow-hidden">
+      {/* Blob Animations Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+      </div>
+      
+      <div className="relative z-10 text-center">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-20 w-20 border-4 border-primary/20 border-t-primary mx-auto"></div>
+          <div className="absolute inset-0 animate-ping rounded-full h-20 w-20 border-2 border-primary/30 mx-auto"></div>
+        </div>
+        <p className="mt-6 text-charcoal-text font-semibold">Redirecting to dashboard...</p>
       </div>
     </div>
   );

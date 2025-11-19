@@ -124,25 +124,10 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
       </div>
 
       <div className="space-y-6 mt-8">
-        {/* Country Header */}
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border border-primary/30">
-          <span className="text-2xl">{country.flag}</span>
-          <div>
-            <h3 className="font-semibold text-charcoal-text">
-              {country.name}
-            </h3>
-            <p className="text-sm text-charcoal-text/70">
-              Select document type for verification
-            </p>
-          </div>
-        </div>
-
+     
         {/* Document Type Cards */}
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-charcoal-text">
-            Valid government issued documents:
-          </h4>
-          
+      
           {documentTypes.map((docType) => (
             <motion.div
               key={docType.id}
@@ -150,8 +135,8 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
               whileTap={{ scale: docType.available ? 0.99 : 1 }}
               className={`p-5 rounded-lg border-2 transition-all cursor-pointer ${
                 selectedDocument?.id === docType.id 
-                  ? 'border-primary shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] bg-primary/10' 
-                  : 'border-primary/30 bg-white hover:border-primary/50'
+                  ? 'border-secondary bg-secondary/10' 
+                  : 'border-secondary/30 bg-white hover:border-secondary/50'
               } ${
                 !docType.available 
                   ? 'opacity-50 cursor-not-allowed' 
@@ -168,19 +153,19 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
                 <div className="flex-shrink-0 mt-1">
                   <div 
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      selectedDocument?.id === docType.id ? 'border-primary' : 'border-primary/50'
+                      selectedDocument?.id === docType.id ? 'border-secondary' : 'border-secondary/50'
                     }`}
                   >
                     {selectedDocument?.id === docType.id && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-secondary" />
                     )}
                   </div>
                 </div>
 
                 {/* Document Info */}
-                <div className="flex-1">
+                <div className="">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="text-primary">
+                    <div className="text-secondary">
                       {docType.icon}
                     </div>
                     <h5 className="font-semibold text-charcoal-text">
@@ -226,13 +211,6 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
             : 'Continue with Selected Document'
           }
         </Button>
-
-        {/* Info Note */}
-        <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-          <p className="text-xs text-charcoal-text/70 leading-relaxed">
-            💡 More document types will be added soon. Currently supporting {country.name} documents with government API integration.
-          </p>
-        </div>
       </div>
     </form>
   );

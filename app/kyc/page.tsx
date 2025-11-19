@@ -468,6 +468,18 @@ function KycPage() {
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
       </div>
+      
+      {/* Subtle gradient overlay for depth */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
+      
+      {/* Subtle pattern overlay */}
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }}
+      ></div>
 
       {/* Header */}
       <div className="sticky top-0 z-50 bg-ghost-white/90 backdrop-blur-md border-b border-primary/20 shadow-sm">
@@ -510,7 +522,7 @@ function KycPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] max-w-4xl mx-auto"
+              className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary/20 shadow-[0.2em_0.2em_0_0_rgb(124_58_237)] max-w-4xl mx-auto"
             >
             {/* Step Indicator */}
             {!['waiting', 'encrypting', 'completed', 'error', 'nft-claimed'].includes(step) && (
