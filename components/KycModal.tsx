@@ -3,6 +3,7 @@ import { X, Upload, Camera, Phone, CheckCircle, AlertCircle, Loader2, FileText, 
 import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { Button } from '@/components/ui/button';
 
 type KycStep = 'aadhaar' | 'face' | 'generate-otp' | 'verify-otp' | 'complete';
 
@@ -391,10 +392,10 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                   <h4 className="text-lg font-medium text-charcoal-text mb-2">Upload Aadhaar Card</h4>
                   <p className="text-charcoal-text/70 mb-6">Choose a clear image of your Aadhaar card</p>
                   
-                  <button
+                  <Button
                     onClick={() => fileInputRef.current?.click()}
+                    variant="primary"
                     disabled={isLoading}
-                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 mx-auto border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                   >
                     {isLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -402,7 +403,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                       <Upload className="w-5 h-5" />
                     )}
                     {isLoading ? 'Processing...' : 'Choose File'}
-                  </button>
+                  </Button>
                   
                   <input
                     ref={fileInputRef}
@@ -511,10 +512,11 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
               </div>
               <div className="flex gap-4">
                 {!faceImage ? (
-                  <button
+                  <Button
                     onClick={capturePhoto}
+                    variant="primary"
                     disabled={isLoading}
-                    className="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50 border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                    className="flex-1"
                   >
                     {isLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -522,24 +524,26 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                       <Camera className="w-5 h-5" />
                     )}
                     {isLoading ? 'Processing...' : 'Take Photo'}
-                  </button>
+                  </Button>
                 ) : (
                   <>
-                    <button
+                    <Button
                       onClick={() => {setFaceImage(null); setError(null); setFaceResult(null);}}
+                      variant="outline"
                       disabled={isLoading}
-                      className="flex-1 bg-charcoal-text text-white py-3 px-6 rounded-lg font-medium hover:bg-charcoal-text/80 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 border-[3px] border-charcoal-text shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                      className="flex-1"
                     >
                       <RotateCcw className="w-5 h-5" />
                       Retake
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => faceResult?.match && setStep('generate-otp')}
+                      variant="success"
                       disabled={isProcessing || !faceResult?.match}
-                      className="flex-1 bg-success text-white py-3 px-6 rounded-lg font-medium hover:bg-success/80 transition-colors disabled:opacity-50 border-[3px] border-success shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                      className="flex-1"
                     >
                       {isProcessing ? 'Verifying...' : 'Next: Generate OTP'}
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
@@ -561,10 +565,11 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                 </p>
                 <p className="text-lg font-semibold text-charcoal-text mb-6">{phoneNumber}</p>
                 
-                <button
+                <Button
                   onClick={generateOtp}
+                  variant="primary"
                   disabled={isLoading}
-                  className="bg-primary text-white px-8 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                  size="lg"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -572,7 +577,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                     <Phone className="w-5 h-5" />
                   )}
                   {isLoading ? 'Sending OTP...' : 'Send OTP'}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -617,10 +622,11 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                   />
                 </div>
 
-                <button
+                <Button
                   type="submit"
+                  variant="success"
                   disabled={otp.length !== 6 || isLoading}
-                  className="w-full bg-success text-white py-3 px-6 rounded-lg font-medium hover:bg-success/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border-[3px] border-success shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                  className="w-full"
                 >
                   {isLoading ? (
                     <>
@@ -630,7 +636,7 @@ const KycModal: React.FC<KycModalProps> = ({ isOpen, onClose, verificationType }
                   ) : (
                     'Verify & Complete'
                   )}
-                </button>
+                </Button>
               </form>
 
               <div className="mt-6 text-center">

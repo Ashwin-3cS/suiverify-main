@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, Globe, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { colors } from '@/app/brand';
+import { Button } from '@/components/ui/button';
 
 interface Country {
   code: string;
@@ -149,13 +150,15 @@ const CountrySelectionStep: React.FC<CountrySelectionStepProps> = ({ onNext, onB
         )}
 
         {/* Continue Button */}
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={!selectedCountry}
-          className="w-full py-3.5 px-6 rounded-lg font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] active:translate-x-[0.05em] active:translate-y-[0.05em] active:shadow-[0.05em_0.05em_0_0_rgb(0_0_0)]"
+          className="w-full"
+          size="lg"
         >
           Continue
-        </button>
+        </Button>
       </div>
     </form>
   );

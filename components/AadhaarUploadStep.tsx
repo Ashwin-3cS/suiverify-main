@@ -3,6 +3,7 @@ import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle
 import { toast } from 'react-toastify';
 import { colors } from '@/app/brand';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { Button } from '@/components/ui/button';
 
 interface AadhaarData {
   name?: string;
@@ -206,11 +207,12 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
             <h3 className="text-xl font-bold mb-2 text-charcoal-text">Upload Aadhaar Card</h3>
             <p className="mb-8 text-charcoal-text/70">Choose a clear image of your Aadhaar card (JPG, PNG)</p>
             
-            <button
+            <Button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              variant="primary"
               disabled={isLoading}
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-bold text-base transition-all disabled:opacity-50 text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+              size="lg"
             >
               {isLoading ? (
                 <>
@@ -223,7 +225,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
                   Choose File
                 </>
               )}
-            </button>
+            </Button>
             
             <input
               ref={fileInputRef}
@@ -262,17 +264,19 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
 
         {/* Action Buttons */}
         <div className="flex gap-4 pt-4">
-          <button
+          <Button
             type="button"
             onClick={onBack}
-            className="flex-1 py-3 px-6 rounded-lg font-medium transition-all text-charcoal-text bg-white border-2 border-primary/30 hover:border-primary/50"
+            variant="outline"
+            className="flex-1"
           >
             Back
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             disabled={!aadhaarData || isLoading}
-            className="flex-1 py-3.5 px-6 rounded-lg font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+            className="flex-1"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
@@ -282,7 +286,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
             ) : (
               'Next: Face Verification'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </form>

@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react';
 import { colors } from '@/app/brand';
 import accessControlData from '@/access-control.json';
+import { Button } from '@/components/ui/button';
 
 interface AuthResult {
   success: boolean;
@@ -224,27 +225,29 @@ export default function AuthPage() {
           )}
 
           {/* Submit Button */}
-          <motion.button
+          <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
-            type="submit"
-            disabled={isLoading || isBlocked}
-            whileHover={{ scale: isLoading || isBlocked ? 1 : 1.02 }}
-            whileTap={{ scale: isLoading || isBlocked ? 1 : 0.98 }}
-            className="w-full font-bold px-6 py-3 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-white border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] active:translate-x-[0.05em] active:translate-y-[0.05em] active:shadow-[0.05em_0.05em_0_0_rgb(0_0_0)]"
           >
-            {isLoading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Authenticating...</span>
-              </div>
-            ) : isBlocked ? (
-              'Too Many Attempts'
-            ) : (
-              'Access Dashboard'
-            )}
-          </motion.button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isLoading || isBlocked}
+              className="w-full"
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Authenticating...</span>
+                </div>
+              ) : isBlocked ? (
+                'Too Many Attempts'
+              ) : (
+                'Access Dashboard'
+              )}
+            </Button>
+          </motion.div>
         </form>
 
         {/* Footer */}

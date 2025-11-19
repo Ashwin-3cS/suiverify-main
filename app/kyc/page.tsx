@@ -20,6 +20,7 @@ import { NFTClaimSuccessModal } from '@/components/NFTClaimSuccess';
 import { colors } from '@/app/brand';
 import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
 import StepIndicator from '@/components/ui/StepIndicator';
+import { Button } from '@/components/ui/button';
 
 interface Country {
   code: string;
@@ -703,14 +704,18 @@ function KycPage() {
                     {isClaimingNft ? '🔄 Claiming NFT...' : '🏆 Claim Your DID NFT'}
                   </motion.button>
                   
-                  <motion.button
-                    onClick={() => router.push('/dashboard')}
+                  <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full py-3 px-6 rounded-lg font-medium transition-all duration-300 text-charcoal-text bg-white border-[3px] border-primary/30 hover:border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                   >
-                    Go to Dashboard
-                  </motion.button>
+                    <Button
+                      onClick={() => router.push('/dashboard')}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Go to Dashboard
+                    </Button>
+                  </motion.div>
                 </div>
               </div>
             )}
@@ -743,14 +748,13 @@ function KycPage() {
                   </p>
                 </div>
                 
-                <motion.button
+                <Button
                   onClick={() => setStep('waiting')}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-3 px-6 rounded-lg font-medium transition-all duration-300 text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                  variant="primary"
+                  className="w-full"
                 >
                   Try Again
-                </motion.button>
+                </Button>
               </div>
             )}
             </motion.div>

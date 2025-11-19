@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { ChevronLeft, Camera, RotateCcw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import Webcam from 'react-webcam';
 import { colors } from '@/app/brand';
+import { Button } from '@/components/ui/button';
 
 interface AadhaarData {
   name?: string;
@@ -218,31 +219,34 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
         </div>
         <div className="flex gap-4">
           {!faceImage ? (
-            <button
+            <Button
               onClick={capturePhoto}
+              variant="primary"
               disabled={isLoading}
-              className="flex-1 py-3.5 px-6 rounded-lg font-bold text-base transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+              className="flex-1"
             >
               <Camera className="w-5 h-5" />
               Take Photo
-            </button>
+            </Button>
           ) : (
             <>
-              <button
+              <Button
                 onClick={retakePhoto}
+                variant="outline"
                 disabled={isLoading}
-                className="flex-1 py-3.5 px-6 rounded-lg font-bold text-base transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 bg-charcoal-text border-[3px] border-charcoal-text shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                className="flex-1"
               >
                 <RotateCcw className="w-5 h-5" />
                 Retake
-              </button>
+              </Button>
               {faceResult?.match && (
-                <button
+                <Button
                   onClick={onNext}
-                  className="flex-1 py-3.5 px-6 rounded-lg font-bold text-base transition-all text-white bg-success border-[3px] border-success shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                  variant="success"
+                  className="flex-1"
                 >
                   Next: OTP Verification
-                </button>
+                </Button>
               )}
             </>
           )}

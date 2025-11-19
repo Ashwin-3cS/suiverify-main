@@ -10,6 +10,7 @@ import { credentialService, type CredentialData, type CredentialStats } from '@/
 import { Shield, FileText, CheckCircle, Clock, AlertCircle, Calendar, Users } from 'lucide-react';
 import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';
+import { Button } from '@/components/ui/button';
 
 const User: React.FC = () => {
     const router = useRouter();
@@ -105,7 +106,7 @@ const User: React.FC = () => {
             />
 
             {/* Header */}
-            <div className="relative z-50 sticky top-0 bg-ghost-white/80 backdrop-blur-sm border-b border-primary/10">
+            <div className="sticky top-0 z-50 bg-ghost-white/80 backdrop-blur-sm border-b border-primary/10">
                 <DashboardHeader />
             </div>
 
@@ -232,11 +233,12 @@ const User: React.FC = () => {
                                                 <p className="text-sm text-charcoal-text/70 mb-5 leading-relaxed">
                                                     {verification.description}
                                                 </p>
-                                                <button
-                                                    className="w-full py-2.5 px-4 rounded-lg font-bold text-sm transition-all bg-primary text-white border-[3px] border-primary hover:bg-primary-dark shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                                                <Button
+                                                    variant="primary"
+                                                    className="w-full"
                                                 >
                                                     Start Verification
-                                                </button>
+                                                </Button>
                                                 <p className="text-xs text-center mt-3 text-charcoal-text/60">
                                                     Accepted by <span className="text-primary font-semibold">Alphafi</span> and <span className="text-primary font-semibold">Suilend</span>
                                                 </p>

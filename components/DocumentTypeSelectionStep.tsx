@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, FileText, CreditCard, BookOpen, Car, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { colors } from '@/app/brand';
+import { Button } from '@/components/ui/button';
 
 interface Country {
   code: string;
@@ -213,16 +214,18 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
         </div>
 
         {/* Continue Button */}
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={!selectedDocument || !selectedDocument.available}
-          className="w-full py-3.5 px-6 rounded-lg font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] active:translate-x-[0.05em] active:translate-y-[0.05em] active:shadow-[0.05em_0.05em_0_0_rgb(0_0_0)]"
+          className="w-full"
+          size="lg"
         >
           {selectedDocument && !selectedDocument.available 
             ? 'Coming Soon' 
             : 'Continue with Selected Document'
           }
-        </button>
+        </Button>
 
         {/* Info Note */}
         <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">

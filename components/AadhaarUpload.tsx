@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, Upload, Camera, Check, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AadhaarUploadProps {
   onNext: (file: File) => void;
@@ -107,21 +108,21 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
               <p className="text-gray-600 mb-6">Choose a file or take a photo</p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
+                <Button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition-colors border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                  variant="primary"
                 >
                   <Upload className="w-5 h-5" />
                   Choose File
-                </button>
+                </Button>
                 
-                <button
+                <Button
                   onClick={openCamera}
-                  className="flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+                  variant="outline"
                 >
                   <Camera className="w-5 h-5" />
                   Take Photo
-                </button>
+                </Button>
               </div>
               
               <input
@@ -173,13 +174,14 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
                 className="hidden"
               ></canvas>
               <div className="flex gap-4">
-                <button
+                <Button
                   onClick={captureImage}
-                  className="flex-1 bg-primary text-white py-3 rounded-lg hover:bg-primary-dark transition-colors border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                  variant="primary"
+                  className="flex-1"
                 >
                   Capture
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => {
                     setIsCameraOpen(false);
                     const video = videoRef.current;
@@ -188,10 +190,11 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
                       stream.getTracks().forEach((track) => track.stop());
                     }
                   }}
-                  className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors"
+                  variant="outline"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -199,19 +202,21 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <button
+          <Button
             onClick={onBack}
-            className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors"
+            variant="outline"
+            className="flex-1"
           >
             Back
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSubmit}
+            variant="primary"
             disabled={!uploadedFile}
-            className="flex-1 bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+            className="flex-1"
           >
             Next: Face Verification
-          </button>
+          </Button>
         </div>
       </div>
     </div>

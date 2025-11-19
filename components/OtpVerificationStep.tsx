@@ -4,6 +4,7 @@ import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { useCurrentAccount } from '@mysten/dapp-kit';
+import { Button } from '@/components/ui/button';
 
 interface AadhaarData {
   name?: string;
@@ -232,10 +233,11 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
               <p className="text-lg font-bold text-charcoal-text">{phoneNumber}</p>
             </div>
 
-            <button
+            <Button
               onClick={generateOtp}
+              variant="primary"
               disabled={isLoading}
-              className="w-full py-3.5 px-6 rounded-lg font-bold text-base transition-all text-white disabled:opacity-50 flex items-center justify-center gap-2 bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+              className="w-full"
             >
               {isLoading ? (
                 <>
@@ -248,7 +250,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
                   Send OTP
                 </>
               )}
-            </button>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleOtpSubmit} className="space-y-6">
@@ -289,10 +291,11 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
             </div>
 
             <div className="space-y-3">
-              <button
+              <Button
                 type="submit"
+                variant="success"
                 disabled={otp.length !== 6 || isLoading}
-                className="w-full py-3.5 px-6 rounded-lg font-bold text-base transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-success border-[3px] border-success shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                className="w-full"
               >
                 {isLoading ? (
                   <>
@@ -302,7 +305,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
                 ) : (
                   'Verify & Complete'
                 )}
-              </button>
+              </Button>
 
               <div className="text-center">
                 <button

@@ -4,6 +4,7 @@ import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { Button } from '@/components/ui/button';
 
 interface PANData {
   pan_number?: string;
@@ -189,10 +190,11 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         </div>
 
         {/* Proceed Button */}
-        <button
+        <Button
           onClick={handleProceed}
+          variant="primary"
           disabled={isLoading || !panData}
-          className="w-full py-3.5 px-6 rounded-lg font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white bg-primary border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+          className="w-full"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
@@ -202,7 +204,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
           ) : (
             'Proceed with Government Verification'
           )}
-        </button>
+        </Button>
 
         {/* Info Note */}
         <div className="p-4 rounded-lg text-center bg-primary/5 border border-primary/20">

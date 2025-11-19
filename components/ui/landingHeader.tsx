@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Logo from "@/public/logo.svg";
+import { Button } from "@/components/ui/button";
 
 
 const LandingHeader = () => {
@@ -41,9 +42,9 @@ const LandingHeader = () => {
             </div> */}
 
             {/* Connect Wallet Button */}
-            <button onClick={handleLaunchApp} className="cursor-pointer bg-primary hover:bg-primary-dark text-white font-semibold px-6 py-2 rounded-lg transition-colors border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]">
+            <Button onClick={handleLaunchApp} variant="primary">
               Launch App
-            </button>
+            </Button>
 
             {/* Mobile Menu Button */}
             <button className="md:hidden p-2">

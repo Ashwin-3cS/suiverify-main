@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import Image from "next/image";
 import Logo from "@/public/head_logo.png";
+import { Button } from "@/components/ui/button";
 
 const DashboardHeader = () => {
     const router = useRouter();
@@ -31,13 +32,14 @@ const DashboardHeader = () => {
                     <div className="flex items-center space-x-3 sm:space-x-4 relative z-50">
                         {/* Logout Button - Only show on admin routes */}
                         {isAdminRoute && (
-                            <button
+                            <Button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 bg-error text-white px-4 py-2 rounded-lg font-bold text-sm transition-all border-[3px] border-error shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                                variant="error"
+                                size="sm"
                             >
                                 <LogOut className="w-4 h-4" />
                                 <span className="hidden sm:inline">Logout</span>
-                            </button>
+                            </Button>
                         )}
 
                         <div className="connect-button-wrapper">
