@@ -18,13 +18,17 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ steps, currentStep, class
   
   return (
     <div className={`w-full ${className}`}>
-      <div className="flex items-center justify-between relative">
-        {/* Progress Line */}
-        <div className="absolute top-5 left-0 right-0 h-0.5 bg-light-gray -z-10">
+      <div className="flex items-start justify-between relative px-2">
+        {/* Progress Line Background */}
+        <div className="absolute top-6 left-8 right-8 h-[2px] bg-light-gray/50 -z-10 rounded-full">
+          {/* Progress Line Fill */}
           <div 
-            className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500 ease-out"
+            className="h-full bg-gradient-to-r from-primary via-primary to-secondary transition-all duration-700 ease-out rounded-full relative overflow-hidden"
             style={{ width: `${(currentIndex / (steps.length - 1)) * 100}%` }}
-          />
+          >
+            {/* Shimmer effect on progress line */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+          </div>
         </div>
 
         {/* Steps */}
@@ -35,33 +39,48 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ steps, currentStep, class
 
           return (
             <div key={step.id} className="flex flex-col items-center flex-1 relative z-10">
-              {/* Step Circle */}
-              <div
-                className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
-                  transition-all duration-300
-                  ${isCompleted 
-                    ? 'bg-success text-white shadow-lg scale-110' 
-                    : isCurrent 
-                    ? 'bg-primary text-white shadow-lg scale-110 ring-4 ring-primary/20' 
-                    : 'bg-light-gray text-charcoal-text/40'
-                  }
-                `}
-              >
-                {isCompleted ? (
-                  <Check className="w-5 h-5" />
-                ) : (
-                  <span>{index + 1}</span>
+              {/* Step Circle Container */}
+              <div className="relative">
+                {/* Outer ring for current step */}
+                {isCurrent && (
+                  <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse" style={{ transform: 'scale(1.5)' }}></div>
                 )}
+                
+                {/* Step Circle */}
+                <div
+                  className={`
+                    relative w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold
+                    transition-all duration-500 ease-out
+                    ${isCompleted 
+                      ? 'bg-success text-white shadow-lg shadow-success/30 scale-100 border-2 border-success' 
+                      : isCurrent 
+                      ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110 border-2 border-primary ring-4 ring-primary/15' 
+                      : 'bg-white text-charcoal-text/40 border-2 border-light-gray scale-100'
+                    }
+                  `}
+                >
+                  {isCompleted ? (
+                    <Check className="w-6 h-6 stroke-[3]" />
+                  ) : (
+                    <span className="text-base">{index + 1}</span>
+                  )}
+                  
+                  {/* Pulse animation for current step */}
+                  {isCurrent && (
+                    <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping"></div>
+                  )}
+                </div>
               </div>
 
               {/* Step Label */}
-              <div className="mt-3 text-center max-w-[120px]">
+              <div className="mt-4 text-center max-w-[140px]">
                 <p
                   className={`
-                    text-xs font-semibold transition-colors duration-300
-                    ${isCompleted || isCurrent 
-                      ? 'text-charcoal-text' 
+                    text-sm font-bold transition-all duration-300
+                    ${isCompleted 
+                      ? 'text-success' 
+                      : isCurrent 
+                      ? 'text-primary' 
                       : 'text-charcoal-text/40'
                     }
                   `}
@@ -71,10 +90,12 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ steps, currentStep, class
                 {step.description && (
                   <p
                     className={`
-                      text-[10px] mt-1 transition-colors duration-300
-                      ${isCompleted || isCurrent 
-                        ? 'text-charcoal-text/60' 
-                        : 'text-charcoal-text/30'
+                      text-xs mt-1.5 transition-all duration-300 leading-tight
+                      ${isCompleted 
+                        ? 'text-charcoal-text/70' 
+                        : isCurrent 
+                        ? 'text-charcoal-text/70 font-medium' 
+                        : 'text-charcoal-text/40'
                       }
                     `}
                   >
