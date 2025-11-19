@@ -13,16 +13,26 @@ const DashboardHeader = () => {
     const router = useRouter();
     const pathname = usePathname();
     const currentAccount = useCurrentAccount();
-    const previousAddressRef = useRef<string | null>(null);
+    const previousAddressRef = useRef<string | null | undefined>(undefined);
+    const isInitialMount = useRef(true);
     
     const isAdminRoute = pathname.startsWith('/admin');
     
-    // Show toast notification when wallet connects/disconnects
+    // Show toast notification when wallet connects/disconnects (only on actual changes, not initial load)
     useEffect(() => {
         const currentAddress = currentAccount?.address || null;
         
-        // Wallet connected
-        if (currentAddress && previousAddressRef.current === null) {
+        // Skip on initial mount - just store the current address without showing toast
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            previousAddressRef.current = currentAddress;
+            return;
+        }
+        
+        const previousAddress = previousAddressRef.current;
+        
+        // Wallet connected (changed from disconnected to connected)
+        if (currentAddress && previousAddress === null) {
             const shortAddress = `${currentAddress.slice(0, 6)}...${currentAddress.slice(-4)}`;
             toast.success(`Wallet connected: ${shortAddress}`, {
                 position: "bottom-right",
@@ -33,8 +43,8 @@ const DashboardHeader = () => {
                 draggable: true,
             });
         }
-        // Wallet disconnected
-        else if (!currentAddress && previousAddressRef.current !== null) {
+        // Wallet disconnected (changed from connected to disconnected)
+        else if (!currentAddress && previousAddress !== null) {
             toast.info('Wallet disconnected', {
                 position: "bottom-right",
                 autoClose: 3000,
@@ -44,8 +54,8 @@ const DashboardHeader = () => {
                 draggable: true,
             });
         }
-        // Wallet changed
-        else if (currentAddress && previousAddressRef.current !== null && currentAddress !== previousAddressRef.current) {
+        // Wallet changed (different address)
+        else if (currentAddress && previousAddress !== null && currentAddress !== previousAddress) {
             const shortAddress = `${currentAddress.slice(0, 6)}...${currentAddress.slice(-4)}`;
             toast.info(`Wallet changed: ${shortAddress}`, {
                 position: "bottom-right",
