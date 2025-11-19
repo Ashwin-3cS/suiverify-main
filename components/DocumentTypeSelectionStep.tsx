@@ -126,7 +126,7 @@ const DocumentTypeSelectionStep: React.FC<DocumentTypeSelectionStepProps> = ({
       <div className="space-y-6 mt-8">
      
         {/* Document Type Cards */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       
           {documentTypes.map((docType) => (
             <motion.div
