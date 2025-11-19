@@ -101,31 +101,22 @@ const User: React.FC = () => {
     };
 
     return (
-        <div className="w-full bg-ghost-white outfit min-h-screen">
-            {/* Grid Pattern Background */}
-            <div
-                className="fixed inset-0 z-0"
-                style={{
-                    backgroundImage: `
-            linear-gradient(to right, #DEE2E6 1px, transparent 1px),
-            linear-gradient(to bottom, #DEE2E6 1px, transparent 1px)
-          `,
-                    backgroundSize: "20px 30px",
-                    WebkitMaskImage:
-                        "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-                    maskImage:
-                        "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-                }}
-            />
+        <div className="w-full bg-ghost-white outfit min-h-screen relative overflow-hidden">
+            {/* Blob Animations Background */}
+            <div className="fixed inset-0 z-0 overflow-hidden">
+                <div className="blob blob-1"></div>
+                <div className="blob blob-2"></div>
+                <div className="blob blob-3"></div>
+            </div>
 
             {/* Header */}
-            <div className="sticky top-0 z-50 bg-ghost-white/80 backdrop-blur-sm border-b border-primary/10">
+            <div className="sticky top-0 z-50 bg-ghost-white/90 backdrop-blur-md border-b border-primary/20 shadow-sm">
                 <DashboardHeader />
             </div>
 
             {/* Main Content */}
             <div className="relative z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Page Header */}
                     <div className="mb-6">
                         <motion.h1
@@ -152,10 +143,10 @@ const User: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
                     >
                         {/* Total Credentials Card */}
-                        <div className="bg-white rounded-lg p-5 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)]">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)]">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="p-2.5 rounded-lg bg-primary/10">
                                     <CheckCircle className="w-5 h-5 text-primary" />
@@ -168,7 +159,7 @@ const User: React.FC = () => {
                         </div>
 
                         {/* Verified Credentials Card */}
-                        <div className="bg-white rounded-lg p-5 border-2 border-secondary/20 shadow-[0.1em_0.1em_0_0_rgb(20_184_166)]">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 border-2 border-secondary/20 shadow-[0.1em_0.1em_0_0_rgb(20_184_166)]">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="p-2.5 rounded-lg bg-secondary/10">
                                     <Shield className="w-5 h-5 text-secondary" />
@@ -181,7 +172,7 @@ const User: React.FC = () => {
                         </div>
 
                         {/* Pending Credentials Card */}
-                        <div className="bg-white rounded-lg p-5 border-2 border-warning/20 shadow-[0.1em_0.1em_0_0_rgb(245_158_11)]">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 border-2 border-warning/20 shadow-[0.1em_0.1em_0_0_rgb(245_158_11)]">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="p-2.5 rounded-lg bg-warning/10">
                                     <Clock className="w-5 h-5 text-warning" />
@@ -195,7 +186,7 @@ const User: React.FC = () => {
                     </motion.div>
 
                     {/* Navigation Tabs */}
-                    <div className="bg-white rounded-lg p-1 mb-6 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)]">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-lg p-1 mb-6 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)]">
                         <nav className="flex space-x-1">
                             {['verifications', 'credentials'].map((tab) => (
                                 <button
@@ -229,7 +220,7 @@ const User: React.FC = () => {
                                         <div
                                             key={verification.id}
                                             onClick={() => handleVerificationClick(verification.title, verification.description)}
-                                            className="group bg-white rounded-lg p-6 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200 cursor-pointer"
+                                            className="group bg-white/95 backdrop-blur-sm rounded-lg p-6 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200 cursor-pointer"
                                         >
                                             {/* Icon */}
                                             <div className="flex justify-center mb-4">
@@ -325,7 +316,7 @@ const User: React.FC = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.4, delay: index * 0.05 }}
                                             whileHover={{ y: -4 }}
-                                            className="group bg-white rounded-xl p-5 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200"
+                                            className="group bg-white/95 backdrop-blur-sm rounded-xl p-5 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200"
                                         >
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex-1 min-w-0">

@@ -66,9 +66,9 @@ const DashboardHeader = () => {
         router.push('/adminLogin');
     };
     return (
-        <div className="relative z-50 bg-ghost-white/80 backdrop-blur-sm">
+        <div className="relative z-50">
             {/* Navigation Bar */}
-            <nav className="px-4 sm:px-6 lg:px-8 py-3 relative z-50">
+            <nav className="px-4 sm:px-6 lg:px-8 py-4 relative z-50">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center space-x-3">

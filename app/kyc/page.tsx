@@ -22,6 +22,7 @@ import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from
 import StepIndicator from '@/components/ui/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
+import DashboardHeader from '@/components/ui/DashboardHeader';
 
 interface Country {
   code: string;
@@ -461,38 +462,34 @@ function KycPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-ghost-white outfit">
-      {/* Grid Pattern Background */}
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `
-          linear-gradient(to right, #DEE2E6 1px, transparent 1px),
-          linear-gradient(to bottom, #DEE2E6 1px, transparent 1px)
-        `,
-          backgroundSize: "20px 30px",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-          maskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-        }}
-      />
+      {/* Blob Animations Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+      </div>
+
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-ghost-white/90 backdrop-blur-md border-b border-primary/20 shadow-sm">
+        <DashboardHeader />
+      </div>
       
       {/* Main Content Container */}
       <div className="relative z-10 min-h-screen">
         {/* Hero Section */}
-        <div className="flex items-center justify-center min-h-screen px-6">
-          <div className="text-center max-w-4xl mx-auto my-16 ">
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-6 py-8">
+          <div className="text-center max-w-5xl mx-auto w-full">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="mb-8"
+              className="mb-6"
             >
               <motion.h1
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-4xl md:text-6xl font-bold mb-4"
+                className="text-3xl md:text-5xl font-bold mb-3"
               >
                 <motion.span className="text-primary">Identity</motion.span>
                 <motion.span className="text-charcoal-text"> Verification</motion.span>
@@ -501,8 +498,8 @@ function KycPage() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="text-lg max-w-2xl mx-auto mb-8 text-charcoal-text/70"
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-base md:text-lg max-w-2xl mx-auto mb-6 text-charcoal-text/70"
               >
                 {verificationDescription}
               </motion.p>
@@ -513,11 +510,11 @@ function KycPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] max-w-2xl mx-auto"
+              className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] max-w-4xl mx-auto"
             >
             {/* Step Indicator */}
             {!['waiting', 'encrypting', 'completed', 'error', 'nft-claimed'].includes(step) && (
-              <div className="mb-8 pb-8 border-b border-primary/20">
+              <div className="mb-6 pb-6 border-b border-primary/20">
                 <StepIndicator
                   steps={(() => {
                     const baseSteps = [
