@@ -3,6 +3,10 @@
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
+import { toast } from "react-toastify";
+import { useCurrentAccount } from "@mysten/dapp-kit";
+import { Button } from "@/components/ui/button";
 import Logo from "@/public/logo.svg";
 import AuthButton from "@/components/auth/AuthButton";
 
@@ -12,22 +16,22 @@ const DashboardHeader = () => {
     const currentAccount = useCurrentAccount();
     const previousAddressRef = useRef<string | null | undefined>(undefined);
     const isInitialMount = useRef(true);
-    
+
     const isAdminRoute = pathname.startsWith('/admin');
-    
+
     // Show toast notification when wallet connects/disconnects (only on actual changes, not initial load)
     useEffect(() => {
         const currentAddress = currentAccount?.address || null;
-        
+
         // Skip on initial mount - just store the current address without showing toast
         if (isInitialMount.current) {
             isInitialMount.current = false;
             previousAddressRef.current = currentAddress;
             return;
         }
-        
+
         const previousAddress = previousAddressRef.current;
-        
+
         // Wallet connected (changed from disconnected to connected)
         if (currentAddress && previousAddress === null) {
             const shortAddress = `${currentAddress.slice(0, 6)}...${currentAddress.slice(-4)}`;
@@ -63,10 +67,10 @@ const DashboardHeader = () => {
                 draggable: true,
             });
         }
-        
+
         previousAddressRef.current = currentAddress;
     }, [currentAccount?.address]);
-    
+
     const handleLogout = () => {
         localStorage.removeItem('adminAuthenticated');
         localStorage.removeItem('adminUsername');

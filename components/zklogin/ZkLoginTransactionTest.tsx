@@ -124,9 +124,10 @@ export default function ZkLoginTransactionTest() {
 
       console.log("✅ Transaction successful!");
       setTxDigest(result.digest);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Transaction error:", err);
-      setError(`Transaction failed: ${err.message}`);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`Transaction failed: ${errorMessage}`);
     } finally {
       setIsExecuting(false);
     }

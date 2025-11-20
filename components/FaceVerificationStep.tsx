@@ -3,6 +3,7 @@ import { ChevronLeft, Camera, RotateCcw, CheckCircle, AlertCircle, Loader2 } fro
 import Webcam from 'react-webcam';
 import { colors } from '@/app/brand';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { Button } from '@/components/ui/button';
 
 interface PANData {
   name?: string;
@@ -49,7 +50,7 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
   const handleFaceVerification = async (liveImageBase64: string) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       if (!panCardImage) {
         setError('PAN card image not found. Please upload PAN card first.');
@@ -59,7 +60,7 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
       // Create FormData for the API call
       const formData = new FormData();
       formData.append('pan_card_image', panCardImage);
-      
+
       // Convert base64 to blob for live image
       const base64Data = liveImageBase64.includes(',') ? liveImageBase64.split(',')[1] : liveImageBase64;
       const byteCharacters = atob(base64Data);
@@ -70,23 +71,23 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
       const byteArray = new Uint8Array(byteNumbers);
       const liveImageBlob = new Blob([byteArray], { type: 'image/jpeg' });
       formData.append('live_image', liveImageBlob, 'live_image.jpg');
-      
+
       const response = await fetch(buildApiUrl(API_ENDPOINTS.VERIFY_PAN_FACE), {
         method: 'POST',
         body: formData
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         const errorMessage = result.detail || result.message || `HTTP error! status: ${response.status}`;
         setError(errorMessage);
         return;
       }
-      
+
       if (result.success && result.data) {
         setFaceResult(result.data);
-        
+
         // Auto proceed to next step after successful face verification
         if (result.data.verified && result.data.verification_status === 'SUCCESS') {
           setTimeout(() => {
@@ -123,9 +124,9 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 mb-8">
-        <button 
-          type="button" 
-          onClick={onBack} 
+        <button
+          type="button"
+          onClick={onBack}
           className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
           <ChevronLeft className="w-5 h-5 text-primary" />
@@ -184,11 +185,11 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
           ) : (
             <div className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={faceImage} 
-                alt="Captured face" 
-                className="w-full rounded-2xl border-2" 
-                style={{ 
+              <img
+                src={faceImage}
+                alt="Captured face"
+                className="w-full rounded-2xl border-2"
+                style={{
                   borderColor: faceResult?.verified ? '#10b981' : `${colors.primary}40`,
                   borderWidth: faceResult?.verified ? '3px' : '2px'
                 }}
@@ -230,15 +231,15 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
               >
                 <RotateCcw className="w-5 h-5" />
                 Retake
-              </button>
+              </Button>
               {faceResult?.verified && (
-                <button
+                <Button
                   onClick={onNext}
                   variant="success"
                   className="flex-1"
                 >
                   Next: PAN Verification
-                </button>
+                </Button>
               )}
             </>
           )}

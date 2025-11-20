@@ -72,6 +72,7 @@ const serverObjectIds = [
 ];
 
 const sealClient = new SealClient({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   suiClient: SUI_CLIENT as any,
   serverConfigs: serverObjectIds.map((id) => ({
     objectId: id,
@@ -103,6 +104,7 @@ interface EncryptionMetadataPayload {
 }
 
 export class DocumentEncryptionService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async tryPublisher(publisherUrl: string, encryptedData: Uint8Array): Promise<any> {
     const url = `${publisherUrl}/v1/blobs?epochs=${NUM_EPOCH}`;
     console.log(`📤 Trying publisher: ${publisherUrl}`);
@@ -127,11 +129,12 @@ export class DocumentEncryptionService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async storeBlob(encryptedData: Uint8Array): Promise<any> {
     console.log(`📤 Uploading ${encryptedData.length} bytes to Walrus with fallback...`);
-    
+
     let lastError: Error | null = null;
-    
+
     // Try each publisher until one succeeds
     for (const publisher of WALRUS_PUBLISHERS) {
       try {
@@ -141,12 +144,12 @@ export class DocumentEncryptionService {
       } catch (error) {
         console.warn(`⚠️ Publisher ${publisher} failed:`, error instanceof Error ? error.message : String(error));
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         // Continue to next publisher
         continue;
       }
     }
-    
+
     // If all publishers failed, throw the last error
     console.error('❌ All publishers failed');
     throw new Error(`All Walrus publishers failed. Last error: ${lastError?.message || 'Unknown error'}`);
@@ -163,13 +166,13 @@ export class DocumentEncryptionService {
       const nonce = crypto.getRandomValues(new Uint8Array(5));
       const policyObjectBytes = fromHex(GOVERNMENT_WHITELIST_ID);
       const encryptionId = toHex(new Uint8Array([...policyObjectBytes, ...nonce]));
-      
+
       console.log('🔑 Generated Encryption ID:', encryptionId);
 
       // Step 2: Convert file to ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
       const fileData = new Uint8Array(arrayBuffer);
-      
+
       console.log('📊 File converted to Uint8Array:', fileData.length, 'bytes');
 
       // Step 3: Encrypt with Seal
@@ -180,24 +183,24 @@ export class DocumentEncryptionService {
         id: encryptionId,
         data: fileData,
       });
-      
+
       console.log('✅ Document encrypted successfully');
       console.log('📦 Encrypted data size:', encryptedBytes.length, 'bytes');
 
       // Step 4: Upload to Walrus with fallback
       console.log('☁️ Uploading to Walrus storage with fallback...');
       const storageInfo = await this.storeBlob(encryptedBytes);
-      
+
       if (!storageInfo) {
         throw new Error('Failed to upload to any Walrus publisher');
       }
 
       console.log('🎉 Upload completed successfully!');
-      
+
       // Step 5: Extract blob information
       let blobId: string;
       let suiRef: string;
-      
+
       if ('alreadyCertified' in storageInfo.info) {
         blobId = storageInfo.info.alreadyCertified.blobId;
         suiRef = storageInfo.info.alreadyCertified.event.txDigest;
@@ -289,8 +292,8 @@ export class DocumentEncryptionService {
 
   // Helper method to get Sui explorer URL
   static getSuiExplorerUrl(objectId: string, type: 'tx' | 'object' = 'object'): string {
-    const baseUrl = type === 'tx' 
-      ? 'https://suiscan.xyz/testnet/tx' 
+    const baseUrl = type === 'tx'
+      ? 'https://suiscan.xyz/testnet/tx'
       : 'https://suiscan.xyz/testnet/object';
     return `${baseUrl}/${objectId}`;
   }

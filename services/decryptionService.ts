@@ -24,6 +24,7 @@ const serverObjectIds = [
 
 // Initialize Seal client
 const sealClient = new SealClient({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   suiClient: SUI_CLIENT as any, // Type assertion to handle SDK version mismatch
   serverConfigs: serverObjectIds.map((id) => ({
     objectId: id,
@@ -66,6 +67,7 @@ export class DocumentDecryptionService {
       address: governmentAddress,
       packageId: PACKAGE_ID,
       ttlMin: this.TTL_MIN,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       suiClient: SUI_CLIENT as any,
     });
   }
@@ -124,7 +126,7 @@ export class DocumentDecryptionService {
         try {
           // Step 1: Download encrypted file from Walrus
           const encryptedData = await this.downloadEncryptedFile(doc.blob_id, onProgress);
-          
+
           if (!encryptedData) {
             console.error(`Failed to download blob ${doc.blob_id}`);
             continue;
@@ -134,23 +136,23 @@ export class DocumentDecryptionService {
           console.log(`🔓 Decrypting with Seal SDK for blob ${doc.blob_id}`);
           console.log(`🔑 Using encryption ID: ${doc.encryption_id}`);
           console.log(`📦 Encrypted data size: ${encryptedData.byteLength} bytes`);
-          
+
           // Convert ArrayBuffer to Uint8Array if needed
-          const encryptedBytes = encryptedData instanceof ArrayBuffer 
+          const encryptedBytes = encryptedData instanceof ArrayBuffer
             ? new Uint8Array(encryptedData)
             : encryptedData;
-          
+
           console.log(`📦 Encrypted bytes length: ${encryptedBytes.length}`);
-          
+
           // Parse the encrypted object to get the full ID (same as main frontend)
           const fullId = EncryptedObject.parse(encryptedBytes).id;
           console.log(`🆔 Full ID from encrypted object: ${fullId}`);
-          
+
           // Create transaction for move call (same as main frontend)
           const tx = new Transaction();
           moveCallConstructor(tx, fullId);
           const txBytes = await tx.build({ client: SUI_CLIENT, onlyTransactionKind: true });
-          
+
           const decryptedData = await sealClient.decrypt({
             data: encryptedBytes,
             sessionKey,
@@ -161,6 +163,7 @@ export class DocumentDecryptionService {
 
           // Step 3: Create blob URL for decrypted data
           const mimeType = this.getMimeType(doc.file_name);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const blob = new Blob([decryptedData as any], { type: mimeType });
           const url = URL.createObjectURL(blob);
           decryptedFileUrls.push(url);
@@ -265,31 +268,31 @@ export class DocumentDecryptionService {
     ].filter(Boolean); // Remove any undefined/null values
 
     console.log(`📡 Trying ${reliableAggregators.length} aggregators for blob ${blobId}`);
-    
+
     for (let i = 0; i < reliableAggregators.length; i++) {
       const aggregatorBase = reliableAggregators[i];
-      
+
       // Skip if aggregatorBase is undefined/null
       if (!aggregatorBase) continue;
-      
+
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 15000); // Increased timeout
-        
+
         const aggregatorUrl = `${aggregatorBase}/v1/blobs/${blobId}`;
         console.log(`[${i + 1}/${reliableAggregators.length}] Attempting download from ${aggregatorBase}`);
         onProgress?.(`Trying aggregator ${i + 1}/${reliableAggregators.length}: ${aggregatorBase}`);
-        
-        const response = await fetch(aggregatorUrl, { 
+
+        const response = await fetch(aggregatorUrl, {
           signal: controller.signal,
           mode: 'cors',
           headers: {
             'Accept': 'application/octet-stream, */*'
           }
         });
-        
+
         clearTimeout(timeout);
-        
+
         if (response.ok) {
           console.log(`✅ Successfully downloaded from ${aggregatorBase} (${response.status})`);
           onProgress?.(`✅ Download successful from ${aggregatorBase}`);
@@ -344,8 +347,8 @@ export class DocumentDecryptionService {
    * Helper method to get Sui explorer URL
    */
   static getSuiExplorerUrl(objectId: string, type: 'tx' | 'object' = 'object'): string {
-    const baseUrl = type === 'tx' 
-      ? 'https://suiscan.xyz/testnet/tx' 
+    const baseUrl = type === 'tx'
+      ? 'https://suiscan.xyz/testnet/tx'
       : 'https://suiscan.xyz/testnet/object';
     return `${baseUrl}/${objectId}`;
   }

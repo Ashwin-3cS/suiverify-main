@@ -199,7 +199,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
           ) : (
             'Proceed with Government Verification'
           )}
-        </button>
+        </Button>
 
         {/* Info Note */}
         <div className="p-3 rounded-xl text-center"
