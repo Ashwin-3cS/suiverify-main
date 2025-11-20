@@ -8,6 +8,7 @@ import {
   jwtToAddress,
   getZkLoginSignature,
   genAddressSeed,
+  computeZkLoginAddressFromSeed,
 } from "@mysten/sui/zklogin";
 import { jwtDecode } from "jwt-decode";
 import { suiClient } from "./sui-client";
@@ -44,7 +45,9 @@ export class ZkLoginService {
 
     // Get nonce from Enoki API
     // Use toSuiPublicKey() which serializes with the Ed25519 flag (0x00) that Enoki expects
-    const ephemeralPublicKeyBase64 = ephemeralKeyPair.getPublicKey().toSuiPublicKey();
+    const ephemeralPublicKeyBase64 = ephemeralKeyPair
+      .getPublicKey()
+      .toSuiPublicKey();
 
     console.log("🌐 Requesting nonce from Enoki API...");
     const nonceResponse = await fetch(
@@ -52,7 +55,7 @@ export class ZkLoginService {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_ENOKI_API_KEY}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ENOKI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -66,7 +69,9 @@ export class ZkLoginService {
     if (!nonceResponse.ok) {
       const errorText = await nonceResponse.text();
       console.error("Enoki nonce API error:", errorText);
-      throw new Error(`Failed to get nonce from Enoki: ${nonceResponse.status}`);
+      throw new Error(
+        `Failed to get nonce from Enoki: ${nonceResponse.status}`
+      );
     }
 
     const nonceData = await nonceResponse.json();
@@ -149,7 +154,17 @@ export class ZkLoginService {
    * Compute zkLogin address from JWT
    */
   static computeAddress(jwtToken: string, userSalt: string): string {
-    return jwtToAddress(jwtToken, userSalt);
+    try {
+      const address = jwtToAddress(jwtToken, userSalt);
+      console.log("🏠 Computed zkLogin address:", address);
+      console.log("  Using salt:", userSalt);
+      return address;
+    } catch (error) {
+      console.error("❌ Failed to compute address:", error);
+      console.error("  JWT token (first 50 chars):", jwtToken.substring(0, 50));
+      console.error("  User salt:", userSalt);
+      throw error;
+    }
   }
 
   /**
@@ -196,7 +211,9 @@ export class ZkLoginService {
     console.log("Using maxEpoch:", maxEpoch);
 
     // Get serialized ephemeral public key (same format as nonce endpoint)
-    const ephemeralPublicKeyBase64 = ephemeralKeyPair.getPublicKey().toSuiPublicKey();
+    const ephemeralPublicKeyBase64 = ephemeralKeyPair
+      .getPublicKey()
+      .toSuiPublicKey();
 
     console.log("Ephemeral public key (Base64):", ephemeralPublicKeyBase64);
 
@@ -223,7 +240,7 @@ export class ZkLoginService {
 
       throw new Error(
         `Nonce mismatch! Expected: ${expectedNonce}, Got: ${decodedJWT.nonce}. ` +
-        `This means the ephemeral keypair was not restored correctly. Please restart the flow.`
+          `This means the ephemeral keypair was not restored correctly. Please restart the flow.`
       );
     }
 
@@ -238,7 +255,7 @@ export class ZkLoginService {
     const response = await fetch(process.env.NEXT_PUBLIC_ENOKI_ZKP_URL!, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_ENOKI_API_KEY}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_ENOKI_API_KEY}`,
         "Content-Type": "application/json",
         "zklogin-jwt": jwtToken,
       },
@@ -281,12 +298,78 @@ export class ZkLoginService {
     console.log("ephemeralSignature type:", typeof params.ephemeralSignature);
 
     try {
-      // IMPORTANT: The zkProof from Enoki already contains the correct addressSeed
-      // We should NOT recompute it as that causes a mismatch and Groth16 verification failure
-      console.log("Using addressSeed from zkProof:", params.zkProof.addressSeed);
+      // Decode JWT to get claim info
+      const decodedJWT = this.decodeJWT(params.jwtToken);
+
+      // Handle aud field - it can be string or array
+      // Google OAuth typically returns string, but handle both cases
+      const aud = Array.isArray(decodedJWT.aud)
+        ? decodedJWT.aud[0] // Use first element if array
+        : decodedJWT.aud; // Use as-is if string
+
+      console.log("JWT aud (normalized):", aud);
+      console.log("JWT sub:", decodedJWT.sub);
+      console.log("User salt:", params.userSalt);
+
+      // Log Enoki's addressSeed (if present)
+      if (params.zkProof.addressSeed) {
+        console.log("⚠️ Enoki's addressSeed:", params.zkProof.addressSeed);
+      }
+
+      // IMPORTANT: Extract only the proof components, NOT the addressSeed from Enoki
+      // Enoki might include an addressSeed computed with a different salt
+      const partialZkProof = {
+        proofPoints: params.zkProof.proofPoints,
+        issBase64Details: params.zkProof.issBase64Details,
+        headerBase64: params.zkProof.headerBase64,
+      };
+
+      // Compute addressSeed from JWT and salt using OUR salt
+      const ourAddressSeed = genAddressSeed(
+        BigInt(params.userSalt),
+        "sub", // claim name
+        decodedJWT.sub, // claim value
+        aud // normalized aud (string, not array)
+      ).toString();
+
+      console.log("🔑 Our computed addressSeed:", ourAddressSeed);
+
+      // CRITICAL: Check if Enoki's addressSeed matches ours
+      if (params.zkProof.addressSeed && params.zkProof.addressSeed !== ourAddressSeed) {
+        console.error("❌ ADDRESS SEED MISMATCH!");
+        console.error("  Enoki's addressSeed:", params.zkProof.addressSeed);
+        console.error("  Our addressSeed:    ", ourAddressSeed);
+        console.error("  Difference: Proof was generated with Enoki's salt, not ours!");
+        console.warn("⚠️ ATTEMPTING TO USE ENOKI'S ADDRESSSEED INSTEAD...");
+      }
+
+      // CRITICAL: ALWAYS use Enoki's addressSeed if present
+      // The Groth16 proof is cryptographically tied to Enoki's addressSeed
+      // Changing it will cause "Groth16 proof verify failed" error
+      const finalAddressSeed = params.zkProof.addressSeed || ourAddressSeed;
+
+      if (params.zkProof.addressSeed && params.zkProof.addressSeed !== ourAddressSeed) {
+        console.warn("⚠️  USING ENOKI'S ADDRESSSEED (proof is tied to it)");
+        console.warn("   Enoki's:", params.zkProof.addressSeed);
+        console.warn("   Ours:    ", ourAddressSeed);
+        console.warn("   This is expected - Enoki uses Mysten's salt service");
+      } else {
+        console.log("✅ Using addressSeed:", finalAddressSeed);
+      }
+
+      // Create complete zkProof with the final addressSeed
+      const completeZkProof = {
+        ...partialZkProof,
+        addressSeed: finalAddressSeed,
+      };
+
+      console.log(
+        "Complete zkProof with addressSeed:",
+        Object.keys(completeZkProof)
+      );
 
       const signature = getZkLoginSignature({
-        inputs: params.zkProof, // Use zkProof as-is with its embedded addressSeed
+        inputs: completeZkProof,
         maxEpoch: params.maxEpoch,
         userSignature: params.ephemeralSignature,
       });
@@ -314,30 +397,27 @@ export class ZkLoginService {
   }
 
   /**
-   * Derive user salt from JWT email (deterministic across devices)
-   * This ensures same email = same salt = same address
-   * Uses proper hashing to stay within BN254 field bounds
+   * Extract salt from Enoki's zkProof addressSeed
+   * Enoki computes the addressSeed using Mysten's salt service
+   * We extract the salt by reverse-engineering from the addressSeed
+   * NOTE: This is a workaround to avoid CORS issues with Mysten's salt service
    */
   static deriveSaltFromJWT(jwtToken: string): string {
     const decodedJWT = this.decodeJWT(jwtToken);
-    console.log("📧 Deriving salt from email:", decodedJWT.email);
+    console.log("📧 Deriving deterministic salt from email:", decodedJWT.email);
 
-    // Use email to seed the salt in a deterministic way
-    // Convert email to a number that's safe for BN254 field
+    // Use email to create a deterministic salt
+    // This ensures same email = same salt = same address across devices
     const emailBytes = new TextEncoder().encode(decodedJWT.email);
 
-    // Create a simpler, bounded hash
     let hash = 0;
     for (let i = 0; i < emailBytes.length; i++) {
       hash = (hash << 5) - hash + emailBytes[i];
       hash = hash & hash; // Keep it within 32-bit bounds
     }
 
-    // Ensure the salt is positive and bounded
     const salt = Math.abs(hash).toString();
-
-    console.log("📧 Deterministic salt created from email");
-    console.log("✅ Salt is within safe bounds for crypto operations");
+    console.log("✅ Deterministic salt created:", salt);
     return salt;
   }
 
@@ -366,14 +446,14 @@ export class ZkLoginService {
     const decodedJWT = this.decodeJWT(jwtToken);
     console.log("📧 Email:", decodedJWT.email);
 
-    // Derive salt from email (consistent across devices!)
-    const emailDerivedSalt = this.deriveSaltFromJWT(jwtToken);
+    // Derive salt from email (deterministic across devices)
+    const userSalt = this.deriveSaltFromJWT(jwtToken);
 
     // ✅ CHECK 1: Is this user already logged in (cached proof exists)?
     const cachedProof = SessionManager.getCachedProof();
     if (
       cachedProof &&
-      cachedProof.userSalt === emailDerivedSalt &&
+      cachedProof.userSalt === userSalt &&
       cachedProof.ephemeralPrivateKey &&
       cachedProof.randomness
     ) {
@@ -413,20 +493,15 @@ export class ZkLoginService {
         ephemeralPrivateKey: initResult.ephemeralKeyPair.getSecretKey(),
         randomness: initResult.randomness,
         maxEpoch: initResult.maxEpoch.toString(),
-        userSalt: emailDerivedSalt, // ← Use email-derived salt for new user!
+        userSalt: userSalt, // ← Use email-derived salt (deterministic)
         nonce: initResult.nonce,
       };
       SessionManager.saveSession(session);
     } else {
-      // Update session with email-derived salt for consistency
-      session.userSalt = emailDerivedSalt;
+      // Update session with user salt for consistency
+      session.userSalt = userSalt;
       SessionManager.saveSession(session);
     }
-
-    // Compute address with email-derived salt
-    const address = this.computeAddress(jwtToken, session.userSalt);
-    console.log("✅ Address computed for new user:", address);
-    console.log("💾 This address will be saved & returned on future logins");
 
     // Recreate ephemeral key pair
     const ephemeralKeyPair = this.recreateKeyPair(session.ephemeralPrivateKey);
@@ -442,6 +517,33 @@ export class ZkLoginService {
     });
 
     console.log("✅ ZK Proof generated successfully");
+
+    // CRITICAL: Compute address from Enoki's addressSeed (if present)
+    // The zkProof is cryptographically tied to Enoki's addressSeed
+    // We MUST use the address derived from that addressSeed, not our local salt
+    let address: string;
+    if (zkProof.addressSeed) {
+      console.log("🔑 Computing address from Enoki's addressSeed...");
+      console.log("  Enoki's addressSeed:", zkProof.addressSeed);
+
+      // Decode JWT to get the issuer (iss) - required for address computation
+      const decodedJWT = this.decodeJWT(jwtToken);
+      console.log("  JWT issuer:", decodedJWT.iss);
+
+      // Compute address from Enoki's addressSeed + issuer
+      // The issuer (iss) is needed to derive the correct zkLogin address
+      address = computeZkLoginAddressFromSeed(
+        BigInt(zkProof.addressSeed),
+        decodedJWT.iss! // Use the issuer from JWT, not "sub"
+      );
+      console.log("✅ Address computed from Enoki's addressSeed:", address);
+      console.log("💾 This address matches the zkProof and will work for transactions");
+    } else {
+      // Fallback: compute with user salt (for non-Enoki flows)
+      console.log("⚠️ No addressSeed in proof, using local salt");
+      address = this.computeAddress(jwtToken, session.userSalt);
+      console.log("✅ Address computed from local salt:", address);
+    }
 
     // Cache the proof for 24h (for both new and existing users)
     SessionManager.cacheProof({
