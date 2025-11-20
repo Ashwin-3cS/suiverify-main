@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, Globe, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { colors } from '@/app/brand';
+import { Button } from '@/components/ui/button';
 
 interface Country {
   code: string;
@@ -49,58 +50,54 @@ const CountrySelectionStep: React.FC<CountrySelectionStepProps> = ({ onNext, onB
         <button 
           type="button" 
           onClick={onBack} 
-          className="p-2 rounded-full transition-colors"
-          style={{ backgroundColor: `${colors.primary}20` }}
+          className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          Select Your Country
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">Select Your Country</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">Choose where your document was issued</p>
+        </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="text-center mb-8">
-          <Globe className="w-16 h-16 mx-auto mb-4" style={{ color: colors.primary }} />
-          <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>
+      <div className="space-y-6 mt-8">
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+            <Globe className="w-10 h-10 text-primary" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2 text-charcoal-text">
             Choose your document issuing country
           </h3>
-          <p className="text-sm" style={{ color: colors.lightBlue }}>
+          <p className="text-sm text-charcoal-text/70">
             Select the country that issued your government documents
           </p>
         </div>
 
         {/* Country Dropdown */}
         <div className="relative">
-          <label className="block text-sm font-medium mb-2" style={{ color: colors.primary }}>
+          <label className="block text-sm font-semibold mb-3 text-charcoal-text">
             Country
           </label>
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full px-4 py-3 rounded-xl border text-left flex items-center justify-between transition-colors"
-            style={{ 
-              backgroundColor: `${colors.primary}05`, 
-              borderColor: `${colors.primary}30`,
-              color: colors.white
-            }}
+            className="w-full px-4 py-3.5 rounded-lg border-2 border-primary/30 bg-white text-left flex items-center justify-between transition-all hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <div className="flex items-center gap-3">
               {selectedCountry ? (
                 <>
                   <span className="text-2xl">{selectedCountry.flag}</span>
-                  <span>{selectedCountry.name}</span>
+                  <span className="text-charcoal-text font-medium">{selectedCountry.name}</span>
                 </>
               ) : (
                 <>
-                  <Globe className="w-5 h-5" style={{ color: colors.lightBlue }} />
-                  <span style={{ color: colors.lightBlue }}>Select a country</span>
+                  <Globe className="w-5 h-5 text-charcoal-text/40" />
+                  <span className="text-charcoal-text/60">Select a country</span>
                 </>
               )}
             </div>
             <ChevronDown 
-              className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-              style={{ color: colors.primary }}
+              className={`w-5 h-5 transition-transform text-primary ${isDropdownOpen ? 'rotate-180' : ''}`}
             />
           </button>
 
@@ -110,22 +107,18 @@ const CountrySelectionStep: React.FC<CountrySelectionStepProps> = ({ onNext, onB
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute top-full left-0 right-0 mt-2 rounded-xl border shadow-lg z-50 max-h-60 overflow-y-auto"
-              style={{ 
-                backgroundColor: colors.darkNavy, 
-                borderColor: `${colors.primary}30`
-              }}
+              className="absolute top-full left-0 right-0 mt-2 rounded-lg border-2 border-primary/20 bg-white shadow-lg z-50 max-h-60 overflow-y-auto"
             >
               {COUNTRIES.map((country) => (
                 <button
                   key={country.code}
                   type="button"
                   onClick={() => handleCountrySelect(country)}
-                  className="w-full px-4 py-3 text-left flex items-center gap-3 hover:opacity-80 transition-colors first:rounded-t-xl last:rounded-b-xl"
-                  style={{ 
-                    backgroundColor: selectedCountry?.code === country.code ? `${colors.primary}20` : 'transparent',
-                    color: colors.white
-                  }}
+                  className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                    selectedCountry?.code === country.code 
+                      ? 'bg-primary/10 text-charcoal-text font-medium' 
+                      : 'text-charcoal-text hover:bg-ghost-white'
+                  }`}
                 >
                   <span className="text-2xl">{country.flag}</span>
                   <span>{country.name}</span>
@@ -135,37 +128,17 @@ const CountrySelectionStep: React.FC<CountrySelectionStepProps> = ({ onNext, onB
           )}
         </div>
 
-        {/* Selected Country Preview */}
-        {selectedCountry && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl"
-            style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{selectedCountry.flag}</span>
-              <div>
-                <h4 className="font-semibold" style={{ color: colors.white }}>
-                  {selectedCountry.name}
-                </h4>
-                <p className="text-sm" style={{ color: colors.lightBlue }}>
-                  Documents from this country will be verified
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Continue Button */}
-        <button
+        <Button
           type="submit"
+          variant="primary"
           disabled={!selectedCountry}
-          className="w-full py-3 px-6 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-          style={{ background: colors.gradients.primary }}
+          className="w-full"
+          size="lg"
         >
           Continue
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Logo from "@/public/logo.svg";
+import { Button } from "@/components/ui/button";
 
 
 const LandingHeader = () => {
@@ -24,9 +25,9 @@ const LandingHeader = () => {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#howitworks" className="text-white hover:text-[#4DA2FF] font-semibold transition-colors">How It Works</a>
-            <a href="#features" className="text-white hover:text-[#4DA2FF] font-semibold transition-colors">Features</a>
-            <a href="https://suiverify.gitbook.io/suiverify/" target="_blank" className="text-white hover:text-[#4DA2FF] font-semibold transition-colors">Documentation</a>
+            <a href="#howitworks" className="text-white hover:text-primary font-semibold transition-colors">How It Works</a>
+            <a href="#features" className="text-white hover:text-primary font-semibold transition-colors">Features</a>
+            <a href="https://suiverify.gitbook.io/suiverify/" target="_blank" className="text-white hover:text-primary font-semibold transition-colors">Documentation</a>
           </div>
 
           {/* Right Side - Balance and Connect Wallet */}
@@ -41,9 +42,9 @@ const LandingHeader = () => {
             </div> */}
 
             {/* Connect Wallet Button */}
-            <button onClick={handleLaunchApp} className=" cursor-pointer bg-[#2d9eff] hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+            <Button onClick={handleLaunchApp} variant="primary">
               Launch App
-            </button>
+            </Button>
 
             {/* Mobile Menu Button */}
             <button className="md:hidden p-2">

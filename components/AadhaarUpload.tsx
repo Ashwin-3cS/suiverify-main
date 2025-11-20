@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, Upload, Camera, Check, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AadhaarUploadProps {
   onNext: (file: File) => void;
@@ -88,7 +89,7 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
         {/* Progress Indicator */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-[#00BFFF] rounded-full flex items-center justify-center text-white text-sm font-medium">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
               1
             </div>
             <div className="w-16 h-1 bg-gray-300 mx-2"></div>
@@ -107,21 +108,21 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
               <p className="text-gray-600 mb-6">Choose a file or take a photo</p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
+                <Button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 bg-[#00BFFF] text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+                  variant="primary"
                 >
                   <Upload className="w-5 h-5" />
                   Choose File
-                </button>
+                </Button>
                 
-                <button
+                <Button
                   onClick={openCamera}
-                  className="flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+                  variant="outline"
                 >
                   <Camera className="w-5 h-5" />
                   Take Photo
-                </button>
+                </Button>
               </div>
               
               <input
@@ -140,19 +141,19 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
                   alt="Aadhaar preview"
                   className="max-w-full max-h-64 rounded-lg border border-gray-300"
                 />
-                <div className="absolute top-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <div className="absolute top-2 right-2 w-8 h-8 bg-success rounded-full flex items-center justify-center">
                   <Check className="w-5 h-5 text-white" />
                 </div>
               </div>
               
-              <p className="text-green-600 mb-4">✓ Aadhaar card uploaded successfully</p>
+              <p className="text-success mb-4">✓ Aadhaar card uploaded successfully</p>
               
               <button
                 onClick={() => {
                   setUploadedFile(null);
                   setPreviewUrl(null);
                 }}
-                className="text-[#00BFFF] hover:text-blue-400 text-sm"
+                className="text-primary hover:text-primary-dark text-sm"
               >
                 Upload different image
               </button>
@@ -173,13 +174,14 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
                 className="hidden"
               ></canvas>
               <div className="flex gap-4">
-                <button
+                <Button
                   onClick={captureImage}
-                  className="flex-1 bg-[#00BFFF] text-white py-3 rounded-lg hover:bg-blue-600 transition-colors"
+                  variant="primary"
+                  className="flex-1"
                 >
                   Capture
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => {
                     setIsCameraOpen(false);
                     const video = videoRef.current;
@@ -188,10 +190,11 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
                       stream.getTracks().forEach((track) => track.stop());
                     }
                   }}
-                  className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition-colors"
+                  variant="outline"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -199,19 +202,21 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <button
+          <Button
             onClick={onBack}
-            className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors"
+            variant="outline"
+            className="flex-1"
           >
             Back
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSubmit}
+            variant="primary"
             disabled={!uploadedFile}
-            className="flex-1 bg-[#00BFFF] text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1"
           >
             Next: Face Verification
-          </button>
+          </Button>
         </div>
       </div>
     </div>

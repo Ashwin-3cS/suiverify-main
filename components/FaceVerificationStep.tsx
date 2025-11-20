@@ -122,26 +122,26 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
 
   return (
     <div className="w-full">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-8">
         <button 
           type="button" 
           onClick={onBack} 
-          className="p-2 rounded-full transition-colors"
-          style={{ backgroundColor: `${colors.primary}20` }}
+          className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          Face Verification
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">Face Verification</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">Verify your identity with a live photo</p>
+        </div>
       </div>
 
       <div className="space-y-6">
         {/* Error Display */}
         {error && (
-          <div className="p-4 rounded-2xl flex items-center gap-3" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-sm" style={{ color: colors.white }}>{error}</p>
+          <div className="p-4 rounded-lg flex items-center gap-3 bg-error/10 border border-error/30">
+            <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
+            <p className="text-sm text-charcoal-text">{error}</p>
           </div>
         )}
 
@@ -155,28 +155,30 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
           </div>
         )}
 
-        <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>Live Face Capture</h3>
-          <p className="text-sm mb-6" style={{ color: colors.lightBlue }}>Position your face in the center and take a clear photo</p>
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+            <Camera className="w-10 h-10 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold mb-2 text-charcoal-text">Live Face Capture</h3>
+          <p className="text-sm text-charcoal-text/70">Position your face in the center and take a clear photo</p>
         </div>
 
-        <div className="relative max-w-sm mx-auto mb-6">
+        <div className="relative max-w-md mx-auto mb-8">
           {!faceImage ? (
             <div className="relative">
               <Webcam
                 audio={false}
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
-                className="w-full rounded-2xl border-2"
-                style={{ borderColor: `${colors.primary}40` }}
+                className="w-full rounded-lg border-2 border-primary/30 shadow-lg"
                 videoConstraints={{
-                  width: 480,
-                  height: 360,
+                  width: 640,
+                  height: 480,
                   facingMode: "user"
                 }}
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-40 h-48 border-2 rounded-full opacity-50" style={{ borderColor: colors.primary }}></div>
+                <div className="w-48 h-60 border-2 border-primary rounded-full opacity-50"></div>
               </div>
             </div>
           ) : (
@@ -192,10 +194,10 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
                 }}
               />
               {isLoading && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-2xl">
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg backdrop-blur-sm">
                   <div className="text-center text-white">
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: colors.primary }} />
-                    <p className="text-sm">Verifying face...</p>
+                    <Loader2 className="w-10 h-10 animate-spin mx-auto mb-3 text-primary" />
+                    <p className="text-base font-medium">Verifying face...</p>
                   </div>
                 </div>
               )}
@@ -209,22 +211,22 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
         </div>
         <div className="flex gap-4">
           {!faceImage ? (
-            <button
+            <Button
               onClick={capturePhoto}
+              variant="primary"
               disabled={isLoading}
-              className="flex-1 py-3 px-6 rounded-xl font-medium transition-colors text-white flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ background: colors.gradients.primary }}
+              className="flex-1"
             >
               <Camera className="w-5 h-5" />
               Take Photo
-            </button>
+            </Button>
           ) : (
             <>
-              <button
+              <Button
                 onClick={retakePhoto}
+                variant="outline"
                 disabled={isLoading}
-                className="flex-1 py-3 px-6 rounded-xl font-medium transition-colors text-white flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: colors.darkNavy, border: `1px solid ${colors.primary}40` }}
+                className="flex-1"
               >
                 <RotateCcw className="w-5 h-5" />
                 Retake
@@ -232,8 +234,8 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
               {faceResult?.verified && (
                 <button
                   onClick={onNext}
-                  className="flex-1 py-3 px-6 rounded-xl font-medium transition-colors text-white"
-                  style={{ background: colors.gradients.primary }}
+                  variant="success"
+                  className="flex-1"
                 >
                   Next: PAN Verification
                 </button>

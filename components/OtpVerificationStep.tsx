@@ -4,6 +4,7 @@ import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { useCurrentAccount } from '@mysten/dapp-kit';
+import { Button } from '@/components/ui/button';
 
 interface AadhaarData {
   name?: string;
@@ -140,8 +141,8 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
           localStorage.setItem('userData', JSON.stringify(result.data.user_data));
 
           // Show success toast for database save
-          toast.success('🎉 Verification completed! Your data has been saved successfully.', {
-            position: "top-right",
+          toast.success('Verification completed! Your data has been saved successfully.', {
+            position: "bottom-right",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -150,8 +151,8 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
           });
         } else {
           // Show success toast for OTP verification only
-          toast.success('✅ OTP verified successfully!', {
-            position: "top-right",
+          toast.success('OTP verified successfully!', {
+            position: "bottom-right",
             autoClose: 3000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -184,87 +185,95 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
 
   return (
     <div className="w-full">
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-8">
         <button 
           type="button" 
           onClick={onBack} 
-          className="p-2 rounded-full transition-colors"
-          style={{ backgroundColor: `${colors.primary}20` }}
+          className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          {step === 'generate' ? 'Generate OTP' : 'Verify OTP'}
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">
+            {step === 'generate' ? 'Generate OTP' : 'Verify OTP'}
+          </h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">
+            {step === 'generate' ? 'Send verification code to your phone' : 'Enter the code sent to your phone'}
+          </p>
+        </div>
       </div>
 
       <div className="space-y-6">
         {/* Error Display */}
         {error && (
-          <div className="p-4 rounded-2xl flex items-center gap-3" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-sm" style={{ color: colors.white }}>{error}</p>
+          <div className="p-4 rounded-lg flex items-center gap-3 bg-error/10 border border-error/30">
+            <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
+            <p className="text-sm text-charcoal-text">{error}</p>
           </div>
         )}
 
         {/* Success Display */}
         {otpSent && (
-          <div className="p-4 rounded-2xl flex items-center gap-3" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #10b981` }}>
-            <CheckCircle className="w-5 h-5" style={{ color: '#10b981' }} />
-            <p className="text-sm" style={{ color: colors.white }}>OTP sent successfully to {phoneNumber}</p>
+          <div className="p-4 rounded-lg flex items-center gap-3 bg-success/10 border border-success/30">
+            <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+            <p className="text-sm text-charcoal-text font-medium">OTP sent successfully to {phoneNumber}</p>
           </div>
         )}
 
         {step === 'generate' ? (
           <div className="text-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: `${colors.primary}20` }}>
-              <Phone className="w-8 h-8" style={{ color: colors.primary }} />
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10">
+              <Phone className="w-10 h-10 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>Send OTP</h3>
-            <p className="mb-4" style={{ color: colors.lightBlue }}>
+            <h3 className="text-xl font-bold mb-3 text-charcoal-text">Send OTP</h3>
+            <p className="mb-2 text-charcoal-text/70">
               We&apos;ll send a 6-digit verification code to:
             </p>
-            <p className="text-lg font-semibold mb-6" style={{ color: colors.white }}>{phoneNumber}</p>
+            <div className="mb-8 p-4 rounded-lg bg-primary/10 border border-primary/30 inline-block">
+              <p className="text-lg font-bold text-charcoal-text">{phoneNumber}</p>
+            </div>
 
-            <button
+            <Button
               onClick={generateOtp}
+              variant="primary"
               disabled={isLoading}
-              className="w-full py-3 px-6 rounded-xl font-medium transition-colors text-white disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ background: colors.gradients.primary }}
+              className="w-full"
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Sending OTP...
+                </>
               ) : (
-                <Phone className="w-5 h-5" />
+                <>
+                  <Phone className="w-5 h-5" />
+                  Send OTP
+                </>
               )}
-              {isLoading ? 'Sending OTP...' : 'Send OTP'}
-            </button>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleOtpSubmit} className="space-y-6">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: `${colors.primary}20` }}>
-                <svg className="w-8 h-8" style={{ color: colors.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10">
+                <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>Enter Verification Code</h3>
-              <p className="text-sm mb-4" style={{ color: colors.lightBlue }}>We&apos;ve sent a 6-digit code to {phoneNumber}</p>
+              <h3 className="text-xl font-bold mb-2 text-charcoal-text">Enter Verification Code</h3>
+              <p className="text-sm mb-2 text-charcoal-text/70">We&apos;ve sent a 6-digit code to</p>
+              <p className="text-base font-semibold mb-6 text-charcoal-text">{phoneNumber}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: colors.white }}>
-                6-Digit OTP<span className="text-red-400">*</span>
+              <label className="block text-sm font-semibold mb-3 text-charcoal-text">
+                6-Digit OTP <span className="text-error">*</span>
               </label>
               <input
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full px-4 py-3 rounded-xl text-center text-2xl font-mono tracking-widest text-white placeholder-gray-400 focus:ring-2 focus:ring-opacity-50"
-                style={{ 
-                  backgroundColor: `${colors.primary}10`,
-                  border: `1px solid ${colors.primary}40`,
-                }}
+                className="w-full px-4 py-4 rounded-lg text-center text-3xl font-mono tracking-[0.5em] text-charcoal-text placeholder-charcoal-text/30 bg-white border-2 border-primary/30 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 placeholder="000000"
                 maxLength={6}
                 required
@@ -272,41 +281,42 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
             </div>
 
             {/* Show verification type info */}
-            <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-              <p className="text-sm" style={{ color: colors.white }}>
-                <strong>Verification Type:</strong> {verificationType === 'above18' ? 'Above 18 Verification' : 'Citizenship Application'}
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+              <p className="text-sm font-semibold mb-1 text-charcoal-text">
+                Verification Type: <span className="text-primary">{verificationType === 'above18' ? 'Above 18 Verification' : 'Citizenship Application'}</span>
               </p>
-              <p className="text-xs mt-1" style={{ color: colors.lightBlue }}>
+              <p className="text-xs text-charcoal-text/60">
                 DID will be automatically set to {getDid()} for this verification type
               </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={otp.length !== 6 || isLoading}
-              className="w-full py-3 px-6 rounded-xl font-medium transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ background: colors.gradients.primary }}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                'Verify & Complete'
-              )}
-            </button>
-
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={generateOtp}
-                disabled={isLoading}
-                className="text-sm disabled:opacity-50 hover:opacity-80 transition-opacity"
-                style={{ color: colors.primary }}
+            <div className="space-y-3">
+              <Button
+                type="submit"
+                variant="success"
+                disabled={otp.length !== 6 || isLoading}
+                className="w-full"
               >
-                Didn&apos;t receive code? Resend
-              </button>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  'Verify & Complete'
+                )}
+              </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={generateOtp}
+                  disabled={isLoading}
+                  className="text-sm font-medium text-primary hover:text-primary-dark disabled:opacity-50 transition-colors"
+                >
+                  Didn&apos;t receive code? Resend
+                </button>
+              </div>
             </div>
           </form>
         )}

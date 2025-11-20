@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 // import { useCurrentAccount } from '@mysten/dapp-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { startEventListener, setVerificationCallback, stopEventListener, type VerificationCompletedEventData } from '@/services/eventListener';
+import { toast } from 'react-toastify';
 
 export interface VerificationStatus {
     isListening: boolean;
@@ -55,10 +56,19 @@ export const useVerificationListener = () => {
                 setVerificationStatus(prev => ({
                     ...prev,
                     isVerified: false,
-                    verificationMessage: '❌ Verification rejected from event listener',
+                    verificationMessage: 'Verification rejected from event listener',
                     userDidId: eventData.user_did_id,
                     eventData: eventData
                 }));
+                
+                toast.error('Verification was rejected. Please try again or contact support.', {
+                    position: "bottom-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
             }
         } else {
             console.log(`ℹ️ Event for different user, ignoring`);

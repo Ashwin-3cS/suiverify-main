@@ -10,6 +10,7 @@ import { ZkLoginService } from '@/lib/zklogin';
 import { SessionManager } from '@/lib/session-manager';
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
+import { Award, ExternalLink } from 'lucide-react';
 import LightRays from '@/components/ui/lightRays';
 import CountrySelectionStep from '@/components/CountrySelectionStep';
 import DocumentTypeSelectionStep from '@/components/DocumentTypeSelectionStep';
@@ -24,6 +25,10 @@ import { credentialService } from '@/services/credentialService';
 import { NFTClaimSuccessModal } from '@/components/NFTClaimSuccess';
 import { colors } from '@/app/brand';
 import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
+import StepIndicator from '@/components/ui/StepIndicator';
+import { Button } from '@/components/ui/button';
+import { toast } from 'react-toastify';
+import DashboardHeader from '@/components/ui/DashboardHeader';
 
 interface Country {
   code: string;
@@ -138,12 +143,66 @@ function KycPage() {
     }
   };
 
+  // Reset verification state when starting a new verification (step is 'country')
+  useEffect(() => {
+    if (step === 'country') {
+      // Stop the event listener to prevent old events from triggering toasts
+      stopListening();
+      resetVerification();
+      setOtpVerified(false);
+      setEncryptionResult(null);
+      setUserDidId(null);
+    }
+  }, [step, resetVerification, stopListening]);
+
+  // Check wallet connection on mount and when account changes
+  useEffect(() => {
+    // If wallet disconnects while in verification flow, reset to country selection
+    if (!currentAccount?.address && step !== 'country') {
+      toast.error('Please connect wallet to continue verification', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setStep('country');
+    }
+  }, [currentAccount?.address, step]);
+
   const handleCountrySelect = (country: Country) => {
+    // Check wallet connection before proceeding
+    if (!currentAccount?.address) {
+      toast.error('Please connect wallet', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+    
     setSelectedCountry(country);
     setStep('document-type');
   };
 
   const handleDocumentTypeSelect = (documentType: DocumentType) => {
+    // Check wallet connection before proceeding
+    if (!currentAccount?.address) {
+      toast.error('Please connect wallet', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+    
     setSelectedDocumentType(documentType);
     if (documentType.id === 'aadhaar') {
       setStep('aadhaar');
@@ -175,11 +234,27 @@ function KycPage() {
 
         setStep('completed');
       } else {
-        console.error('❌ Encryption failed:', result.error);
+        console.error('Encryption failed:', result.error);
+        toast.error('Document encryption failed. Please try again.', {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
         setStep('error');
       }
     } catch (error) {
-      console.error('❌ Unexpected error during encryption:', error);
+      console.error('Unexpected error during encryption:', error);
+      toast.error('An unexpected error occurred. Please try again.', {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       setStep('error');
     }
   }, [zkLoginAddress]);
@@ -229,8 +304,9 @@ function KycPage() {
   }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, zkLoginAddress, encryptAndUploadDocument, aadhaarData, panData]);
 
   // Handle successful verification from event listener
+  // Only process if we're in the waiting step (after OTP/PAN verification)
   useEffect(() => {
-    if (verificationStatus.isVerified && otpVerified) {
+    if (verificationStatus.isVerified && otpVerified && step === 'waiting') {
       // Store the UserDID object ID from the verification event
       if (verificationStatus.userDidId) {
         setUserDidId(verificationStatus.userDidId);
@@ -253,7 +329,7 @@ function KycPage() {
       // Start document encryption and upload process
       handleDocumentEncryption();
     }
-  }, [verificationStatus.isVerified, otpVerified, verificationStatus.userDidId, verificationStatus.eventData, handleDocumentEncryption]);
+  }, [verificationStatus.isVerified, otpVerified, step, verificationStatus.userDidId, verificationStatus.eventData, handleDocumentEncryption]);
 
   // NFT Claiming function - using zkLogin
   const claimDidNft = async () => {
@@ -427,31 +503,49 @@ function KycPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ backgroundColor: colors.darkerNavy }}>
-      {/* LightRays Background */}
-      <div className="fixed inset-0 z-0">
-        <LightRays raysColor={colors.primary} />
+    <div className="relative min-h-screen overflow-hidden bg-ghost-white outfit">
+      {/* Blob Animations Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+      </div>
+      
+      {/* Subtle gradient overlay for depth */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
+      
+      {/* Subtle pattern overlay */}
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }}
+      ></div>
+
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-ghost-white/90 backdrop-blur-md border-b border-primary/20 shadow-sm">
+        <DashboardHeader />
       </div>
 
       {/* Main Content Container */}
       <div className="relative z-10 min-h-screen">
         {/* Hero Section */}
-        <div className="flex items-center justify-center min-h-screen px-6">
-          <div className="text-center max-w-4xl mx-auto my-16 ">
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-6 py-8">
+          <div className="text-center max-w-5xl mx-auto w-full">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="mb-8"
+              className="mb-6"
             >
               <motion.h1
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-4xl md:text-6xl font-bold mb-4 "
+                className="text-3xl md:text-5xl font-bold mb-3"
               >
-                <motion.span style={{ color: colors.primary }}>Identity</motion.span>
-                <motion.span style={{ color: colors.white }}> Verification</motion.span>
+                <p className=' bg-primary text-white p-4 rounded-lg w-fit mx-auto'>Identity Verification</p>
               </motion.h1>
 
               {/* <motion.p
@@ -467,9 +561,8 @@ function KycPage() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="text-lg max-w-2xl mx-auto mb-8"
-                style={{ color: colors.lightBlue }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-base md:text-lg max-w-2xl mx-auto mb-6 text-charcoal-text/70"
               >
                 {verificationDescription}
               </motion.p>
@@ -480,8 +573,7 @@ function KycPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border max-w-2xl mx-auto"
-              style={{ borderColor: `${colors.primary}30` }}
+              className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary/20 max-w-4xl mx-auto"
             >
               {step === 'country' && (
                 <motion.div

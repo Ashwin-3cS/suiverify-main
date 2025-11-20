@@ -4,10 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { motion } from 'framer-motion';
-// import DashboardLayout from '../components/DashboardLayout';
-// import LightRays from '../components/ui/lightRays';
 import { credentialService, type CredentialData, type CredentialStats } from '@/services/credentialService';
-import { Shield, FileText, CheckCircle, Clock, AlertCircle, Calendar, Users } from 'lucide-react';
+import { Shield, FileText, CheckCircle, Clock, AlertCircle, Calendar, Users, TrendingUp, ArrowRight, Search } from 'lucide-react';
 import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';
 import ZkLoginTransactionTest from '@/components/zklogin/ZkLoginTransactionTest';
@@ -15,7 +13,6 @@ import ZkLoginTransactionTest from '@/components/zklogin/ZkLoginTransactionTest'
 const User: React.FC = () => {
     const router = useRouter();
     const currentAccount = useCurrentAccount();
-    // const [activeFilter, setActiveFilter] = useState('Active');
     const [activeNav, setActiveNav] = useState('verifications');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -30,24 +27,38 @@ const User: React.FC = () => {
         {
             id: 1,
             title: 'Verify Above 18',
-            description: 'Verify your age using Aadhaar document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
+            description: 'Verify your age using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
             icon: Calendar,
             status: 'not_verified',
-            delay: 0.1
+            delay: 0.1,
+            color: 'primary'
         },
         {
             id: 2,
             title: 'Citizenship Verification',
-            description: 'Verify your citizenship status. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
+            description: 'Verify your citizenship status using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
             icon: Users,
             status: 'not_verified',
-            delay: 0.2
+            delay: 0.2,
+            color: 'secondary'
         },
     ];
 
     const handleVerificationClick = (verificationType: string, verificationDescription: string) => {
+        // Check if wallet is connected before starting verification
+        if (!currentAccount?.address) {
+            toast.error('Please connect wallet', {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+            return;
+        }
+        
         // Redirect to KYC page for verification with type and description
-        // In Next.js, we can pass data through URL params or use a global state management solution
         router.push(`/kyc?type=${encodeURIComponent(verificationType)}&description=${encodeURIComponent(verificationDescription)}`);
     };
 
@@ -77,113 +88,98 @@ const User: React.FC = () => {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'verified':
-                return <CheckCircle className="w-5 h-5" style={{ color: colors.primary }} />;
+                return <CheckCircle className="w-5 h-5 text-success" />;
             case 'pending':
-                return <Clock className="w-5 h-5" style={{ color: colors.lightBlue }} />;
+                return <Clock className="w-5 h-5 text-warning" />;
             case 'expired':
-                return <AlertCircle className="w-5 h-5 text-red-500" />;
+                return <AlertCircle className="w-5 h-5 text-error" />;
             default:
-                return <Clock className="w-5 h-5 text-gray-500" />;
+                return <Clock className="w-5 h-5 text-charcoal-text/40" />;
         }
     };
 
+    const verificationPercentage = stats.total > 0 ? Math.round((stats.verified / stats.total) * 100) : 0;
+
     return (
-        <div className="w-full" style={{ backgroundColor: colors.darkerNavy, position: 'relative', minHeight: '100vh' }}>
-            {/* Grid Pattern Background */}
-            <div
-                className="fixed inset-0 z-0"
+        <div className="w-full bg-ghost-white outfit min-h-screen relative overflow-hidden">
+            {/* Blob Animations Background */}
+            <div className="fixed inset-0 z-0 overflow-hidden">
+                <div className="blob blob-1"></div>
+                <div className="blob blob-2"></div>
+                <div className="blob blob-3"></div>
+            </div>
+            
+            {/* Subtle gradient overlay for depth */}
+            <div className="fixed inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
+            
+            {/* Subtle pattern overlay */}
+            <div 
+                className="fixed inset-0 z-0 opacity-[0.02] pointer-events-none"
                 style={{
-                    backgroundImage: `
-            linear-gradient(to right, ${colors.primary}20 1px, transparent 1px),
-            linear-gradient(to bottom, ${colors.primary}20 1px, transparent 1px)
-          `,
-                    backgroundSize: "20px 30px",
-                    WebkitMaskImage:
-                        "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-                    maskImage:
-                        "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
+                    backgroundImage: `radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)`,
+                    backgroundSize: '40px 40px'
                 }}
-            />
+            ></div>
 
-            {/* Hero Section */}
-            <div className="relative h-screen flex flex-col pt-[10rem]">
-                <div className="absolute top-4 w-full z-50">
-                    <DashboardHeader />
-                </div>
+            {/* Header */}
+            <div className="sticky top-0 z-50 bg-ghost-white/90 backdrop-blur-md border-b border-primary/20 shadow-sm">
+                <DashboardHeader />
+            </div>
 
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center max-w-4xl mx-auto px-6">
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            <motion.h1
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.8, delay: 0.2 }}
-                                className="text-4xl md:text-6xl font-bold mb-4"
-                            >
-                                <motion.span style={{ color: colors.primary }}>Identity</motion.span>
-                                <motion.span style={{ color: colors.white }}> Dashboard</motion.span>
-                            </motion.h1>
-
-                            <motion.p
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.4 }}
-                                className="text-xl"
-                                style={{ color: colors.lightBlue }}
-                            >
-                                View and manage identities stored in your wallet
-                            </motion.p>
-                        </motion.div>
-                    </div>
-                </div>
-                {/* Main Content Section */}
-                <div className="relative z-10" style={{ backgroundColor: colors.darkerNavy, minHeight: '100vh' }}>
-                    <div className="max-w-5xl mx-auto px-6 pb-20">
-                        {/* Stats Cards */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 40 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.6 }}
-                            className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12 pt-4"
-                        >
-                            <motion.div
-                                whileHover={{ y: -5, scale: 1.02 }}
-                                className="relative p-6 rounded-3xl transition-all duration-300 overflow-hidden"
-                                style={{ backgroundColor: colors.darkNavy }}
-                            >
-                                <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at center, ${colors.primary} 0%, transparent 70%)` }}></div>
-                                <div className="relative z-10 flex items-center">
-                                    <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-                                        <CheckCircle className="w-6 h-6" style={{ color: colors.primary }} />
+            {/* Main Content */}
+            <div className="relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    {/* Hero Section with Stats */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="mb-12"
+                    >
+                        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
+                            <div>
+                                <h1 className="text-4xl md:text-5xl font-bold mb-3">
+                                    <span className="text-primary">Identity</span>
+                                    <span className="text-charcoal-text"> Dashboard</span>
+                                </h1>
+                                <p className="text-base text-charcoal-text/70 max-w-2xl">
+                                    Manage your verified identities and credentials in one secure place
+                                </p>
+                            </div>
+                            
+                            {/* Quick Stats */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
+                                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 sm:p-6 border-[3px] border-primary/30 shadow-[0.1em_0.1em]">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2 rounded-lg bg-primary/15">
+                                            <CheckCircle className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <p className="text-xs font-semibold text-charcoal-text/60 uppercase tracking-wider">Total</p>
                                     </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium" style={{ color: colors.lightBlue }}>Total Credentials</p>
-                                        <p className="text-2xl font-bold" style={{ color: colors.white }}>{loading ? '...' : stats.total}</p>
-                                    </div>
+                                    <p className="text-3xl font-bold text-charcoal-text">{loading ? '...' : stats.total}</p>
                                 </div>
-                            </motion.div>
-
-                            <motion.div
-                                whileHover={{ y: -5, scale: 1.02 }}
-                                className="relative p-6 rounded-3xl transition-all duration-300 overflow-hidden"
-                                style={{ backgroundColor: colors.darkNavy }}
-                            >
-                                <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at center, ${colors.primary} 0%, transparent 70%)` }}></div>
-                                <div className="relative z-10 flex items-center">
-                                    <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-                                        <Shield className="w-6 h-6" style={{ color: colors.primary }} />
+                                
+                                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 sm:p-6 border-[3px] border-secondary/30 shadow-[0.1em_0.1em]">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2 rounded-lg bg-secondary/15">
+                                            <Shield className="w-5 h-5 text-secondary" />
+                                        </div>
+                                        <p className="text-xs font-semibold text-charcoal-text/60 uppercase tracking-wider">Verified</p>
                                     </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium" style={{ color: colors.lightBlue }}>Verified Credentials</p>
-                                        <p className="text-2xl font-bold" style={{ color: colors.white }}>{loading ? '...' : stats.verified}</p>
-                                    </div>
+                                    <p className="text-3xl font-bold text-charcoal-text">{loading ? '...' : stats.verified}</p>
                                 </div>
-                            </motion.div>
-                        </motion.div>
+                                
+                                <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 sm:p-6 border-[3px] border-warning/30 shadow-[0.1em_0.1em]">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2 rounded-lg bg-warning/15">
+                                            <Clock className="w-5 h-5 text-warning" />
+                                        </div>
+                                        <p className="text-xs font-semibold text-charcoal-text/60 uppercase tracking-wider">Pending</p>
+                                    </div>
+                                    <p className="text-3xl font-bold text-charcoal-text">{loading ? '...' : stats.pending}</p>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Navigation Tabs */}
                         <motion.div
@@ -198,169 +194,136 @@ const User: React.FC = () => {
                                     <button
                                         key={tab}
                                         onClick={() => setActiveNav(tab)}
-                                        className={`flex-1 py-3 px-6 rounded-xl font-medium text-sm capitalize transition-all duration-300 ${activeNav === tab
-                                            ? 'text-white shadow-lg'
-                                            : 'text-gray-400 hover:text-white'
-                                            }`}
-                                        style={{
-                                            backgroundColor: activeNav === tab ? colors.primary : 'transparent'
-                                        }}
+                                        className={`px-8 py-3 rounded-xl font-bold text-sm capitalize transition-all duration-200 ${
+                                            activeNav === tab
+                                                ? 'text-white shadow-[0.1em_0.1em] bg-primary border-[3px] border-primary'
+                                                : 'text-charcoal-text/70 hover:text-charcoal-text bg-transparent hover:bg-primary/5'
+                                        }`}
                                     >
                                         {tab}
                                     </button>
                                 ))}
                             </nav>
+                        </div>
+                    </motion.div>
+
+                    {/* Verifications Section */}
+                    {activeNav === 'verifications' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-bold mb-2 text-charcoal-text">Identity Verifications</h2>
+                                <p className="text-base text-charcoal-text/70">Complete these verifications to unlock full platform access</p>
+                            </div>
+
+                            {/* Verification Cards - Side by Side with Better Design */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {verificationOptions.map((verification) => {
+                                    const IconComponent = verification.icon;
+                                    const isPrimary = verification.color === 'primary';
+                                    return (
+                                        <motion.div
+                                            key={verification.id}
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.4, delay: verification.delay }}
+                                            onClick={() => handleVerificationClick(verification.title, verification.description)}
+                                            className={`group relative overflow-hidden bg-gradient-to-br ${
+                                                isPrimary 
+                                                    ? 'from-primary/10 via-white to-primary/5 ' 
+                                                    : 'from-secondary/10 via-white to-secondary/5'
+                                            } backdrop-blur-sm rounded-2xl p-8 border-[3px] ${
+                                                isPrimary ? 'border-primary/30' : 'border-secondary/30'
+                                            } shadow-[0.1em_0.1em] hover:shadow-[0.2em_0.2em] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-300 cursor-pointer`}
+                                        >
+                                            {/* Decorative Background Element */}
+                                            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 ${
+                                                isPrimary ? 'bg-primary' : 'bg-secondary'
+                                            }`}></div>
+                                            
+                                            <div className="relative z-10">
+                                                {/* Icon and Badge */}
+                                                <div className="flex items-start justify-between mb-6">
+                                                    <div className={`p-4 rounded-2xl ${
+                                                        isPrimary ? 'bg-primary/20 border-2 border-primary/30' : 'bg-secondary/20 border-2 border-secondary/30'
+                                                    } group-hover:scale-110 transition-transform duration-300`}>
+                                                        <IconComponent className={`w-8 h-8 ${
+                                                            isPrimary ? 'text-primary' : 'text-secondary'
+                                                        }`} />
+                                                    </div>
+                                                    <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                                                        isPrimary 
+                                                            ? 'bg-primary/15 text-primary border border-primary/30' 
+                                                            : 'bg-secondary/15 text-secondary border border-secondary/30'
+                                                    }`}>
+                                                        Required
+                                                    </div>
+                                                </div>
+
+                                                {/* Content */}
+                                                <div>
+                                                    <h3 className={`text-2xl font-bold mb-3 text-charcoal-text group-hover:${
+                                                        isPrimary ? 'text-primary' : 'text-secondary'
+                                                    } transition-colors`}>
+                                                        {verification.title}
+                                                    </h3>
+                                                    <p className="text-sm text-charcoal-text/70 mb-6 leading-relaxed">
+                                                        {verification.description}
+                                                    </p>
+                                                    
+                                                    <Button
+                                                        variant={isPrimary ? "primary" : "secondary"}
+                                                        className="w-full mb-4 group/btn"
+                                                        size="lg"
+                                                    >
+                                                        Start Verification
+                                                        <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                                                    </Button>
+                                                    
+                                                    <div className="flex items-center justify-center text-xs text-charcoal-text/60">
+                                                        <span className="mr-2">Accepted by</span>
+                                                        <span className={`font-semibold ${
+                                                            isPrimary ? 'text-primary' : 'text-secondary'
+                                                        }`}>Alphafi</span>
+                                                        <span className="text-charcoal-text/40">•</span>
+                                                        <span className={`font-semibold ${
+                                                            isPrimary ? 'text-primary' : 'text-secondary'
+                                                        }`}>Suilend</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
                         </motion.div>
+                    )}
 
-                        {/* Verifications Section */}
-                        {activeNav === 'verifications' && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6 }}
-                            >
-                                <div className="mb-8">
-                                    <h2 className="text-2xl font-bold mb-2" style={{ color: colors.white }}>Identity Verifications</h2>
-                                    <p className="text-sm" style={{ color: colors.lightBlue }}>Complete these verifications to unlock full platform access</p>
+                    {/* Credentials Section */}
+                    {activeNav === 'credentials' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8">
+                                <div>
+                                    <h2 className="text-3xl font-bold mb-2 text-charcoal-text">Your Credentials</h2>
+                                    <p className="text-base text-charcoal-text/70">View and manage credentials stored in your identity wallet</p>
                                 </div>
-
-                                {/* Verification Cards */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {verificationOptions.map((verification) => {
-                                        const IconComponent = verification.icon;
-                                        return (
-                                            <motion.div
-                                                key={verification.id}
-                                                initial={{ opacity: 0, y: 50, rotateX: -15 }}
-                                                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                                                transition={{ duration: 0.8, delay: verification.delay, type: "spring", stiffness: 100 }}
-                                                whileHover={{
-                                                    y: -12,
-                                                    rotateX: 5,
-                                                    transition: { duration: 0.3 }
-                                                }}
-                                                onClick={() => handleVerificationClick(verification.title, verification.description)}
-                                                className="group relative overflow-hidden rounded-3xl p-8 transition-all duration-500 transform-gpu cursor-pointer"
-                                                style={{
-                                                    background: `linear-gradient(135deg, ${colors.darkNavy} 0%, ${colors.darkerNavy} 100%)`,
-                                                    border: `1px solid ${colors.primary}40`
-                                                }}
-                                            >
-                                                {/* Animated Background Gradient */}
-                                                <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-                                                    style={{
-                                                        background: `radial-gradient(circle at 50% 50%, ${colors.primary}60 0%, transparent 70%)`
-                                                    }}></div>
-
-                                                {/* Floating Particles Effect */}
-                                                <div className="absolute inset-0 overflow-hidden">
-                                                    {[...Array(4)].map((_, i) => (
-                                                        <motion.div
-                                                            key={i}
-                                                            className="absolute w-1 h-1 rounded-full opacity-30"
-                                                            style={{
-                                                                backgroundColor: colors.primary, left: `${20 + i * 20}%`,
-                                                                top: `${30 + i * 10}%`
-                                                            }}
-                                                            animate={{
-                                                                x: [0, 100, 0],
-                                                                y: [0, -50, 0],
-                                                                opacity: [0.3, 0.8, 0.3],
-                                                                scale: [0.5, 1.2, 0.5]
-                                                            }}
-                                                            transition={{
-                                                                duration: 4 + i * 0.5,
-                                                                repeat: Infinity,
-                                                                delay: i * 0.3,
-                                                                ease: "easeInOut"
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </div>
-
-                                                <div className="relative z-10">
-                                                    {/* Icon with Glow Effect */}
-                                                    <motion.div
-                                                        initial={{ scale: 0, rotate: -180 }}
-                                                        whileInView={{ scale: 1, rotate: 0 }}
-                                                        transition={{ duration: 0.8, delay: verification.delay + 0.2, type: "spring", stiffness: 150 }}
-                                                        className="relative mb-6"
-                                                    >
-                                                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto relative overflow-hidden"
-                                                            style={{
-                                                                background: `linear-gradient(135deg, ${colors.primary}20, ${colors.primary}40)`,
-                                                                boxShadow: `0 0 30px ${colors.primary}40`
-                                                            }}>
-                                                            <motion.div
-                                                                className="absolute inset-0 rounded-2xl"
-                                                                style={{ background: `linear-gradient(135deg, ${colors.primary}60, transparent)` }}
-                                                                animate={{
-                                                                    opacity: [0.3, 0.8, 0.3],
-                                                                    scale: [1, 1.1, 1]
-                                                                }}
-                                                                transition={{
-                                                                    duration: 2,
-                                                                    repeat: Infinity,
-                                                                    ease: "easeInOut"
-                                                                }}
-                                                            />
-                                                            <div className="relative z-10" style={{ color: colors.primary }}>
-                                                                <IconComponent className="w-8 h-8" />
-                                                            </div>
-                                                        </div>
-                                                    </motion.div>
-
-                                                    {/* Content */}
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: 20 }}
-                                                        whileInView={{ opacity: 1, y: 0 }}
-                                                        transition={{ delay: verification.delay + 0.4, duration: 0.6 }}
-                                                    >
-                                                        <h3 className="text-xl font-bold mb-3 text-center bg-gradient-to-r bg-clip-text text-transparent"
-                                                            style={{
-                                                                backgroundImage: `linear-gradient(135deg, ${colors.white}, ${colors.lightBlue})`
-                                                            }}>
-                                                            {verification.title}
-                                                        </h3>
-                                                        <p className="text-sm leading-relaxed text-center opacity-80 mb-4" style={{ color: colors.lightBlue }}>
-                                                            {verification.description}
-                                                        </p>
-
-                                                        <motion.button
-                                                            whileHover={{ scale: 1.05 }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                            className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300"
-                                                            style={{
-                                                                background: colors.gradients.primary,
-                                                                color: colors.white
-                                                            }}
-                                                        >
-                                                            Start Verification
-                                                        </motion.button>
-                                                        <p className="text-xs text-center mt-3" style={{ color: colors.lightBlue, fontWeight: '500' }}>
-                                                            Accepted by <span style={{ color: colors.primary }}>Alphafi</span> and <span style={{ color: colors.primary }}>Suilend</span>
-                                                        </p>
-                                                    </motion.div>
-                                                </div>
-
-                                                <div className="absolute top-4 left-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-r-0 border-b-0 rounded-tl-lg" style={{ borderColor: colors.primary }}></div>
-                                                </div>
-                                                <div className="absolute top-4 right-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-l-0 border-b-0 rounded-tr-lg" style={{ borderColor: colors.primary }}></div>
-                                                </div>
-                                                <div className="absolute bottom-4 left-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-r-0 border-t-0 rounded-bl-lg" style={{ borderColor: colors.primary }}></div>
-                                                </div>
-                                                <div className="absolute bottom-4 right-4 w-8 h-8 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                                                    <div className="w-full h-full border-2 border-l-0 border-t-0 rounded-br-lg" style={{ borderColor: colors.primary }}></div>
-                                                </div>
-                                            </motion.div>
-                                        );
-                                    })}
+                                <div className="sm:w-80">
+                                    <input
+                                        type="text"
+                                        placeholder="Search credentials..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-[3px] border-primary/30 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-charcoal-text placeholder-charcoal-text/40 text-sm transition-all shadow-[0.1em_0.1em]"
+                                    />
                                 </div>
-                            </motion.div>
-                        )}
+                            </div>
 
                         {/* zkLogin Transaction Test Section */}
                         {activeNav === 'zkLogin' && (
@@ -391,113 +354,96 @@ const User: React.FC = () => {
                                         <p className="text-sm" style={{ color: colors.lightBlue }}>View and manage credentials stored in your identity wallet</p>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <input
-                                            type="text"
-                                            placeholder="Search credentials..."
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="px-4 py-2 bg-white/10 border rounded-lg focus:ring-2 focus:ring-opacity-50 text-white placeholder-gray-400 text-sm backdrop-blur-sm"
-                                            style={{
-                                                borderColor: `${colors.primary}40`
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Error Display */}
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 backdrop-blur-sm"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <AlertCircle className="w-5 h-5 text-red-400" />
-                                            <p className="text-red-200 font-medium">{error}</p>
+                                        <div className="p-3 rounded-xl bg-error/20">
+                                            <AlertCircle className="w-6 h-6 text-error" />
                                         </div>
-                                    </motion.div>
-                                )}
-
-                                {/* Loading State */}
-                                {loading && (
-                                    <div className="text-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: colors.primary }}></div>
-                                        <p style={{ color: colors.lightBlue }}>Loading credentials...</p>
+                                        <p className="text-charcoal-text font-semibold">{error}</p>
                                     </div>
-                                )}
+                                </motion.div>
+                            )}
 
-                                {/* Empty State */}
-                                {!loading && !error && credentials.length === 0 && (
-                                    <div className="text-center py-12">
-                                        <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: colors.lightBlue }} />
-                                        <p className="text-lg mb-2" style={{ color: colors.white }}>No credentials found</p>
-                                        <p className="text-sm" style={{ color: colors.lightBlue }}>Complete identity verifications to see your credentials here</p>
+                            {/* Loading State */}
+                            {loading && (
+                                <div className="text-center py-20">
+                                    <div className="relative mx-auto w-20 h-20 mb-6">
+                                        <div className="animate-spin rounded-full h-20 w-20 border-4 border-primary/20 border-t-primary"></div>
+                                        <div className="absolute inset-0 animate-ping rounded-full h-20 w-20 border-2 border-primary/30"></div>
                                     </div>
-                                )}
+                                    <p className="text-lg font-semibold text-charcoal-text">Loading credentials...</p>
+                                </div>
+                            )}
 
-                                {/* Credentials Grid */}
-                                {!loading && !error && credentials.length > 0 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {credentials.map((credential, index) => (
-                                            <motion.div
-                                                key={credential.id}
-                                                initial={{ opacity: 0, y: 30 }}
-                                                whileInView={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.6, delay: index * 0.1 }}
-                                                whileHover={{ y: -8, scale: 1.02 }}
-                                                className="group relative overflow-hidden rounded-3xl p-6 transition-all duration-300"
-                                                style={{
-                                                    backgroundColor: colors.darkNavy,
-                                                    border: `1px solid ${colors.primary}30`
-                                                }}
-                                            >
-                                                {/* Subtle Background Pattern */}
-                                                <div className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity duration-300"
-                                                    style={{ background: `radial-gradient(circle at center, ${colors.primary} 0%, transparent 70%)` }}></div>
+                            {/* Empty State */}
+                            {!loading && !error && credentials.length === 0 && (
+                                <div className="text-center py-20 bg-white/95 backdrop-blur-sm rounded-2xl p-16 border-[3px] border-primary/20 shadow-[0.1em_0.1em]">
+                                    <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                                        <FileText className="w-12 h-12 text-primary" />
+                                    </div>
+                                    <p className="text-2xl font-bold mb-3 text-charcoal-text">No credentials found</p>
+                                    <p className="text-base text-charcoal-text/70 mb-6">Complete identity verifications to see your credentials here</p>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => setActiveNav('verifications')}
+                                    >
+                                        Start Verification
+                                    </Button>
+                                </div>
+                            )}
 
-                                                <div className="relative z-10">
-                                                    <div className="flex items-start justify-between mb-4">
-                                                        <div>
-                                                            <h3 className="font-bold text-lg mb-1" style={{ color: colors.white }}>{credential.title}</h3>
-                                                            <p className="text-sm" style={{ color: colors.lightBlue }}>{credential.description}</p>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
+                            {/* Credentials Grid */}
+                            {!loading && !error && credentials.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {credentials.map((credential, index) => (
+                                        <motion.div
+                                            key={credential.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                                            whileHover={{ y: -6, scale: 1.02 }}
+                                            className="group relative overflow-hidden bg-gradient-to-br from-white to-primary/5 backdrop-blur-sm rounded-2xl p-6 border-[3px] border-primary/30 shadow-[0.1em_0.1em] hover:shadow-[0.2em_0.2em] transition-all duration-300"
+                                        >
+                                            {/* Decorative Corner */}
+                                            <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full"></div>
+                                            
+                                            <div className="relative z-10">
+                                                <div className="flex items-start justify-between mb-5">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            <h3 className="font-bold text-lg text-charcoal-text truncate">{credential.title}</h3>
                                                             {getStatusIcon(credential.status)}
                                                         </div>
-                                                    </div>
-
-                                                    <div className="mb-4">
-                                                        <p className="text-xs" style={{ color: colors.lightBlue }}>Exp: {credential.expiryDate}</p>
-                                                    </div>
-
-                                                    <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: `${colors.primary}20` }}>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="text-center">
-                                                                <div className="text-2xl font-bold" style={{ color: colors.primary }}>{index + 1}</div>
-                                                            </div>
-                                                            <div className="text-xs" style={{ color: colors.lightBlue }}>
-                                                                Issued on: {credential.issuedDate}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            {credential.type === 'nft' && (
-                                                                <span className="px-2 py-1 text-xs font-medium rounded"
-                                                                    style={{ backgroundColor: `${colors.primary}20`, color: colors.primary }}>NFT</span>
-                                                            )}
-                                                        </div>
+                                                        <p className="text-sm text-charcoal-text/70 line-clamp-2 leading-relaxed">{credential.description}</p>
                                                     </div>
                                                 </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                )}
-                            </motion.div>
-                        )}
-                    </div>
+
+                                                <div className="mb-5 p-4 rounded-xl bg-primary/10 border-2 border-primary/20">
+                                                    <p className="text-xs font-semibold text-charcoal-text/60 mb-1.5 uppercase tracking-wider">Expiry Date</p>
+                                                    <p className="text-lg font-bold text-charcoal-text">{credential.expiryDate}</p>
+                                                </div>
+
+                                                <div className="flex items-center justify-between pt-4 border-t-2 border-primary/20">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 rounded-xl bg-primary/15 border-2 border-primary/20 flex items-center justify-center">
+                                                            <span className="text-base font-bold text-primary">#{index + 1}</span>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-semibold text-charcoal-text/60 uppercase tracking-wider">Issued</p>
+                                                            <p className="text-sm font-medium text-charcoal-text">{credential.issuedDate}</p>
+                                                        </div>
+                                                    </div>
+                                                    {credential.type === 'nft' && (
+                                                        <span className="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary/15 text-primary border-2 border-primary/20">NFT</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
                 </div>
             </div>
-
-
         </div>
     );
 };

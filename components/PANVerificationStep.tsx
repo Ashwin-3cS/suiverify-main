@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 // import { useCurrentAccount } from '@mysten/dapp-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { Button } from '@/components/ui/button';
 
 interface PANData {
   pan_number?: string;
@@ -103,11 +104,12 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
           className="p-2 rounded-full transition-colors"
           style={{ backgroundColor: `${colors.primary}20` }}
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          PAN Verification
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">PAN Verification</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">Verify your PAN with government databases</p>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -122,11 +124,13 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
 
         {/* PAN Verification Info */}
         <div className="text-center mb-8">
-          <CreditCard className="w-16 h-16 mx-auto mb-4" style={{ color: colors.primary }} />
-          <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>
+          <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
+            <CreditCard className="w-10 h-10 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold mb-3 text-charcoal-text">
             Ready for Government Verification
           </h3>
-          <p className="text-sm" style={{ color: colors.lightBlue }}>
+          <p className="text-sm text-charcoal-text/70">
             Your PAN details will be verified with government databases through our secure enclave
           </p>
         </div>
@@ -139,29 +143,29 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
               <CheckCircle className="w-5 h-5" style={{ color: colors.primary }} />
               <h4 className="font-semibold" style={{ color: colors.white }}>PAN Details to Verify</h4>
             </div>
-            <div className="space-y-2 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {panData.pan_number && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>PAN Number:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.pan_number}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">PAN Number</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.pan_number}</span>
                 </div>
               )}
               {panData.name && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>Name:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.name}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">Name</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.name}</span>
                 </div>
               )}
               {panData.father_name && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>Father&apos;s Name:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.father_name}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">Father&apos;s Name</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.father_name}</span>
                 </div>
               )}
               {panData.dob && (
-                <div className="flex justify-between">
-                  <span style={{ color: colors.primary }}>Date of Birth:</span>
-                  <span style={{ color: colors.lightBlue }}>{panData.dob}</span>
+                <div className="p-3 rounded-lg bg-white/50">
+                  <span className="text-xs font-semibold text-charcoal-text/70 block mb-1">Date of Birth</span>
+                  <span className="text-sm font-bold text-charcoal-text">{panData.dob}</span>
                 </div>
               )}
             </div>
@@ -181,15 +185,15 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         </div>
 
         {/* Proceed Button */}
-        <button
+        <Button
           onClick={handleProceed}
+          variant="primary"
           disabled={isLoading || !panData}
-          className="w-full py-3 px-6 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-          style={{ background: colors.gradients.primary }}
+          className="w-full"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
               Initiating Verification...
             </div>
           ) : (

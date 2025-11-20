@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle, Eye } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { colors } from '@/app/brand';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { Button } from '@/components/ui/button';
+import { ExtractedDataModal } from './ExtractedDataModal';
 
 interface AadhaarData {
   name?: string;
@@ -26,6 +28,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aadhaarData, setAadhaarData] = useState<AadhaarData | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const handleApiCall = async (url: string, formData: FormData) => {
     try {
@@ -138,87 +141,85 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
   };
 
   return (
+    <>
     <form
       onSubmit={handleSubmit}
       className="w-full"
     >
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-8">
         <button 
           type="button" 
           onClick={onBack} 
-          className="p-2 rounded-full transition-colors"
-          style={{ backgroundColor: `${colors.primary}20` }}
+          className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: colors.primary }} />
+          <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
-        <h2 className="text-xl font-semibold" style={{ color: colors.white }}>
-          Upload Aadhaar Card
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-charcoal-text">Upload Aadhaar Card</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">Upload a clear image of your Aadhaar card</p>
+        </div>
       </div>
 
       <div className="space-y-6">
         {/* Error Display */}
         {error && (
-          <div className="p-4 rounded-2xl flex items-center gap-3" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-sm" style={{ color: colors.white }}>{error}</p>
+          <div className="p-4 rounded-lg flex items-center gap-3 bg-error/10 border border-error/30">
+            <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
+            <p className="text-sm text-charcoal-text">{error}</p>
           </div>
         )}
 
         {/* Success Display */}
         {aadhaarData && !error && (
-          <div className="p-4 rounded-2xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle className="w-5 h-5" style={{ color: colors.primary }} />
-              <h4 className="font-semibold" style={{ color: colors.white }}>Aadhaar Data Extracted</h4>
-            </div>
-            <div className="grid grid-cols-1 gap-2 text-sm">
-              {aadhaarData.aadhaar_number && (
-                <div>
-                  <span className="font-medium" style={{ color: colors.primary }}>Aadhaar Number:</span>
-                  <span className="ml-2" style={{ color: colors.lightBlue }}>{aadhaarData.aadhaar_number}</span>
-                </div>
-              )}
-              {aadhaarData.phone_number && (
-                <div>
-                  <span className="font-medium" style={{ color: colors.primary }}>Phone Number:</span>
-                  <span className="ml-2" style={{ color: colors.lightBlue }}>{aadhaarData.phone_number}</span>
-                </div>
-              )}
-              {aadhaarData.dob && (
-                <div>
-                  <span className="font-medium" style={{ color: colors.primary }}>Date of Birth:</span>
-                  <span className="ml-2" style={{ color: colors.lightBlue }}>{aadhaarData.dob}</span>
-                </div>
-              )}
+          <div className="p-5 rounded-lg bg-success/10 border border-success/30">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <h4 className="font-semibold text-charcoal-text">Aadhaar Data Extracted Successfully</h4>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsViewModalOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                View Details
+              </Button>
             </div>
           </div>
         )}
 
         {/* Upload Area */}
         {!previewUrl ? (
-          <div className="border-2 border-dashed rounded-2xl p-8 text-center transition-colors"
-               style={{ 
-                 borderColor: error ? '#ef4444' : `${colors.primary}40`,
-                 backgroundColor: error ? '#ef444410' : `${colors.primary}05`
-               }}>
-            <FileText className="w-12 h-12 mx-auto mb-4" style={{ color: error ? '#ef4444' : colors.primary }} />
-            <h3 className="text-lg font-semibold mb-2" style={{ color: colors.white }}>Upload Aadhaar Card</h3>
-            <p className="mb-6" style={{ color: colors.lightBlue }}>Choose a clear image of your Aadhaar card (JPG, PNG)</p>
+          <div className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
+            error ? 'border-error/50 bg-error/5' : 'border-primary/30 bg-primary/5 hover:border-primary/50'
+          }`}>
+            <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
+              <FileText className={`w-10 h-10 ${error ? 'text-error' : 'text-primary'}`} />
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-charcoal-text">Upload Aadhaar Card</h3>
+            <p className="mb-8 text-charcoal-text/70">Choose a clear image of your Aadhaar card (JPG, PNG)</p>
             
-            <button
+            <Button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              variant="primary"
               disabled={isLoading}
-              className="inline-flex items-center underline underline-offset-2 gap-2 px-6 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 text-white"
+              size="lg"
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
               ) : (
-                <Upload className="w-4 h-4" />
+                <>
+                  <Upload className="w-5 h-5" />
+                  Choose File
+                </>
               )}
-              {isLoading ? 'Processing...' : 'Choose File'}
-            </button>
+            </Button>
             
             <input
               ref={fileInputRef}
@@ -231,37 +232,69 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
           </div>
         ) : (
           <div className="text-center">
-            <div className="relative inline-block mx-auto">
-              <img
-                src={previewUrl}
-                alt="Aadhaar preview"
-                className="max-w-full mx-auto max-h-48 rounded-2xl border-2"
-                style={{ borderColor: `${colors.primary}40` }}
-              />
+            <div className="relative inline-block mx-auto mb-4">
+              <div className="relative">
+                <img
+                  src={previewUrl}
+                  alt="Aadhaar preview"
+                  className="max-w-full mx-auto max-h-64 rounded-lg border-2 border-primary/30 shadow-lg"
+                />
+                <div className="absolute top-2 right-2 w-8 h-8 bg-success rounded-full flex items-center justify-center shadow-lg">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+              </div>
             </div>
-            <p className="font-medium mb-2" style={{ color: colors.primary }}></p>
+            <p className="text-success font-semibold mb-4">✓ Aadhaar card uploaded successfully</p>
             
             <button
               type="button"
               onClick={() => {setPreviewUrl(null); setAadhaarData(null); setError(null);}}
-              className="text-sm transition-colors hover:opacity-80"
-              style={{ color: colors.primary }}
+              className="text-sm font-medium text-primary hover:text-primary-dark transition-colors underline underline-offset-2"
             >
               Upload Different Image
             </button>
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={!aadhaarData || isLoading}
-          className="w-full py-3 px-6 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
-          style={{ background: colors.gradients.primary }}
-        >
-         {isLoading ? "Extracting  data..." : "Next"}
-        </button>
+        {/* Action Buttons */}
+        <div className="flex gap-4 pt-4">
+          <Button
+            type="button"
+            onClick={onBack}
+            variant="outline"
+            className="flex-1"
+          >
+            Back
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={!aadhaarData || isLoading}
+            className="flex-1"
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Extracting data...
+              </span>
+            ) : (
+              'Next: Face Verification'
+            )}
+          </Button>
+        </div>
       </div>
     </form>
+
+    {/* Extracted Data Modal */}
+    {aadhaarData && (
+      <ExtractedDataModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        documentType="aadhaar"
+        data={aadhaarData}
+      />
+    )}
+    </>
   );
 };
 

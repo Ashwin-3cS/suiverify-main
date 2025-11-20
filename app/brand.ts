@@ -1,19 +1,37 @@
-// SuiVerify Brand Colors
+// SuiVerify Brand Colors - Updated to match landing page theme
 export const brandColors = {
-    // Primary Blue
-    primary: '#4DA2FF',
+    // Primary - Deep Amethyst
+    primary: '#7C3AED',
+    primaryDark: '#5B21B6',
+    primaryLight: '#BC9AF5',
+    primaryBg: '#F2EBFE',
     
-    // Dark Navy
-    darkNavy: '#011829',
+    // Secondary - Brand Teal
+    secondary: '#14B8A6',
+    secondaryDark: '#0D9488',
+    secondaryLight: '#5EEAD4',
     
-    // Light Blue
-    lightBlue: '#c0e6ff',
+    // Dark Navy (keeping for compatibility)
+    darkNavy: '#1E293B',
     
-    // Darker Navy
-    darkerNavy: '#030f1c',
+    // Light Blue (keeping for compatibility)
+    lightBlue: '#94A3B8',
+    
+    // Darker Navy (keeping for compatibility)
+    darkerNavy: '#0F172A',
     
     // White
     white: '#ffffff',
+    
+    // Neutral Colors
+    ghostWhite: '#F8F9FA',
+    charcoalText: '#212529',
+    lightGray: '#DEE2E6',
+    
+    // Status Colors
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
   } as const;
   
   // Color variations for different use cases
@@ -95,9 +113,10 @@ export const brandColors = {
     },
   } as const;
   
-  // Gradient definitions
+  // Gradient definitions - Updated to match landing page
   export const gradients = {
-    primary: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.lightBlue} 100%)`,
+    primary: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+    accent: `linear-gradient(135deg, ${brandColors.warning} 0%, ${brandColors.primary} 100%)`,
     dark: `linear-gradient(135deg, ${brandColors.darkerNavy} 0%, ${brandColors.darkNavy} 100%)`,
     hero: `linear-gradient(135deg, ${brandColors.darkerNavy} 0%, ${brandColors.darkNavy} 50%, ${brandColors.darkNavy} 100%)`,
     card: `linear-gradient(135deg, ${brandColors.darkNavy} 0%, ${brandColors.darkNavy} 100%)`,
