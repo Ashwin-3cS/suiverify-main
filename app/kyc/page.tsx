@@ -739,21 +739,6 @@ function KycPage() {
                     Converting documents to secure encrypted format...
                   </p>
                 </motion.div>
-              
-                <div className="rounded-2xl p-4 mb-6 bg-primary/10 border border-primary/30">
-                  <div className="space-y-2 text-sm text-charcoal-text">
-                    <p>🔐 Converting base64 to file format...</p>
-                    <p>📄 Preparing document for encryption...</p>
-                    <p>🔄 Encrypting with Seal protocol...</p>
-                    <p>☁️ Uploading to Walrus storage...</p>
-                  </div>
-                </div>
-                
-                <div className="rounded-2xl p-4 bg-white border border-primary/20">
-                  <p className="text-sm text-charcoal-text/70">
-                    <strong>Process:</strong> Document → Base64 → Python Backend → Encryption → Walrus Upload
-                  </p>
-                </div>
               </div>
             )}
         
@@ -779,41 +764,40 @@ function KycPage() {
                   </p>
                 </motion.div>
               
-                <div className="rounded-2xl p-4 mb-6 bg-primary/10 border border-primary/30">
-                  {encryptionResult && (
-                    <div className="mt-4 pt-4 border-t border-primary/30">
-                      <p className="text-xs font-semibold mb-2 text-charcoal-text">Encryption Details:</p>
-                      <div className="space-y-1 text-xs font-mono text-charcoal-text/70">
-                        <p><strong>Blob ID:</strong> {encryptionResult.blobId}</p>
-                      </div>
-                      <div className="mt-2 space-y-1">
-                        <a 
-                          href={DocumentEncryptionService.getSuiExplorerUrl(encryptionResult.suiRef!, 'object')}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs underline block hover:opacity-80 transition-opacity text-primary"
-                        >
-                          🔍 View on Sui Explorer
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
               
                 <div className="space-y-4">
-                  <motion.button
-                    onClick={claimDidNft}
-                    disabled={isClaimingNft || !encryptionResult?.blobId}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full py-4 px-6 rounded-lg font-semibold transition-all duration-300 border-[3px] shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] ${
-                      isClaimingNft || !encryptionResult?.blobId
-                        ? 'text-gray-300 cursor-not-allowed bg-gray-400 border-gray-400'
-                        : 'text-white bg-primary border-primary'
-                    }`}
-                  >
-                    {isClaimingNft ? '🔄 Claiming NFT...' : '🏆 Claim Your DID NFT'}
-                  </motion.button>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button
+                      onClick={claimDidNft}
+                      disabled={isClaimingNft || !encryptionResult?.blobId}
+                      variant="primary"
+                      className="flex-1 py-4 px-6 rounded-lg font-semibold transition-all duration-300 border-[3px] shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                    >
+                      {isClaimingNft ? 'Claiming NFT...' : 'Claim Your DID NFT'}
+                    </Button>
+                    
+                    {encryptionResult?.suiRef && (
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex-1"
+                      >
+                        <Button
+                          onClick={() => {
+                            window.open(
+                              DocumentEncryptionService.getSuiExplorerUrl(encryptionResult.suiRef!, 'object'),
+                              '_blank',
+                              'noopener,noreferrer'
+                            );
+                          }}
+                          variant="secondary"
+                          className="w-full py-4"
+                        >
+                          View on Explorer
+                        </Button>
+                      </motion.div>
+                    )}
+                  </div>
                   
                   <motion.div
                     whileHover={{ scale: 1.02 }}

@@ -166,29 +166,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
           </div>
         )}
 
-        {/* Verification Process Info */}
-        <div className="p-5 rounded-lg bg-primary/5 border border-primary/20">
-          <h4 className="font-bold mb-4 text-charcoal-text">Verification Process:</h4>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🔐</span>
-              <span className="text-charcoal-text/70">Secure enclave processes your data</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🏛️</span>
-              <span className="text-charcoal-text/70">Government database verification</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xl">⛓️</span>
-              <span className="text-charcoal-text/70">Blockchain attestation recording</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🎯</span>
-              <span className="text-charcoal-text/70">DID NFT ready for claiming</span>
-            </div>
-          </div>
-        </div>
-
+      
         {/* Proceed Button */}
         <Button
           onClick={handleProceed}
@@ -205,13 +183,6 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
             'Proceed with Government Verification'
           )}
         </Button>
-
-        {/* Info Note */}
-        <div className="p-4 rounded-lg text-center bg-primary/5 border border-primary/20">
-          <p className="text-xs text-charcoal-text/70 leading-relaxed">
-            💡 No OTP required for PAN verification. Government database verification happens automatically.
-          </p>
-        </div>
       </div>
     </div>
   );

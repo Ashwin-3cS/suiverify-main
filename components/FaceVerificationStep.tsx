@@ -146,25 +146,6 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
           </div>
         )}
 
-        {/* Success Display */}
-        {faceResult && faceResult.match && (
-          <div className="p-5 rounded-lg bg-success/10 border border-success/30">
-            <div className="flex items-center gap-3 mb-3">
-              <CheckCircle className="w-6 h-6 text-success" />
-              <h4 className="font-bold text-lg text-charcoal-text">Face Verification Successful</h4>
-            </div>
-            <div className="pl-9 space-y-1 text-sm">
-              <p className="text-charcoal-text/70">
-                <span className="font-semibold">Confidence:</span> {faceResult.confidence.toFixed(1)}%
-              </p>
-              {faceResult.face_distance && (
-                <p className="text-charcoal-text/70">
-                  <span className="font-semibold">Face Distance:</span> {faceResult.face_distance.toFixed(3)}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
 
         <div className="text-center mb-6">
           <div className="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
