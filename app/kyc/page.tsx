@@ -84,7 +84,7 @@ function KycPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentAccount = useCurrentAccount();
-  const { verificationStatus, startListening } = useVerificationListener();
+  const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener();
   
   // Get verification type from URL parameters or default
   // const verificationType = searchParams.get('type') || 'Verify Above 18'; // Commented out - not used
@@ -133,6 +133,18 @@ function KycPage() {
       startListening();
     }
   };
+
+  // Reset verification state when starting a new verification (step is 'country')
+  useEffect(() => {
+    if (step === 'country') {
+      // Stop the event listener to prevent old events from triggering toasts
+      stopListening();
+      resetVerification();
+      setOtpVerified(false);
+      setEncryptionResult(null);
+      setUserDidId(null);
+    }
+  }, [step, resetVerification, stopListening]);
 
   // Check wallet connection on mount and when account changes
   useEffect(() => {
@@ -292,8 +304,9 @@ function KycPage() {
   }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument, aadhaarData, panData]);
 
   // Handle successful verification from event listener
+  // Only process if we're in the waiting step (after OTP verification)
   useEffect(() => {
-    if (verificationStatus.isVerified && otpVerified) {
+    if (verificationStatus.isVerified && otpVerified && step === 'waiting') {
       // Store the UserDID object ID from the verification event
       if (verificationStatus.userDidId) {
         setUserDidId(verificationStatus.userDidId);
@@ -316,7 +329,7 @@ function KycPage() {
       // Start document encryption and upload process
       handleDocumentEncryption();
     }
-  }, [verificationStatus.isVerified, otpVerified, verificationStatus.userDidId, verificationStatus.eventData, handleDocumentEncryption]);
+  }, [verificationStatus.isVerified, otpVerified, step, verificationStatus.userDidId, verificationStatus.eventData, handleDocumentEncryption]);
 
   // NFT Claiming function
   const claimDidNft = async () => {
