@@ -182,26 +182,6 @@ const User: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Progress Bar */}
-                        {stats.total > 0 && (
-                            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 border-[3px] border-primary/20 shadow-[0.1em_0.1em]">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <TrendingUp className="w-5 h-5 text-primary" />
-                                        <span className="font-semibold text-charcoal-text">Verification Progress</span>
-                                    </div>
-                                    <span className="text-2xl font-bold text-primary">{verificationPercentage}%</span>
-                                </div>
-                                <div className="w-full h-4 bg-primary/10 rounded-full overflow-hidden">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${verificationPercentage}%` }}
-                                        transition={{ duration: 1, delay: 0.3 }}
-                                        className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
-                                    />
-                                </div>
-                            </div>
-                        )}
                     </motion.div>
 
                     {/* Navigation Tabs */}
@@ -337,14 +317,13 @@ const User: React.FC = () => {
                                     <h2 className="text-3xl font-bold mb-2 text-charcoal-text">Your Credentials</h2>
                                     <p className="text-base text-charcoal-text/70">View and manage credentials stored in your identity wallet</p>
                                 </div>
-                                <div className="relative sm:w-80">
-                                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-charcoal-text/40" />
+                                <div className="sm:w-80">
                                     <input
                                         type="text"
                                         placeholder="Search credentials..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3 bg-white/95 backdrop-blur-sm border-[3px] border-primary/30 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-charcoal-text placeholder-charcoal-text/40 text-sm transition-all shadow-[0.1em_0.1em]"
+                                        className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-[3px] border-primary/30 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-charcoal-text placeholder-charcoal-text/40 text-sm transition-all shadow-[0.1em_0.1em]"
                                     />
                                 </div>
                             </div>

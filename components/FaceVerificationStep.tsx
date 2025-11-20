@@ -25,9 +25,10 @@ interface FaceVerificationStepProps {
   onNext: () => void;
   onBack: () => void;
   aadhaarData: AadhaarData;
+  documentType?: 'aadhaar' | 'pan';
 }
 
-const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onBack }) => {
+const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onBack, documentType = 'aadhaar' }) => {
   const webcamRef = useRef<Webcam>(null);
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -245,7 +246,7 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
                   variant="success"
                   className="flex-1"
                 >
-                  Next: OTP Verification
+                  {documentType === 'pan' ? 'Next: PAN Verification' : 'Next: OTP Verification'}
                 </Button>
               )}
             </>

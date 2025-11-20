@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, CheckCircle, Eye } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { colors } from '@/app/brand';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
+import { ExtractedDataModal } from './ExtractedDataModal';
 
 interface AadhaarData {
   name?: string;
@@ -27,6 +28,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aadhaarData, setAadhaarData] = useState<AadhaarData | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const handleApiCall = async (url: string, formData: FormData) => {
     try {
@@ -139,6 +141,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
   };
 
   return (
+    <>
     <form
       onSubmit={handleSubmit}
       className="w-full"
@@ -169,29 +172,20 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
         {/* Success Display */}
         {aadhaarData && !error && (
           <div className="p-5 rounded-lg bg-success/10 border border-success/30">
-            <div className="flex items-center gap-2 mb-4">
-              <CheckCircle className="w-5 h-5 text-success" />
-              <h4 className="font-semibold text-charcoal-text">Aadhaar Data Extracted Successfully</h4>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              {aadhaarData.aadhaar_number && (
-                <div className="p-3 rounded-lg bg-white/50">
-                  <span className="font-semibold text-charcoal-text/70 block mb-1 text-xs">Aadhaar Number</span>
-                  <span className="text-charcoal-text font-medium">{aadhaarData.aadhaar_number}</span>
-                </div>
-              )}
-              {aadhaarData.phone_number && (
-                <div className="p-3 rounded-lg bg-white/50">
-                  <span className="font-semibold text-charcoal-text/70 block mb-1 text-xs">Phone Number</span>
-                  <span className="text-charcoal-text font-medium">{aadhaarData.phone_number}</span>
-                </div>
-              )}
-              {aadhaarData.dob && (
-                <div className="p-3 rounded-lg bg-white/50">
-                  <span className="font-semibold text-charcoal-text/70 block mb-1 text-xs">Date of Birth</span>
-                  <span className="text-charcoal-text font-medium">{aadhaarData.dob}</span>
-                </div>
-              )}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <h4 className="font-semibold text-charcoal-text">Aadhaar Data Extracted Successfully</h4>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsViewModalOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                View Details
+              </Button>
             </div>
           </div>
         )}
@@ -290,6 +284,17 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
         </div>
       </div>
     </form>
+
+    {/* Extracted Data Modal */}
+    {aadhaarData && (
+      <ExtractedDataModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        documentType="aadhaar"
+        data={aadhaarData}
+      />
+    )}
+    </>
   );
 };
 

@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, Edit3, Save, X, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Check, AlertCircle, Loader2, ChevronLeft, Edit3, Save, X, CheckCircle, Eye } from 'lucide-react';
 import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
+import { ExtractedDataModal } from './ExtractedDataModal';
 
 interface PANData {
   pan_number?: string;
@@ -27,6 +28,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
   const [panData, setPanData] = useState<PANData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState<PANData>({});
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const handleApiCall = async (url: string, formData: FormData) => {
     try {
@@ -186,6 +188,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="w-full">
       <div className="flex items-center gap-4 mb-8">
         <button 
@@ -210,33 +213,44 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
           </div>
         )}
 
-        {/* Editable PAN Data Display */}
+        {/* Success Display */}
         {panData && !error && (
           <div className="p-5 rounded-lg bg-success/10 border border-success/30">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-success" />
-                <h4 className="font-bold text-lg text-charcoal-text">
-                  Review extracted details and edit if necessary
-                </h4>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <h4 className="font-semibold text-charcoal-text">PAN Data Extracted Successfully</h4>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsEditing(!isEditing)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30"
-              >
-                <Edit3 className="w-4 h-4" />
-                {isEditing ? 'Cancel' : 'Edit'}
-              </button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsViewModalOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Eye className="w-4 h-4" />
+                  View Details
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex items-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  {isEditing ? 'Cancel' : 'Edit'}
+                </Button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {/* PAN Number */}
-              <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: colors.primary }}>
-                  PAN Number
-                </label>
-                {isEditing ? (
+            {/* Editable Fields - Only show when editing */}
+            {isEditing && (
+              <div className="grid grid-cols-1 gap-4 mt-4">
+                {/* PAN Number */}
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: colors.primary }}>
+                    PAN Number
+                  </label>
                   <input
                     type="text"
                     value={editedData.pan_number || ''}
@@ -244,19 +258,13 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
                     className="w-full px-4 py-2.5 rounded-lg border-2 border-primary/30 bg-white text-charcoal-text text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="Enter PAN number"
                   />
-                ) : (
-                  <div className="px-4 py-2.5 rounded-lg text-sm bg-white/50 text-charcoal-text font-medium">
-                    {panData.pan_number || 'Not extracted'}
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-charcoal-text">
-                  Name
-                </label>
-                {isEditing ? (
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-charcoal-text">
+                    Name
+                  </label>
                   <input
                     type="text"
                     value={editedData.name || ''}
@@ -264,19 +272,13 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
                     className="w-full px-4 py-2.5 rounded-lg border-2 border-primary/30 bg-white text-charcoal-text text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="Enter full name"
                   />
-                ) : (
-                  <div className="px-4 py-2.5 rounded-lg text-sm bg-white/50 text-charcoal-text font-medium">
-                    {panData.name || 'Not extracted'}
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* Father's Name */}
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-charcoal-text">
-                  Father&apos;s Name
-                </label>
-                {isEditing ? (
+                {/* Father's Name */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-charcoal-text">
+                    Father&apos;s Name
+                  </label>
                   <input
                     type="text"
                     value={editedData.father_name || ''}
@@ -284,19 +286,13 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
                     className="w-full px-4 py-2.5 rounded-lg border-2 border-primary/30 bg-white text-charcoal-text text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     placeholder="Enter father's name"
                   />
-                ) : (
-                  <div className="px-4 py-2.5 rounded-lg text-sm bg-white/50 text-charcoal-text font-medium">
-                    {panData.father_name || 'Not extracted'}
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* Date of Birth */}
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-charcoal-text">
-                  Date of Birth
-                </label>
-                {isEditing ? (
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-charcoal-text">
+                    Date of Birth
+                  </label>
                   <input
                     type="date"
                     value={editedData.dob ? editedData.dob.split('/').reverse().join('-') : ''}
@@ -307,15 +303,9 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
                     }}
                     className="w-full px-4 py-2.5 rounded-lg border-2 border-primary/30 bg-white text-charcoal-text text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
-                ) : (
-                  <div className="px-4 py-2.5 rounded-lg text-sm bg-white/50 text-charcoal-text font-medium">
-                    {panData.dob || 'Not extracted'}
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* Save Changes Button */}
-              {isEditing && (
+                {/* Save Changes Button */}
                 <Button
                   type="button"
                   onClick={handleEditSave}
@@ -326,8 +316,8 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
                 >
                   {isLoading ? 'Saving...' : 'Save Changes'}
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -441,6 +431,17 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({ onNext, onBack, onFileUpl
         */}
       </div>
     </form>
+
+    {/* Extracted Data Modal */}
+    {panData && (
+      <ExtractedDataModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        documentType="pan"
+        data={panData}
+      />
+    )}
+    </>
   );
 };
 

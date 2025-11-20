@@ -304,7 +304,7 @@ function KycPage() {
   }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument, aadhaarData, panData]);
 
   // Handle successful verification from event listener
-  // Only process if we're in the waiting step (after OTP verification)
+  // Only process if we're in the waiting step (after OTP/PAN verification)
   useEffect(() => {
     if (verificationStatus.isVerified && otpVerified && step === 'waiting') {
       // Store the UserDID object ID from the verification event
@@ -543,22 +543,22 @@ function KycPage() {
                 <StepIndicator
                   steps={(() => {
                     const baseSteps = [
-                      { id: 'country', label: 'Country', description: 'Select country' },
-                      { id: 'document-type', label: 'Document', description: 'Choose type' },
+                      { id: 'country', label: 'Region', description: 'Select country' },
+                      { id: 'document-type', label: 'Select Document', description: 'Choose type' },
                     ];
                     
                     if (selectedDocumentType?.id === 'pan') {
                       return [
                         ...baseSteps,
                         { id: 'pan', label: 'Upload', description: 'Upload PAN' },
-                        { id: 'face', label: 'Face', description: 'Face verify' },
+                        { id: 'face', label: 'Biometric', description: 'Face verification' },
                         { id: 'pan-verification', label: 'Verify', description: 'Final step' },
                       ];
                     } else {
                       return [
                         ...baseSteps,
                         { id: 'aadhaar', label: 'Upload', description: 'Upload Aadhaar' },
-                        { id: 'face', label: 'Face', description: 'Face verify' },
+                        { id: 'face', label: 'Biometric', description: 'Face verification' },
                         { id: 'otp', label: 'OTP', description: 'Verify OTP' },
                       ];
                     }
@@ -638,6 +638,7 @@ function KycPage() {
                   aadhaar_number: undefined,
                   aadhaar_photo_base64: panData?.pan_photo_base64
                 }}
+                documentType={selectedDocumentType?.id === 'pan' ? 'pan' : 'aadhaar'}
               />
             )}
             {step === 'pan-verification' && panData && (
@@ -669,7 +670,10 @@ function KycPage() {
                     Waiting for Blockchain Verification
                   </h2>
                   <p className="text-lg mb-6 text-charcoal-text/70">
-                    Your OTP has been verified. Now waiting for on-chain attestation...
+                    {selectedDocumentType?.id === 'pan' 
+                      ? 'Your PAN verification has been submitted. Now waiting for on-chain attestation...'
+                      : 'Your OTP has been verified. Now waiting for on-chain attestation...'
+                    }
                   </p>
                 </motion.div>
               
