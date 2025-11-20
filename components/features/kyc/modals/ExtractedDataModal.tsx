@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle, Eye, Edit3, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from './ui/button';
+import { Button } from '../../../ui/button';
 import { colors } from '@/app/brand';
 
 interface AadhaarData {

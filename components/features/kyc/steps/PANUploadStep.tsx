@@ -16,7 +16,7 @@ import { colors } from "@/app/brand";
 import { toast } from "react-toastify";
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 import { Button } from "@/components/ui/button";
-import { ExtractedDataModal } from "./ExtractedDataModal";
+import { ExtractedDataModal } from "../modals/ExtractedDataModal";
 
 interface PANData {
   pan_number?: string;

@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { colors } from '@/app/brand';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
-import { ExtractedDataModal } from './ExtractedDataModal';
+import { ExtractedDataModal } from '../modals/ExtractedDataModal';
 
 interface AadhaarData {
   name?: string;
