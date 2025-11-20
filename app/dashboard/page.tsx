@@ -155,58 +155,49 @@ const User: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+                        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
                     >
                         {/* Total Credentials Card */}
-                        <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)]">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 rounded-lg bg-primary/10">
-                                    <CheckCircle className="w-5 h-5 text-primary" />
+                        <div className="bg-gradient-to-br from-white to-primary/5 backdrop-blur-sm rounded-xl p-6 border-[3px] border-primary/30 shadow-[0.1em_0.1em] hover:shadow-[0.15em_0.15em] transition-all duration-200">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-xl bg-primary/15 border-2 border-primary/20">
+                                        <CheckCircle className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-semibold text-charcoal-text/60 mb-1 uppercase tracking-wider">Total Credentials</p>
+                                        <p className="text-3xl font-bold text-charcoal-text leading-none">{loading ? '...' : stats.total}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <p className="text-xs font-semibold text-charcoal-text/60 mb-1 uppercase tracking-wide">Total Credentials</p>
-                                <p className="text-2xl font-bold text-charcoal-text">{loading ? '...' : stats.total}</p>
                             </div>
                         </div>
 
                         {/* Verified Credentials Card */}
-                        <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 border-2 border-secondary/20 shadow-[0.1em_0.1em_0_0_rgb(20_184_166)]">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 rounded-lg bg-secondary/10">
-                                    <Shield className="w-5 h-5 text-secondary" />
+                        <div className="bg-gradient-to-br from-white to-secondary/5 backdrop-blur-sm rounded-xl p-6 border-[3px] border-secondary/30 shadow-[0.1em_0.1em] hover:shadow-[0.15em_0.15em] transition-all duration-200">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-xl bg-secondary/15 border-2 border-secondary/20">
+                                        <Shield className="w-6 h-6 text-secondary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-semibold text-charcoal-text/60 mb-1 uppercase tracking-wider">Verified</p>
+                                        <p className="text-3xl font-bold text-charcoal-text leading-none">{loading ? '...' : stats.verified}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <p className="text-xs font-semibold text-charcoal-text/60 mb-1 uppercase tracking-wide">Verified</p>
-                                <p className="text-2xl font-bold text-charcoal-text">{loading ? '...' : stats.verified}</p>
-                            </div>
-                        </div>
-
-                        {/* Pending Credentials Card */}
-                        <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 border-2 border-warning/20 shadow-[0.1em_0.1em_0_0_rgb(245_158_11)]">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 rounded-lg bg-warning/10">
-                                    <Clock className="w-5 h-5 text-warning" />
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-xs font-semibold text-charcoal-text/60 mb-1 uppercase tracking-wide">Pending</p>
-                                <p className="text-2xl font-bold text-charcoal-text">{loading ? '...' : stats.pending}</p>
                             </div>
                         </div>
                     </motion.div>
 
                     {/* Navigation Tabs */}
-                    <div className="bg-white/95 backdrop-blur-sm rounded-lg p-1 mb-6 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)]">
-                        <nav className="flex space-x-1">
+                    <div className="bg-white/95 backdrop-blur-sm rounded-xl p-1.5 mb-8 border-[3px] border-primary/30 shadow-[0.1em_0.1em]">
+                        <nav className="flex space-x-1.5">
                             {['verifications', 'credentials'].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveNav(tab)}
-                                    className={`flex-1 py-2 px-4 rounded-md font-bold text-sm capitalize transition-all duration-200 ${
+                                    className={`flex-1 py-3 px-6 rounded-lg font-bold text-sm capitalize transition-all duration-200 ${
                                         activeNav === tab
-                                            ? 'text-white shadow-sm bg-primary'
+                                            ? 'text-white shadow-[0.1em_0.1em] bg-primary border-[3px] border-primary'
                                             : 'text-charcoal-text/70 hover:text-charcoal-text bg-transparent hover:bg-primary/5'
                                     }`}
                                 >
@@ -219,47 +210,51 @@ const User: React.FC = () => {
                     {/* Verifications Section */}
                     {activeNav === 'verifications' && (
                         <div>
-                            <div className="mb-5">
-                                <h2 className="text-xl font-bold mb-1 text-charcoal-text">Identity Verifications</h2>
-                                <p className="text-xs text-charcoal-text/70">Complete these verifications to unlock full platform access</p>
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-bold mb-2 text-charcoal-text">Identity Verifications</h2>
+                                <p className="text-sm text-charcoal-text/70">Complete these verifications to unlock full platform access</p>
                             </div>
 
                             {/* Verification Cards */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {verificationOptions.map((verification) => {
                                     const IconComponent = verification.icon;
                                     return (
-                                        <div
+                                        <motion.div
                                             key={verification.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.4, delay: verification.delay }}
                                             onClick={() => handleVerificationClick(verification.title, verification.description)}
-                                            className="group bg-white/95 backdrop-blur-sm rounded-lg p-6 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200 cursor-pointer"
+                                            className="group bg-gradient-to-br from-white to-primary/5 backdrop-blur-sm rounded-xl p-8 border-[3px] border-primary/30 shadow-[0.1em_0.1em] hover:shadow-[0.15em_0.15em] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200 cursor-pointer"
                                         >
                                             {/* Icon */}
-                                            <div className="flex justify-center mb-4">
-                                                <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                                                    <IconComponent className="w-8 h-8 text-primary" />
+                                            <div className="flex justify-center mb-6">
+                                                <div className="w-20 h-20 rounded-2xl flex items-center justify-center bg-primary/15 border-2 border-primary/20 group-hover:bg-primary/20 group-hover:scale-105 transition-all duration-200">
+                                                    <IconComponent className="w-10 h-10 text-primary" />
                                                 </div>
                                             </div>
 
                                             {/* Content */}
                                             <div className="text-center">
-                                                <h3 className="text-lg font-bold mb-2 text-charcoal-text">
+                                                <h3 className="text-xl font-bold mb-3 text-charcoal-text">
                                                     {verification.title}
                                                 </h3>
-                                                <p className="text-sm text-charcoal-text/70 mb-5 leading-relaxed">
+                                                <p className="text-sm text-charcoal-text/70 mb-6 leading-relaxed">
                                                     {verification.description}
                                                 </p>
                                                 <Button
                                                     variant="primary"
-                                                    className="w-full"
+                                                    className="w-full mb-4"
+                                                    size="lg"
                                                 >
                                                     Start Verification
                                                 </Button>
-                                                <p className="text-xs text-center mt-3 text-charcoal-text/60">
+                                                <p className="text-xs text-center text-charcoal-text/60">
                                                     Accepted by <span className="text-primary font-semibold">Alphafi</span> and <span className="text-primary font-semibold">Suilend</span>
                                                 </p>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     );
                                 })}
                             </div>
@@ -269,19 +264,19 @@ const User: React.FC = () => {
                     {/* Credentials Section */}
                     {activeNav === 'credentials' && (
                         <div>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                                 <div>
-                                    <h2 className="text-xl font-bold mb-1 text-charcoal-text">Credentials</h2>
-                                    <p className="text-xs text-charcoal-text/70">View and manage credentials stored in your identity wallet</p>
+                                    <h2 className="text-2xl font-bold mb-2 text-charcoal-text">Credentials</h2>
+                                    <p className="text-sm text-charcoal-text/70">View and manage credentials stored in your identity wallet</p>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <div className="relative flex-1 sm:flex-initial sm:w-64">
+                                    <div className="relative flex-1 sm:flex-initial sm:w-72">
                                         <input
                                             type="text"
                                             placeholder="Search credentials..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full px-4 py-2.5 bg-white border-2 border-primary/30 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-charcoal-text placeholder-charcoal-text/40 text-sm transition-all"
+                                            className="w-full px-4 py-3 bg-white/95 backdrop-blur-sm border-[3px] border-primary/30 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-charcoal-text placeholder-charcoal-text/40 text-sm transition-all shadow-[0.1em_0.1em]"
                                         />
                                     </div>
                                 </div>
@@ -292,35 +287,42 @@ const User: React.FC = () => {
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="bg-error/10 border border-error/30 rounded-lg p-4 mb-6"
+                                        className="bg-error/10 border-[3px] border-error/30 rounded-xl p-5 mb-6 shadow-[0.1em_0.1em]"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <AlertCircle className="w-5 h-5 text-error" />
-                                            <p className="text-charcoal-text font-medium">{error}</p>
+                                            <div className="p-2 rounded-lg bg-error/20">
+                                                <AlertCircle className="w-5 h-5 text-error" />
+                                            </div>
+                                            <p className="text-charcoal-text font-semibold">{error}</p>
                                         </div>
                                     </motion.div>
                                 )}
 
                                 {/* Loading State */}
                                 {loading && (
-                                    <div className="text-center py-12">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                                        <p className="text-charcoal-text/70">Loading credentials...</p>
+                                    <div className="text-center py-16">
+                                        <div className="relative mx-auto w-16 h-16 mb-6">
+                                            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary"></div>
+                                            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-2 border-primary/30"></div>
+                                        </div>
+                                        <p className="text-charcoal-text font-semibold">Loading credentials...</p>
                                     </div>
                                 )}
 
                                 {/* Empty State */}
                                 {!loading && !error && credentials.length === 0 && (
-                                    <div className="text-center py-12">
-                                        <FileText className="w-16 h-16 mx-auto mb-4 text-charcoal-text/40" />
-                                        <p className="text-lg mb-2 text-charcoal-text">No credentials found</p>
+                                    <div className="text-center py-16 bg-white/95 backdrop-blur-sm rounded-xl p-12 border-[3px] border-primary/20 shadow-[0.1em_0.1em]">
+                                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+                                            <FileText className="w-10 h-10 text-primary" />
+                                        </div>
+                                        <p className="text-xl font-bold mb-2 text-charcoal-text">No credentials found</p>
                                         <p className="text-sm text-charcoal-text/70">Complete identity verifications to see your credentials here</p>
                                     </div>
                                 )}
 
                             {/* Credentials Grid */}
                             {!loading && !error && credentials.length > 0 && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {credentials.map((credential, index) => (
                                         <motion.div
                                             key={credential.id}
@@ -328,35 +330,35 @@ const User: React.FC = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.4, delay: index * 0.05 }}
                                             whileHover={{ y: -4 }}
-                                            className="group bg-white/95 backdrop-blur-sm rounded-xl p-5 border-2 border-primary/20 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200"
+                                            className="group bg-gradient-to-br from-white to-primary/5 backdrop-blur-sm rounded-xl p-6 border-[3px] border-primary/30 shadow-[0.1em_0.1em] hover:shadow-[0.15em_0.15em] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-200"
                                         >
-                                            <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-start justify-between mb-5">
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <h3 className="font-bold text-base text-charcoal-text truncate">{credential.title}</h3>
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <h3 className="font-bold text-lg text-charcoal-text truncate">{credential.title}</h3>
                                                         {getStatusIcon(credential.status)}
                                                     </div>
-                                                    <p className="text-xs text-charcoal-text/70 line-clamp-2">{credential.description}</p>
+                                                    <p className="text-sm text-charcoal-text/70 line-clamp-2 leading-relaxed">{credential.description}</p>
                                                 </div>
                                             </div>
 
-                                            <div className="mb-4 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-                                                <p className="text-xs font-semibold text-charcoal-text/60 mb-0.5">Expiry Date</p>
-                                                <p className="text-sm font-bold text-charcoal-text">{credential.expiryDate}</p>
+                                            <div className="mb-5 p-4 rounded-xl bg-primary/10 border-2 border-primary/20">
+                                                <p className="text-xs font-semibold text-charcoal-text/60 mb-1 uppercase tracking-wider">Expiry Date</p>
+                                                <p className="text-base font-bold text-charcoal-text">{credential.expiryDate}</p>
                                             </div>
 
-                                            <div className="flex items-center justify-between pt-3 border-t border-primary/10">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                            <div className="flex items-center justify-between pt-4 border-t-2 border-primary/20">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-primary/15 border-2 border-primary/20 flex items-center justify-center">
                                                         <span className="text-sm font-bold text-primary">#{index + 1}</span>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-semibold text-charcoal-text/60">Issued</p>
-                                                        <p className="text-xs text-charcoal-text/70">{credential.issuedDate}</p>
+                                                        <p className="text-xs font-semibold text-charcoal-text/60 uppercase tracking-wider">Issued</p>
+                                                        <p className="text-sm font-medium text-charcoal-text">{credential.issuedDate}</p>
                                                     </div>
                                                 </div>
                                                 {credential.type === 'nft' && (
-                                                    <span className="px-2 py-1 text-xs font-bold rounded-md bg-primary/10 text-primary border border-primary/20">NFT</span>
+                                                    <span className="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary/15 text-primary border-2 border-primary/20">NFT</span>
                                                 )}
                                             </div>
                                         </motion.div>
