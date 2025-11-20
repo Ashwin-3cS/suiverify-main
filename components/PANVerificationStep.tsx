@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, Loader2, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
 import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
-import { useCurrentAccount } from '@mysten/dapp-kit';
+import { useAuth } from '@/hooks/useAuth';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
 
@@ -29,7 +29,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currentAccount = useCurrentAccount();
+  const { address } = useAuth();
 
   // Auto-set DID based on verification type
   const getDid = () => {
@@ -37,7 +37,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
   };
 
   const handleProceed = async () => {
-    if (!panData || !currentAccount?.address) {
+    if (!panData || !address) {
       setError('Missing PAN data or wallet connection');
       return;
     }
@@ -50,7 +50,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
       
       // Send PAN data to Redis stream for enclave processing
       const verificationPayload = {
-        user_address: currentAccount.address,
+        user_address: address,
         document_type: 'pan',
         did_type: getDid(),
         pan_data: {
