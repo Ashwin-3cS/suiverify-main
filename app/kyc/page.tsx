@@ -2,8 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
+// Commented out EOA wallet imports - using zkLogin instead
+// import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
+import { suiClient } from '@/lib/sui-client';
+import { ZkLoginService } from '@/lib/zklogin';
+import { SessionManager } from '@/lib/session-manager';
+import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import LightRays from '@/components/ui/lightRays';
 import CountrySelectionStep from '@/components/CountrySelectionStep';
@@ -80,26 +85,28 @@ function KycPage() {
   } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentAccount = useCurrentAccount();
+  // Commented out EOA wallet hook - using zkLogin instead
+  // const currentAccount = useCurrentAccount();
+  const { address: zkLoginAddress, isAuthenticated } = useAuth();
   const { verificationStatus, startListening } = useVerificationListener();
-  
+
   // Get verification type from URL parameters or default
   // const verificationType = searchParams.get('type') || 'Verify Above 18'; // Commented out - not used
   const verificationDescription = searchParams.get('description') || 'Verify your age using Aadhaar document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.';
-  
-  // Sui client and transaction execution
-  const suiClient = useSuiClient();
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
-    execute: async ({ bytes, signature }) =>
-      await suiClient.executeTransactionBlock({
-        transactionBlock: bytes,
-        signature,
-        options: {
-          showRawEffects: true,
-          showEffects: true,
-        },
-      }),
-  });
+
+  // Commented out EOA transaction execution - using zkLogin instead
+  // const suiClient = useSuiClient();
+  // const { mutate: signAndExecute } = useSignAndExecuteTransaction({
+  //   execute: async ({ bytes, signature }) =>
+  //     await suiClient.executeTransactionBlock({
+  //       transactionBlock: bytes,
+  //       signature,
+  //       options: {
+  //         showRawEffects: true,
+  //         showEffects: true,
+  //       },
+  //     }),
+  // });
 
   // Contract configuration from centralized config
   // const PACKAGE_ID = getCurrentPackageId(); // Commented out - not used
@@ -149,23 +156,23 @@ function KycPage() {
   const encryptAndUploadDocument = useCallback(async (file: File) => {
     try {
       console.log('🔄 Starting real encryption and upload process...');
-      
+
       const result = await documentEncryptionService.encryptAndUploadDocument(
-        file, 
-        currentAccount!.address
+        file,
+        zkLoginAddress!
       );
-      
+
       if (result.success) {
         console.log('✅ Encryption and upload successful!');
         console.log('📋 Results:', result);
-        
+
         // Store the encryption results
         setEncryptionResult({
           blobId: result.blobId,
           encryptionId: result.encryptionId,
           suiRef: result.suiRef
         });
-        
+
         setStep('completed');
       } else {
         console.error('❌ Encryption failed:', result.error);
@@ -175,29 +182,29 @@ function KycPage() {
       console.error('❌ Unexpected error during encryption:', error);
       setStep('error');
     }
-  }, [currentAccount]);
+  }, [zkLoginAddress]);
 
   const handleDocumentEncryption = useCallback(async () => {
-    const photoBase64 = selectedDocumentType?.id === 'pan' 
-      ? panData?.pan_photo_base64 
+    const photoBase64 = selectedDocumentType?.id === 'pan'
+      ? panData?.pan_photo_base64
       : aadhaarData?.aadhaar_photo_base64;
-    
-    if (!photoBase64 || !currentAccount?.address) {
-      console.error('Missing document data or wallet address');
+
+    if (!photoBase64 || !zkLoginAddress) {
+      console.error('Missing document data or zkLogin address');
       return;
     }
 
     try {
       console.log('🔐 Starting document encryption and upload process...');
       setStep('encrypting');
-      
+
       // Convert base64 to File object for encryption
       const base64Data = photoBase64;
       console.log('📊 Base64 data received:', base64Data.length, 'characters');
-      
+
       const byteCharacters = atob(base64Data);
       console.log('📊 Decoded byte characters:', byteCharacters.length, 'bytes');
-      
+
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -205,21 +212,21 @@ function KycPage() {
       const byteArray = new Uint8Array(byteNumbers);
       console.log('📊 Byte array created:', byteArray.length, 'bytes');
       console.log('📊 First 20 bytes (should be JPEG signature):', Array.from(byteArray.slice(0, 20)));
-      
+
       const fileName = selectedDocumentType?.id === 'pan' ? 'pan-document.jpg' : 'aadhaar-document.jpg';
       const file = new File([byteArray], fileName, { type: 'image/jpeg' });
-      
+
       console.log('📄 Document converted to file:', file.name, file.size, 'bytes');
       console.log('✅ Ready to encrypt FULL size image:', file.size, 'bytes');
-      
+
       // Use the encryption logic from EncryptAndUpload.tsx
       await encryptAndUploadDocument(file);
-      
+
     } catch (error) {
       console.error('❌ Error in document encryption:', error);
       setStep('error');
     }
-  }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, currentAccount?.address, encryptAndUploadDocument, aadhaarData, panData]);
+  }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, zkLoginAddress, encryptAndUploadDocument, aadhaarData, panData]);
 
   // Handle successful verification from event listener
   useEffect(() => {
@@ -229,7 +236,7 @@ function KycPage() {
         setUserDidId(verificationStatus.userDidId);
         console.log('🎯 UserDID object ID captured from event:', verificationStatus.userDidId);
       }
-      
+
       // Log enhanced event data for SDK verification
       if (verificationStatus.eventData) {
         console.log('📋 Enhanced Event Data Available:');
@@ -238,20 +245,20 @@ function KycPage() {
         console.log('   🔍 Evidence Hash Length:', verificationStatus.eventData.evidence_hash.length);
         console.log('   🆔 DID Type:', verificationStatus.eventData.did_type);
         console.log('   📋 Registry ID:', verificationStatus.eventData.registry_id);
-        
+
         // This enhanced data can now be used for SDK verification calls
         // Example: await enclave.verify_signature(enclave_id, 1, parseInt(eventData.signature_timestamp_ms), payload, eventData.nautilus_signature);
       }
-      
+
       // Start document encryption and upload process
       handleDocumentEncryption();
     }
   }, [verificationStatus.isVerified, otpVerified, verificationStatus.userDidId, verificationStatus.eventData, handleDocumentEncryption]);
 
-  // NFT Claiming function
+  // NFT Claiming function - using zkLogin
   const claimDidNft = async () => {
-    if (!encryptionResult?.blobId || !currentAccount?.address) {
-      console.error('❌ Missing blob ID or user address');
+    if (!encryptionResult?.blobId || !zkLoginAddress) {
+      console.error('❌ Missing blob ID or zkLogin address');
       return;
     }
 
@@ -263,9 +270,20 @@ function KycPage() {
 
     try {
       setIsClaimingNft(true);
-      console.log('🏆 Starting DID NFT claim process...');
+      console.log('🏆 Starting DID NFT claim process with zkLogin...');
       console.log('🎯 Using UserDID object ID from event:', userDidId);
-      
+      console.log('🔐 zkLogin Address:', zkLoginAddress);
+
+      // Get cached zkLogin proof
+      const cached = SessionManager.getCachedProof();
+      if (!cached || !cached.address) {
+        throw new Error('No zkLogin session found. Please sign in first.');
+      }
+
+      if (!cached.ephemeralPrivateKey) {
+        throw new Error('Cached proof missing ephemeral private key. Please sign in again.');
+      }
+
       // Log enhanced verification data available for future SDK integration
       if (verificationStatus.eventData) {
         console.log('📋 Enhanced verification data available:');
@@ -274,7 +292,11 @@ function KycPage() {
         console.log('   🔍 Evidence Hash Available:', verificationStatus.eventData.evidence_hash.length > 0);
         console.log('   🆔 DID Type:', verificationStatus.eventData.did_type);
       }
-      
+
+      // Recreate ephemeral key pair from cached proof
+      const ephemeralKeyPair = ZkLoginService.recreateKeyPair(cached.ephemeralPrivateKey);
+
+      // Create transaction
       const tx = new Transaction();
       tx.moveCall({
         target: CONTRACT_FUNCTIONS.DID_REGISTRY.CLAIM_DID_NFT,
@@ -287,72 +309,93 @@ function KycPage() {
       });
       tx.setGasBudget(GAS_CONFIG.NFT_CLAIM_GAS_BUDGET);
 
-      signAndExecute(
-        {
-          transaction: tx as unknown as Parameters<typeof signAndExecute>[0]['transaction'], // Type assertion to handle SDK version mismatch
+      // Set sender to zkLogin address
+      tx.setSender(cached.address);
+
+      // Build the transaction
+      console.log('Building transaction...');
+      const txBytes = await tx.build({ client: suiClient });
+
+      // Sign with ephemeral key
+      console.log('Signing with ephemeral key...');
+      const { signature: ephemeralSignature } = await ephemeralKeyPair.signTransaction(txBytes);
+
+      // Verify cached data
+      if (!cached.jwtToken || !cached.userSalt) {
+        throw new Error('Cached proof is missing JWT token or user salt. Please sign in again.');
+      }
+
+      // Create zkLogin signature using cached proof data
+      console.log('Creating zkLogin signature from cached proof...');
+      const zkLoginSignature = ZkLoginService.getTransactionSignature({
+        ephemeralSignature,
+        useCache: true, // Use cached proof data
+      });
+
+      // Execute transaction
+      console.log('Executing transaction on testnet...');
+      const result = await suiClient.executeTransactionBlock({
+        transactionBlock: txBytes,
+        signature: zkLoginSignature,
+        options: {
+          showEffects: true,
+          showObjectChanges: true,
         },
-        {
-          onSuccess: async (result) => {
-            console.log('🎉 NFT Claim Transaction Success:', result);
-            
-            // Extract the NFT object ID from the transaction result
-            const nftObject = result.effects?.created?.find(
-              (item) => item.owner && typeof item.owner === 'object' && 'AddressOwner' in item.owner,
-            );
-            const nftId = nftObject?.reference?.objectId;
-            
-            console.log('🏆 DID NFT Created:', nftId);
-            
-            if (nftId) {
-              console.log('🎉 NFT Claimed Successfully! Saving to backend...');
-              
-              // Prepare NFT data for modal and backend
-              const nftData = {
-                nftId,
-                title: 'Age Verification NFT',
-                description: 'Verified above 18 years using Aadhaar document',
-                suiExplorerUrl: `https://suiscan.xyz/testnet/object/${nftId}`,
-                walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
-                transactionHash: result.digest,
-                userAddress: currentAccount.address
-              };
-              
-              // Save NFT credential to backend
-              try {
-                const saveResult = await credentialService.saveNFTCredential({
-                  userAddress: currentAccount.address,
-                  nftId,
-                  didType: userDidId || '1',
-                  title: 'Age Verification NFT',
-                  description: 'Verified above 18 years using Aadhaar document',
-                  suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
-                  walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
-                  blobId: encryptionResult.blobId,
-                  transactionHash: result.digest
-                });
-                
-                if (saveResult.success) {
-                  console.log('✅ NFT credential saved to backend:', saveResult.credentialId);
-                } else {
-                  console.error('❌ Failed to save NFT credential:', saveResult.error);
-                }
-              } catch (error) {
-                console.error('❌ Error saving NFT credential to backend:', error);
-              }
-              
-              // Show success modal
-              setNftClaimData(nftData);
-              setShowSuccessModal(true);
-              setStep('nft-claimed');
-            }
-          },
-          onError: (error) => {
-            console.error('❌ NFT Claim Transaction Failed:', error);
-            alert(`Failed to claim DID NFT: ${error.message || 'Unknown error'}`);
-          }
-        },
+      });
+
+      console.log('🎉 NFT Claim Transaction Success:', result);
+
+      // Extract the NFT object ID from the transaction result
+      const nftObject = result.effects?.created?.find(
+        (item: any) => item.owner && typeof item.owner === 'object' && 'AddressOwner' in item.owner,
       );
-    } catch (error) {
+      const nftId = nftObject?.reference?.objectId;
+
+      console.log('🏆 DID NFT Created:', nftId);
+
+      if (nftId) {
+        console.log('🎉 NFT Claimed Successfully! Saving to backend...');
+
+        // Prepare NFT data for modal and backend
+        const nftData = {
+          nftId,
+          title: 'Age Verification NFT',
+          description: 'Verified above 18 years using Aadhaar document',
+          suiExplorerUrl: `https://suiscan.xyz/testnet/object/${nftId}`,
+          walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
+          transactionHash: result.digest,
+          userAddress: zkLoginAddress
+        };
+
+        // Save NFT credential to backend
+        try {
+          const saveResult = await credentialService.saveNFTCredential({
+            userAddress: zkLoginAddress,
+            nftId,
+            didType: userDidId || '1',
+            title: 'Age Verification NFT',
+            description: 'Verified above 18 years using Aadhaar document',
+            suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
+            walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
+            blobId: encryptionResult.blobId,
+            transactionHash: result.digest
+          });
+
+          if (saveResult.success) {
+            console.log('✅ NFT credential saved to backend:', saveResult.credentialId);
+          } else {
+            console.error('❌ Failed to save NFT credential:', saveResult.error);
+          }
+        } catch (error) {
+          console.error('❌ Error saving NFT credential to backend:', error);
+        }
+
+        // Show success modal
+        setNftClaimData(nftData);
+        setShowSuccessModal(true);
+        setStep('nft-claimed');
+      }
+    } catch (error: any) {
       console.error('❌ Error claiming NFT:', error);
       alert(`Error claiming NFT: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -389,7 +432,7 @@ function KycPage() {
       <div className="fixed inset-0 z-0">
         <LightRays raysColor={colors.primary} />
       </div>
-      
+
       {/* Main Content Container */}
       <div className="relative z-10 min-h-screen">
         {/* Hero Section */}
@@ -410,7 +453,7 @@ function KycPage() {
                 <motion.span style={{ color: colors.primary }}>Identity</motion.span>
                 <motion.span style={{ color: colors.white }}> Verification</motion.span>
               </motion.h1>
-              
+
               {/* <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -420,7 +463,7 @@ function KycPage() {
               >
                 {verificationType}
               </motion.p> */}
-              
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -440,225 +483,224 @@ function KycPage() {
               className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border max-w-2xl mx-auto"
               style={{ borderColor: `${colors.primary}30` }}
             >
-            {step === 'country' && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <CountrySelectionStep
-                  onNext={handleCountrySelect}
-                  onBack={handleBack}
-                />
-              </motion.div>
-            )}
-            {step === 'document-type' && selectedCountry && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <DocumentTypeSelectionStep
-                  country={selectedCountry}
-                  onNext={handleDocumentTypeSelect}
-                  onBack={handleBack}
-                />
-              </motion.div>
-            )}
-            {step === 'aadhaar' && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <AadhaarUploadStep
-                  onNext={handleNext}
-                  onBack={handleBack}
-                  onFileUpload={handleAadhaarUpload}
-                />
-              </motion.div>
-            )}
-            {step === 'pan' && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PANUploadStep
-                  onNext={handleNext}
-                  onBack={handleBack}
-                  onFileUpload={handlePANUpload}
-                />
-              </motion.div>
-            )}
-            {step === 'face' && (aadhaarData || panData) && (
-              <FaceVerificationStep
-                onNext={handleNext}
-                onBack={handleBack}
-                panData={panData || {
-                  name: aadhaarData?.name,
-                  dob: aadhaarData?.dob,
-                  father_name: undefined,
-                  pan_number: undefined,
-                  pan_photo_base64: aadhaarData?.aadhaar_photo_base64
-                }}
-                panCardImage={panCardImage}
-              />
-            )}
-            {step === 'pan-verification' && panData && (
-              <PANVerificationStep
-                onNext={handleNext}
-                onBack={handleBack}
-                panData={panData}
-              />
-            )}
-            {step === 'otp' && aadhaarData && (
-              <OtpVerificationStep
-                onNext={handleNext}
-                onBack={handleBack}
-                phoneNumber={aadhaarData.phone_number || ''}
-                aadhaarData={aadhaarData}
-              />
-            )}
-            {step === 'waiting' && (
-              <div className="text-center py-12">
+              {step === 'country' && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="mb-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <div className="w-20 h-20 border-4 rounded-full animate-spin mx-auto mb-6" 
-                       style={{ borderColor: `${colors.primary}20`, borderTopColor: colors.primary }}></div>
-                  <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
-                    Waiting for Blockchain Verification
-                  </h2>
-                  <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
-                    Your OTP has been verified. Now waiting for on-chain attestation...
-                  </p>
+                  <CountrySelectionStep
+                    onNext={handleCountrySelect}
+                    onBack={handleBack}
+                  />
                 </motion.div>
-              
-                {currentAccount?.address && (
-                  <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                    <p className="text-sm mb-2" style={{ color: colors.white }}>
-                      <strong>Listening for address:</strong>
+              )}
+              {step === 'document-type' && selectedCountry && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <DocumentTypeSelectionStep
+                    country={selectedCountry}
+                    onNext={handleDocumentTypeSelect}
+                    onBack={handleBack}
+                  />
+                </motion.div>
+              )}
+              {step === 'aadhaar' && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AadhaarUploadStep
+                    onNext={handleNext}
+                    onBack={handleBack}
+                    onFileUpload={handleAadhaarUpload}
+                  />
+                </motion.div>
+              )}
+              {step === 'pan' && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <PANUploadStep
+                    onNext={handleNext}
+                    onBack={handleBack}
+                    onFileUpload={handlePANUpload}
+                  />
+                </motion.div>
+              )}
+              {step === 'face' && (aadhaarData || panData) && (
+                <FaceVerificationStep
+                  onNext={handleNext}
+                  onBack={handleBack}
+                  panData={panData || {
+                    name: aadhaarData?.name,
+                    dob: aadhaarData?.dob,
+                    father_name: undefined,
+                    pan_number: undefined,
+                    pan_photo_base64: aadhaarData?.aadhaar_photo_base64
+                  }}
+                  panCardImage={panCardImage}
+                />
+              )}
+              {step === 'pan-verification' && panData && (
+                <PANVerificationStep
+                  onNext={handleNext}
+                  onBack={handleBack}
+                  panData={panData}
+                />
+              )}
+              {step === 'otp' && aadhaarData && (
+                <OtpVerificationStep
+                  onNext={handleNext}
+                  onBack={handleBack}
+                  phoneNumber={aadhaarData.phone_number || ''}
+                  aadhaarData={aadhaarData}
+                />
+              )}
+              {step === 'waiting' && (
+                <div className="text-center py-12">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="mb-8"
+                  >
+                    <div className="w-20 h-20 border-4 rounded-full animate-spin mx-auto mb-6"
+                      style={{ borderColor: `${colors.primary}20`, borderTopColor: colors.primary }}></div>
+                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                      Waiting for Blockchain Verification
+                    </h2>
+                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                      Your OTP has been verified. Now waiting for on-chain attestation...
                     </p>
-                    <p className="text-xs font-mono px-3 py-2 rounded-lg" 
-                       style={{ backgroundColor: colors.darkNavy, color: colors.lightBlue }}>
-                      {currentAccount.address}
-                    </p>
-                  </div>
-                )}
-                
-                <div className="rounded-2xl p-4" style={{ backgroundColor: `${colors.darkNavy}80`, border: `1px solid ${colors.primary}20` }}>
-                  <p className="text-sm mb-2" style={{ color: colors.white }}>
-                    <strong>Event Listener Status:</strong>
-                  </p>
-                  <p className="text-sm" style={{ color: colors.lightBlue }}>
-                    {verificationStatus.verificationMessage || 'Initializing...'}
-                  </p>
-                
-                  {verificationStatus.isVerified && (
-                    <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                      <p className="font-semibold mb-2" style={{ color: colors.white }}>
-                        ✅ Verification completed from event listener!
+                  </motion.div>
+
+                  {zkLoginAddress && (
+                    <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+                      <p className="text-sm mb-2" style={{ color: colors.white }}>
+                        <strong>Listening for address:</strong>
                       </p>
-                      <p className="text-sm mb-3" style={{ color: colors.lightBlue }}>
-                        Starting document encryption process...
+                      <p className="text-xs font-mono px-3 py-2 rounded-lg"
+                        style={{ backgroundColor: colors.darkNavy, color: colors.lightBlue }}>
+                        {zkLoginAddress}
                       </p>
-                      
-                      {verificationStatus.eventData && (
-                        <div className="mt-3 p-3 rounded-lg text-xs" style={{ backgroundColor: colors.darkNavy, border: `1px solid ${colors.primary}20` }}>
-                          <p className="font-semibold mb-2" style={{ color: colors.white }}>Enhanced Event Data:</p>
-                          <div className="space-y-1" style={{ color: colors.lightBlue }}>
-                            <p>🆔 DID Type: {verificationStatus.eventData.did_type}</p>
-                            <p>📅 Signature Time: {new Date(parseInt(verificationStatus.eventData.signature_timestamp_ms)).toLocaleString()}</p>
-                            <p>🔐 Nautilus Signature: {verificationStatus.eventData.nautilus_signature.length > 0 ? '✅ Available' : '❌ Missing'}</p>
-                            <p>🔍 Evidence Hash: {verificationStatus.eventData.evidence_hash.length > 0 ? '✅ Available' : '❌ Missing'}</p>
-                          </div>
-                          <p className="text-sm mt-2" style={{ color: colors.primary }}>Ready for SDK verification calls!</p>
-                        </div>
-                      )}
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-            {step === 'encrypting' && (
-              <div className="text-center py-12">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="mb-8"
-                >
-                  <div className="w-20 h-20 border-4 rounded-full animate-spin mx-auto mb-6" 
-                       style={{ borderColor: `${colors.primary}20`, borderTopColor: colors.primary }}></div>
-                  <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
-                    Encrypting Documents
-                  </h2>
-                  <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
-                    Converting documents to secure encrypted format...
-                  </p>
-                </motion.div>
-              
-                <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                  <div className="space-y-2 text-sm" style={{ color: colors.white }}>
-                    <p>🔐 Converting base64 to file format...</p>
-                    <p>📄 Preparing document for encryption...</p>
-                    <p>🔄 Encrypting with Seal protocol...</p>
-                    <p>☁️ Uploading to Walrus storage...</p>
+                  <div className="rounded-2xl p-4" style={{ backgroundColor: `${colors.darkNavy}80`, border: `1px solid ${colors.primary}20` }}>
+                    <p className="text-sm mb-2" style={{ color: colors.white }}>
+                      <strong>Event Listener Status:</strong>
+                    </p>
+                    <p className="text-sm" style={{ color: colors.lightBlue }}>
+                      {verificationStatus.verificationMessage || 'Initializing...'}
+                    </p>
+
+                    {verificationStatus.isVerified && (
+                      <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+                        <p className="font-semibold mb-2" style={{ color: colors.white }}>
+                          ✅ Verification completed from event listener!
+                        </p>
+                        <p className="text-sm mb-3" style={{ color: colors.lightBlue }}>
+                          Starting document encryption process...
+                        </p>
+
+                        {verificationStatus.eventData && (
+                          <div className="mt-3 p-3 rounded-lg text-xs" style={{ backgroundColor: colors.darkNavy, border: `1px solid ${colors.primary}20` }}>
+                            <p className="font-semibold mb-2" style={{ color: colors.white }}>Enhanced Event Data:</p>
+                            <div className="space-y-1" style={{ color: colors.lightBlue }}>
+                              <p>🆔 DID Type: {verificationStatus.eventData.did_type}</p>
+                              <p>📅 Signature Time: {new Date(parseInt(verificationStatus.eventData.signature_timestamp_ms)).toLocaleString()}</p>
+                              <p>🔐 Nautilus Signature: {verificationStatus.eventData.nautilus_signature.length > 0 ? '✅ Available' : '❌ Missing'}</p>
+                              <p>🔍 Evidence Hash: {verificationStatus.eventData.evidence_hash.length > 0 ? '✅ Available' : '❌ Missing'}</p>
+                            </div>
+                            <p className="text-sm mt-2" style={{ color: colors.primary }}>Ready for SDK verification calls!</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                <div className="rounded-2xl p-4" style={{ backgroundColor: `${colors.darkNavy}80`, border: `1px solid ${colors.primary}20` }}>
-                  <p className="text-sm" style={{ color: colors.lightBlue }}>
-                    <strong>Process:</strong> Document → Base64 → Python Backend → Encryption → Walrus Upload
-                  </p>
-                </div>
-              </div>
-            )}
-        
-            {step === 'completed' && (
-              <div className="text-center py-12">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="mb-8"
-                >
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                       style={{ backgroundColor: `${colors.primary}20`, border: `2px solid ${colors.primary}` }}>
-                    <svg className="w-10 h-10" style={{ color: colors.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+              )}
+              {step === 'encrypting' && (
+                <div className="text-center py-12">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="mb-8"
+                  >
+                    <div className="w-20 h-20 border-4 rounded-full animate-spin mx-auto mb-6"
+                      style={{ borderColor: `${colors.primary}20`, borderTopColor: colors.primary }}></div>
+                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                      Encrypting Documents
+                    </h2>
+                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                      Converting documents to secure encrypted format...
+                    </p>
+                  </motion.div>
+
+                  <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+                    <div className="space-y-2 text-sm" style={{ color: colors.white }}>
+                      <p>🔐 Converting base64 to file format...</p>
+                      <p>📄 Preparing document for encryption...</p>
+                      <p>🔄 Encrypting with Seal protocol...</p>
+                      <p>☁️ Uploading to Walrus storage...</p>
+                    </div>
                   </div>
-                  <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
-                    Verification Complete!
-                  </h2>
-                  <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
-                    Your documents have been encrypted and stored securely.
-                  </p>
-                </motion.div>
-              
-                <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                  {/* <div className="space-y-2 text-sm" style={{ color: colors.white }}>
+
+                  <div className="rounded-2xl p-4" style={{ backgroundColor: `${colors.darkNavy}80`, border: `1px solid ${colors.primary}20` }}>
+                    <p className="text-sm" style={{ color: colors.lightBlue }}>
+                      <strong>Process:</strong> Document → Base64 → Python Backend → Encryption → Walrus Upload
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {step === 'completed' && (
+                <div className="text-center py-12">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="mb-8"
+                  >
+                    <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+                      style={{ backgroundColor: `${colors.primary}20`, border: `2px solid ${colors.primary}` }}>
+                      <svg className="w-10 h-10" style={{ color: colors.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                      Verification Complete!
+                    </h2>
+                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                      Your documents have been encrypted and stored securely.
+                    </p>
+                  </motion.div>
+
+                  <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+                    {/* <div className="space-y-2 text-sm" style={{ color: colors.white }}>
                     <p>✅ Blockchain verification confirmed</p>
                     <p>✅ Documents encrypted with Seal protocol</p>
                     <p>✅ Secure storage on Walrus network</p>
                     <p>✅ Ready to claim DID NFT</p>
                   </div> */}
-                
-                  {encryptionResult && (
-                    <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${colors.primary}30` }}>
-                      <p className="text-xs font-semibold mb-2" style={{ color: colors.white }}>Encryption Details:</p>
-                      <div className="space-y-1 text-xs font-mono" style={{ color: colors.lightBlue }}>
-                        <p><strong>Blob ID:</strong> {encryptionResult.blobId}</p>
-                        {/* <p><strong>Encryption ID:</strong> {encryptionResult.encryptionId}</p> */}
-                        {/* <p><strong>Sui Reference:</strong> {encryptionResult.suiRef}</p> */}
-                      </div>
-                      <div className="mt-2 space-y-1">
-                        {/* <a 
+
+                    {encryptionResult && (
+                      <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${colors.primary}30` }}>
+                        <p className="text-xs font-semibold mb-2" style={{ color: colors.white }}>Encryption Details:</p>
+                        <div className="space-y-1 text-xs font-mono" style={{ color: colors.lightBlue }}>
+                          <p><strong>Blob ID:</strong> {encryptionResult.blobId}</p>
+                          {/* <p><strong>Encryption ID:</strong> {encryptionResult.encryptionId}</p> */}
+                          {/* <p><strong>Sui Reference:</strong> {encryptionResult.suiRef}</p> */}
+                        </div>
+                        <div className="mt-2 space-y-1">
+                          {/* <a 
                           href={DocumentEncryptionService.getBlobUrl(encryptionResult.blobId!)}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -667,92 +709,91 @@ function KycPage() {
                         >
                           🔗 View on Walrus
                         </a> */}
-                        <a 
-                          href={DocumentEncryptionService.getSuiExplorerUrl(encryptionResult.suiRef!, 'object')}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs underline block hover:opacity-80 transition-opacity"
-                          style={{ color: colors.primary }}
-                        >
-                          🔍 View on Sui Explorer
-                        </a>
+                          <a
+                            href={DocumentEncryptionService.getSuiExplorerUrl(encryptionResult.suiRef!, 'object')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs underline block hover:opacity-80 transition-opacity"
+                            style={{ color: colors.primary }}
+                          >
+                            🔍 View on Sui Explorer
+                          </a>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              
-                <div className="space-y-4">
-                  <motion.button
-                    onClick={claimDidNft}
-                    disabled={isClaimingNft || !encryptionResult?.blobId}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
-                      isClaimingNft || !encryptionResult?.blobId
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <motion.button
+                      onClick={claimDidNft}
+                      disabled={isClaimingNft || !encryptionResult?.blobId}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${isClaimingNft || !encryptionResult?.blobId
                         ? 'text-gray-300 cursor-not-allowed'
                         : 'text-white shadow-lg'
-                    }`}
-                    style={{
-                      background: isClaimingNft || !encryptionResult?.blobId 
-                        ? '#4b5563' 
-                        : colors.gradients.primary
-                    }}
+                        }`}
+                      style={{
+                        background: isClaimingNft || !encryptionResult?.blobId
+                          ? '#4b5563'
+                          : colors.gradients.primary
+                      }}
+                    >
+                      {isClaimingNft ? '🔄 Claiming NFT...' : '🏆 Claim Your DID NFT'}
+                    </motion.button>
+
+                    <motion.button
+                      onClick={() => router.push('/dashboard')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 text-white"
+                      style={{ backgroundColor: colors.darkNavy, border: `1px solid ${colors.primary}40` }}
+                    >
+                      Go to Dashboard
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+
+              {step === 'error' && (
+                <div className="text-center py-12">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="mb-8"
                   >
-                    {isClaimingNft ? '🔄 Claiming NFT...' : '🏆 Claim Your DID NFT'}
-                  </motion.button>
-                  
+                    <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+                      style={{ backgroundColor: `${colors.primary}20`, border: `2px solid #ef4444` }}>
+                      <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                      Process Failed
+                    </h2>
+                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                      There was an error during the document encryption process.
+                    </p>
+                  </motion.div>
+
+                  <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
+                    <p className="text-sm" style={{ color: colors.white }}>
+                      Please check the console for detailed error information.
+                    </p>
+                  </div>
+
                   <motion.button
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => setStep('waiting')}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 text-white"
-                    style={{ backgroundColor: colors.darkNavy, border: `1px solid ${colors.primary}40` }}
+                    style={{ backgroundColor: colors.primary }}
                   >
-                    Go to Dashboard
+                    Try Again
                   </motion.button>
                 </div>
-              </div>
-            )}
-        
-            {step === 'error' && (
-              <div className="text-center py-12">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="mb-8"
-                >
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                       style={{ backgroundColor: `${colors.primary}20`, border: `2px solid #ef4444` }}>
-                    <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
-                    Process Failed
-                  </h2>
-                  <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
-                    There was an error during the document encryption process.
-                  </p>
-                </motion.div>
-                
-                <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
-                  <p className="text-sm" style={{ color: colors.white }}>
-                    Please check the console for detailed error information.
-                  </p>
-                </div>
-                
-                <motion.button
-                  onClick={() => setStep('waiting')}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 text-white"
-                  style={{ backgroundColor: colors.primary }}
-                >
-                  Try Again
-                </motion.button>
-              </div>
-            )}
+              )}
             </motion.div>
           </div>
         </div>

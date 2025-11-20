@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { ChevronLeft, Loader2, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
 import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
-import { useCurrentAccount } from '@mysten/dapp-kit';
+// Commented out EOA wallet import - using zkLogin instead
+// import { useCurrentAccount } from '@mysten/dapp-kit';
+import { useAuth } from '@/hooks/useAuth';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 interface PANData {
@@ -20,15 +22,16 @@ interface PANVerificationStepProps {
   verificationType?: string; // 'above18' or 'citizenship'
 }
 
-const PANVerificationStep: React.FC<PANVerificationStepProps> = ({ 
-  onNext, 
-  onBack, 
-  panData, 
-  verificationType = 'above18' 
+const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
+  onNext,
+  onBack,
+  panData,
+  verificationType = 'above18'
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currentAccount = useCurrentAccount();
+  // Use zkLogin address instead of EOA wallet
+  const { address: zkLoginAddress } = useAuth();
 
   // Auto-set DID based on verification type
   const getDid = () => {
@@ -36,8 +39,8 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
   };
 
   const handleProceed = async () => {
-    if (!panData || !currentAccount?.address) {
-      setError('Missing PAN data or wallet connection');
+    if (!panData || !zkLoginAddress) {
+      setError('Missing PAN data or zkLogin address');
       return;
     }
 
@@ -46,10 +49,10 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
       setError(null);
 
       console.log('🔄 Starting PAN verification process...');
-      
+
       // Send PAN data to Redis stream for enclave processing
       const verificationPayload = {
-        user_address: currentAccount.address,
+        user_address: zkLoginAddress,
         document_type: 'pan',
         did_type: getDid(),
         pan_data: {
@@ -94,9 +97,9 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 mb-6">
-        <button 
-          type="button" 
-          onClick={onBack} 
+        <button
+          type="button"
+          onClick={onBack}
           className="p-2 rounded-full transition-colors"
           style={{ backgroundColor: `${colors.primary}20` }}
         >
@@ -110,8 +113,8 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
       <div className="space-y-6">
         {/* Error Display */}
         {error && (
-          <div className="p-4 rounded-2xl flex items-center gap-3" 
-               style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
+          <div className="p-4 rounded-2xl flex items-center gap-3"
+            style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <p className="text-sm" style={{ color: colors.white }}>{error}</p>
           </div>
@@ -130,8 +133,8 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
 
         {/* PAN Data Summary */}
         {panData && (
-          <div className="p-4 rounded-xl" 
-               style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
+          <div className="p-4 rounded-xl"
+            style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle className="w-5 h-5" style={{ color: colors.primary }} />
               <h4 className="font-semibold" style={{ color: colors.white }}>PAN Details to Verify</h4>
@@ -166,8 +169,8 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         )}
 
         {/* Verification Process Info */}
-        <div className="p-4 rounded-xl" 
-             style={{ backgroundColor: `${colors.primary}05`, border: `1px solid ${colors.primary}20` }}>
+        <div className="p-4 rounded-xl"
+          style={{ backgroundColor: `${colors.primary}05`, border: `1px solid ${colors.primary}20` }}>
           <h4 className="font-semibold mb-2" style={{ color: colors.white }}>Verification Process:</h4>
           <div className="space-y-2 text-sm" style={{ color: colors.lightBlue }}>
             <p>🔐 Secure enclave processes your data</p>
@@ -195,8 +198,8 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         </button>
 
         {/* Info Note */}
-        <div className="p-3 rounded-xl text-center" 
-             style={{ backgroundColor: `${colors.primary}05`, border: `1px solid ${colors.primary}20` }}>
+        <div className="p-3 rounded-xl text-center"
+          style={{ backgroundColor: `${colors.primary}05`, border: `1px solid ${colors.primary}20` }}>
           <p className="text-xs" style={{ color: colors.lightBlue }}>
             💡 No OTP required for PAN verification. Government database verification happens automatically.
           </p>
