@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
 import { motion } from 'framer-motion';
+import { Award, ExternalLink } from 'lucide-react';
 import LightRays from '@/components/ui/lightRays';
 import CountrySelectionStep from '@/components/CountrySelectionStep';
 import DocumentTypeSelectionStep from '@/components/DocumentTypeSelectionStep';
@@ -88,7 +89,7 @@ function KycPage() {
   
   // Get verification type from URL parameters or default
   // const verificationType = searchParams.get('type') || 'Verify Above 18'; // Commented out - not used
-  const verificationDescription = searchParams.get('description') || 'Verify your age using Aadhaar document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.';
+  const verificationDescription = searchParams.get('description') || 'Verify your age using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.';
   
   // Sui client and transaction execution
   const suiClient = useSuiClient();
@@ -516,8 +517,7 @@ function KycPage() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-3xl md:text-5xl font-bold mb-3"
               >
-                <motion.span className="text-primary">Identity</motion.span>
-                <motion.span className="text-charcoal-text"> Verification</motion.span>
+                <p className=' bg-primary text-white p-4 rounded-lg w-fit mx-auto'>Identity Verification</p>
               </motion.h1>
               
               <motion.p
@@ -678,7 +678,7 @@ function KycPage() {
                 </motion.div>
               
                 {currentAccount?.address && (
-                  <div className="rounded-2xl p-4 mb-6 bg-primary/10 border border-primary/30">
+                  <div className="rounded-2xl p-4 mb-6 bg-primary/10 border border-primary/30 hidden">
                     <p className="text-sm mb-2 text-charcoal-text">
                       <strong>Listening for address:</strong>
                     </p>
@@ -688,7 +688,7 @@ function KycPage() {
                   </div>
                 )}
                 
-                <div className="rounded-2xl p-4 bg-white border border-primary/20">
+                <div className="rounded-2xl p-4 bg-white border border-primary/20 hidden">
                   <p className="text-sm mb-2 text-charcoal-text">
                     <strong>Event Listener Status:</strong>
                   </p>
@@ -773,6 +773,7 @@ function KycPage() {
                       variant="primary"
                       className="flex-1 py-4 px-6 rounded-lg font-semibold transition-all duration-300 border-[3px] shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                     >
+                      <Award className="w-5 h-5 mr-2" />
                       {isClaimingNft ? 'Claiming NFT...' : 'Claim Your DID NFT'}
                     </Button>
                     
@@ -793,6 +794,7 @@ function KycPage() {
                           variant="secondary"
                           className="w-full py-4"
                         >
+                          <ExternalLink className="w-5 h-5 mr-2" />
                           View on Explorer
                         </Button>
                       </motion.div>
@@ -836,12 +838,6 @@ function KycPage() {
                     There was an error during the document encryption process.
                   </p>
                 </motion.div>
-                
-                <div className="rounded-2xl p-4 mb-6 bg-error/10 border border-error/30">
-                  <p className="text-sm text-charcoal-text">
-                    Please check the console for detailed error information.
-                  </p>
-                </div>
                 
                 <Button
                   onClick={() => setStep('waiting')}

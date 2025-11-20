@@ -28,7 +28,7 @@ const User: React.FC = () => {
         {
             id: 1,
             title: 'Verify Above 18',
-            description: 'Verify your age using Aadhaar document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
+            description: 'Verify your age using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
             icon: Calendar,
             status: 'not_verified',
             delay: 0.1,
@@ -37,7 +37,7 @@ const User: React.FC = () => {
         {
             id: 2,
             title: 'Citizenship Verification',
-            description: 'Verify your citizenship status. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
+            description: 'Verify your citizenship status using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.',
             icon: Users,
             status: 'not_verified',
             delay: 0.2,

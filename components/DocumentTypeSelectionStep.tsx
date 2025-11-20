@@ -30,19 +30,19 @@ const getDocumentTypesForCountry = (countryCode: string): DocumentType[] => {
     case 'IN':
       return [
         {
-          id: 'aadhaar',
-          name: 'National ID (Aadhaar)',
-          description: 'Biometric identity document issued by UIDAI',
-          icon: <FileText className="w-6 h-6" />,
-          features: ['Biometric verification', 'Residence proof', 'Government database linkage'],
-          available: true
-        },
-        {
           id: 'pan',
           name: 'PAN Card',
           description: 'Permanent Account Number for tax identification',
           icon: <CreditCard className="w-6 h-6" />,
           features: ['Tax ID verification', 'Age verification', 'Income tax compliance'],
+          available: true
+        },
+        {
+          id: 'aadhaar',
+          name: 'National ID (Aadhaar)',
+          description: 'Biometric identity document issued by UIDAI',
+          icon: <FileText className="w-6 h-6" />,
+          features: ['Biometric verification', 'Residence proof', 'Government database linkage'],
           available: true
         },
         {
