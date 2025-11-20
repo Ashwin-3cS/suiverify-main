@@ -55,9 +55,16 @@ export const ExtractedDataModal: React.FC<ExtractedDataModalProps> = ({
     }
   }, [isOpen, mode, data]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (onSave) {
-      onSave(editedData);
+      try {
+        await onSave(editedData);
+        // Close modal after successful save
+        onClose();
+      } catch (error) {
+        // If save fails, keep modal open so user can retry
+        console.error('Error saving data:', error);
+      }
     }
   };
 
