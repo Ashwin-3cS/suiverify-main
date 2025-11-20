@@ -13,9 +13,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Don't protect the auth page and adminLogin page
-    if (pathname === '/auth' || pathname === '/adminLogin' || pathname === '/admin') {
+    // Don't protect adminLogin and admin pages
+    if (pathname === '/adminLogin' || pathname === '/admin') {
       setIsAuthenticated(true);
+      return;
+    }
+
+    // Redirect /auth to /dashboard
+    if (pathname === '/auth') {
+      router.replace('/dashboard');
       return;
     }
 
@@ -24,8 +30,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       const authData = localStorage.getItem('suiverify_auth');
       
       if (!authData) {
-        // No auth data, redirect to auth page
-        router.push('/auth');
+        // No auth data, redirect to dashboard (where they can sign in)
+        router.push('/dashboard');
         return;
       }
 
@@ -38,7 +44,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         if (sessionAge > sessionTimeout) {
           // Session expired, clear and redirect
           localStorage.removeItem('suiverify_auth');
-          router.push('/auth');
+          router.push('/dashboard');
           return;
         }
 
@@ -47,7 +53,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       } catch {
         // Invalid auth data, redirect
         localStorage.removeItem('suiverify_auth');
-        router.push('/auth');
+        router.push('/dashboard');
       }
     };
 
