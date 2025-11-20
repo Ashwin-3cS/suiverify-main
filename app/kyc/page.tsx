@@ -766,21 +766,6 @@ function KycPage() {
                       Converting documents to secure encrypted format...
                     </p>
                   </motion.div>
-
-                  <div className="rounded-2xl p-4 mb-6 bg-primary/10 border border-primary/30">
-                    <div className="space-y-2 text-sm text-charcoal-text">
-                      <p>🔐 Converting base64 to file format...</p>
-                      <p>📄 Preparing document for encryption...</p>
-                      <p>🔄 Encrypting with Seal protocol...</p>
-                      <p>☁️ Uploading to Walrus storage...</p>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl p-4 bg-white border border-primary/20">
-                    <p className="text-sm text-charcoal-text/70">
-                      <strong>Process:</strong> Document → Base64 → Python Backend → Encryption → Walrus Upload
-                    </p>
-                  </div>
                 </div>
               )}
 
