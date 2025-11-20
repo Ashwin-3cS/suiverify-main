@@ -87,13 +87,6 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
 
       if (result.success && result.data) {
         setFaceResult(result.data);
-
-        // Auto proceed to next step after successful face verification
-        if (result.data.verified && result.data.verification_status === 'SUCCESS') {
-          setTimeout(() => {
-            onNext();
-          }, 2000);
-        }
       } else {
         const failureMessage = result.data?.message || result.message || 'Face verification failed.';
         setError(`Face verification failed: ${failureMessage}`);
@@ -143,16 +136,6 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
           <div className="p-4 rounded-lg flex items-center gap-3 bg-error/10 border border-error/30">
             <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
             <p className="text-sm text-charcoal-text">{error}</p>
-          </div>
-        )}
-
-        {/* Success Display */}
-        {faceResult && faceResult.verified && (
-          <div className="p-4 rounded-2xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #10b981` }}>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5" style={{ color: '#10b981' }} />
-              <h4 className="font-semibold" style={{ color: colors.white }}>Face Verification Successful</h4>
-            </div>
           </div>
         )}
 
