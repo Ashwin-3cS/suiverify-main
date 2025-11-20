@@ -91,7 +91,7 @@ function KycPage() {
   const searchParams = useSearchParams();
   // Commented out EOA wallet hook - using zkLogin instead
   // const currentAccount = useCurrentAccount();
-  const { address: zkLoginAddress, isAuthenticated } = useAuth();
+  const { address: zkLoginAddress } = useAuth();
   const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener();
 
   // Get verification type from URL parameters or default
@@ -300,7 +300,7 @@ function KycPage() {
       console.error('❌ Error in document encryption:', error);
       setStep('error');
     }
-  }, [selectedDocumentType?.id, panData?.pan_photo_base64, aadhaarData?.aadhaar_photo_base64, zkLoginAddress, encryptAndUploadDocument, aadhaarData, panData]);
+  }, [selectedDocumentType?.id, zkLoginAddress, encryptAndUploadDocument]);
 
   // Handle successful verification from event listener
   // Only process if we're in the waiting step (after OTP/PAN verification)
@@ -422,7 +422,10 @@ function KycPage() {
 
       // Extract the NFT object ID from the transaction result
       const nftObject = result.effects?.created?.find(
-        (item: any) => item.owner && typeof item.owner === 'object' && 'AddressOwner' in item.owner,
+        (item) => {
+          if (!item.owner || typeof item.owner !== 'object') return false;
+          return 'AddressOwner' in item.owner;
+        }
       );
       const nftId = nftObject?.reference?.objectId;
 
@@ -470,7 +473,7 @@ function KycPage() {
         setShowSuccessModal(true);
         setStep('nft-claimed');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Error claiming NFT:', error);
       alert(`Error claiming NFT: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {

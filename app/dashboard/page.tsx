@@ -17,9 +17,7 @@ import {
   AlertCircle,
   Calendar,
   Users,
-  TrendingUp,
   ArrowRight,
-  Search,
 } from "lucide-react";
 import { colors } from "@/app/brand";
 import DashboardHeader from "@/components/ui/DashboardHeader";
@@ -128,9 +126,6 @@ const User: React.FC = () => {
         return <Clock className="w-5 h-5 text-charcoal-text/40" />;
     }
   };
-
-  const verificationPercentage =
-    stats.total > 0 ? Math.round((stats.verified / stats.total) * 100) : 0;
 
   return (
     <div className="w-full bg-ghost-white outfit min-h-screen relative overflow-hidden">

@@ -1,12 +1,9 @@
 'use client';
 
-import type { Metadata } from "next";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react';
-import { colors } from '@/app/brand';
 import accessControlData from '@/access-control.json';
 import { Button } from '@/components/ui/button';
 
@@ -15,39 +12,6 @@ interface AuthResult {
   user?: { name: string; role: string };
   error?: string;
 }
-
-// Authentication function using the JSON data
-const authenticate = (username: string, password: string): AuthResult => {
-  try {
-    const user = accessControlData.users.find((u: { username: string; password: string; role: string }) => u.username === username && u.password === password);
-    
-    if (user) {
-      // Store auth data in localStorage
-      const authData = {
-        username: user.username,
-        role: user.role,
-        timestamp: Date.now()
-      };
-      
-      localStorage.setItem('suiverify_auth', JSON.stringify(authData));
-      
-      return {
-        success: true,
-        user: { name: user.username, role: user.role }
-      };
-    } else {
-      return {
-        success: false,
-        error: 'Invalid credentials'
-      };
-    }
-  } catch (error) {
-    return {
-      success: false,
-      error: 'Authentication failed'
-    };
-  }
-};
 
 export default function AuthPage() {
   const [username, setUsername] = useState('');
@@ -132,7 +96,8 @@ export default function AuthPage() {
       } else {
         setError(result.error || 'Authentication failed');
       }
-    } catch {
+    } catch (err) {
+      console.error('Authentication error:', err);
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);

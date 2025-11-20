@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCurrentAccount, useSignPersonalMessage } from '@mysten/dapp-kit';
 import { useRouter } from 'next/navigation';
 import { SessionKey } from '@mysten/seal';
-import { AlertCircle, Clock, FileText, Shield, Search, Download, Loader2, X } from 'lucide-react';
+import { AlertCircle, FileText, Shield, Search, Download, Loader2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';

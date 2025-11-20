@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { colors } from '@/app/brand';
 import { Eye, EyeOff, Shield, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
