@@ -106,10 +106,13 @@ export class DocumentEncryptionService {
   private async tryPublisher(publisherUrl: string, encryptedData: Uint8Array): Promise<any> {
     const url = `${publisherUrl}/v1/blobs?epochs=${NUM_EPOCH}`;
     console.log(`📤 Trying publisher: ${publisherUrl}`);
-    
+
     const response = await fetch(url, {
       method: 'PUT',
-      body: encryptedData,
+      body: Buffer.from(encryptedData),
+      headers: {
+        'Content-Type': 'application/octet-stream',
+      },
       // Add timeout to prevent hanging
       signal: AbortSignal.timeout(30000) // 30 second timeout
     });

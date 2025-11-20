@@ -1,10 +1,10 @@
 "use client";
 
-import { ConnectButton } from "@mysten/dapp-kit";
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import Image from "next/image";
 import Logo from "@/public/logo.svg";
+import AuthButton from "@/components/auth/AuthButton";
 
 const DashboardHeader = () => {
     const router = useRouter();
@@ -27,7 +27,7 @@ const DashboardHeader = () => {
                         <Image src={Logo} alt="SuiVerify" className="w-24 h-auto" />
                     </div>
 
-                    {/* Right Side - Balance and Connect Wallet */}
+                    {/* Right Side - Auth, Wallet Connect, and Logout */}
                     <div className="flex items-center space-x-4 relative z-50">
                         {/* Logout Button - Only show on admin routes */}
                         {isAdminRoute && (
@@ -40,10 +40,8 @@ const DashboardHeader = () => {
                             </button>
                         )}
 
-                        <ConnectButton
-                            connectText="Connect Wallet"
-                            className="flex items-center gap-2 bg-[#00BFFF] text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium"
-                        />
+                        {/* zkLogin Sign In Button */}
+                        <AuthButton size="sm" />
 
                         {/* Mobile Menu Button */}
                         <button className="md:hidden p-2">

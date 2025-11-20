@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { WalletProvider } from "@/components/providers/WalletProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 // Temporarily use system fonts to fix Turbopack build issues
 // TODO: Re-enable Google Fonts when Turbopack font loading is stable
@@ -69,11 +70,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <WalletProvider>
-          <ProtectedRoute>
-            {children}
-          </ProtectedRoute>
-        </WalletProvider>
+        <AuthProvider>
+          <WalletProvider>
+            <ProtectedRoute>
+              {children}
+            </ProtectedRoute>
+          </WalletProvider>
+        </AuthProvider>
       </body>
     </html>
   );
