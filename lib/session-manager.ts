@@ -75,25 +75,21 @@ export class SessionManager {
 
   /**
    * Save proof data to cache with 24h TTL
-   * NOTE: We only store ADDRESS (non-sensitive) to maintain logged-in state persistence
-   * Sensitive data (jwtToken, ephemeralPrivateKey, userSalt, etc) stays in React context ONLY
-   * This ensures the address survives page refreshes without exposing secrets
+   * NOTE: Stores zkProof data including jwtToken, userSalt for transaction signing
+   * This data is required to create zkLogin signatures for transactions
    */
   static cacheProof(data: Omit<CachedProofData, "createdAt" | "expiresAt">): void {
     if (typeof window === "undefined") return;
 
     const now = Date.now();
-    // ⚠️ IMPORTANT: Only store ADDRESS - it never changes per user
-    // Sensitive data must be retrieved from React context or re-derived from email
-    const minimalCacheData = {
-      address: data.address,
-      // DO NOT store: jwtToken, ephemeralPrivateKey, userSalt, randomness, maxEpoch, zkProof
+    const cacheData = {
+      ...data,
       createdAt: now,
       expiresAt: now + CACHE_TTL,
     };
 
-    localStorage.setItem(PROOF_CACHE_KEY, JSON.stringify(minimalCacheData));
-    console.log("✅ User address cached for persistence (non-sensitive) - expires in 24h");
+    localStorage.setItem(PROOF_CACHE_KEY, JSON.stringify(cacheData));
+    console.log("✅ zkLogin proof cached (valid for 24h) - includes proof data for transactions");
   }
 
   /**

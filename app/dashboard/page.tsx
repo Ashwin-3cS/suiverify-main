@@ -10,6 +10,7 @@ import { credentialService, type CredentialData, type CredentialStats } from '@/
 import { Shield, FileText, CheckCircle, Clock, AlertCircle, Calendar, Users } from 'lucide-react';
 import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';
+import ZkLoginTransactionTest from '@/components/zklogin/ZkLoginTransactionTest';
 
 const User: React.FC = () => {
     const router = useRouter();
@@ -193,7 +194,7 @@ const User: React.FC = () => {
                             style={{ borderColor: `${colors.primary}30` }}
                         >
                             <nav className="flex space-x-2">
-                                {['verifications', 'credentials'].map((tab) => (
+                                {['verifications', 'credentials', 'zkLogin'].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveNav(tab)}
@@ -358,6 +359,22 @@ const User: React.FC = () => {
                                         );
                                     })}
                                 </div>
+                            </motion.div>
+                        )}
+
+                        {/* zkLogin Transaction Test Section */}
+                        {activeNav === 'zkLogin' && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6 }}
+                            >
+                                <div className="mb-8">
+                                    <h2 className="text-2xl font-bold mb-2" style={{ color: colors.white }}>zkLogin Testnet Test</h2>
+                                    <p className="text-sm" style={{ color: colors.lightBlue }}>Test your zkLogin integration on Sui Testnet</p>
+                                </div>
+
+                                <ZkLoginTransactionTest />
                             </motion.div>
                         )}
 

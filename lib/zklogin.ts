@@ -281,32 +281,12 @@ export class ZkLoginService {
     console.log("ephemeralSignature type:", typeof params.ephemeralSignature);
 
     try {
-      // Decode JWT to get claim info
-      const decodedJWT = this.decodeJWT(params.jwtToken);
-
-      // Compute addressSeed from JWT and salt
-      const addressSeed = genAddressSeed(
-        BigInt(params.userSalt),
-        "sub", // claim name
-        decodedJWT.sub, // claim value
-        decodedJWT.aud
-      ).toString();
-
-      console.log("Address seed:", addressSeed);
-
-      // Add addressSeed to zkProof
-      const completeZkProof = {
-        ...params.zkProof,
-        addressSeed,
-      };
-
-      console.log(
-        "Complete zkProof with addressSeed:",
-        Object.keys(completeZkProof)
-      );
+      // IMPORTANT: The zkProof from Enoki already contains the correct addressSeed
+      // We should NOT recompute it as that causes a mismatch and Groth16 verification failure
+      console.log("Using addressSeed from zkProof:", params.zkProof.addressSeed);
 
       const signature = getZkLoginSignature({
-        inputs: completeZkProof,
+        inputs: params.zkProof, // Use zkProof as-is with its embedded addressSeed
         maxEpoch: params.maxEpoch,
         userSignature: params.ephemeralSignature,
       });
