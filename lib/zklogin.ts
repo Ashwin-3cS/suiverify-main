@@ -20,6 +20,7 @@ export class ZkLoginService {
   /**
    * Initialize a new zkLogin session
    * Note: userSalt will be derived from JWT email for consistency across devices
+   * Uses Enoki API for nonce generation on testnet
    */
   static async initializeSession(): Promise<{
     ephemeralKeyPair: Ed25519Keypair;
@@ -33,15 +34,7 @@ export class ZkLoginService {
     // Generate ephemeral key pair
     const ephemeralKeyPair = new Ed25519Keypair();
 
-    // Generate randomness
-    const randomness = generateRandomness();
-
-    // Get current epoch
-    const { epoch } = await suiClient.getLatestSuiSystemState();
-    const maxEpoch = Number(epoch) + 10; // Valid for ~2 days
-
     // Generate a consistent user salt (will be finalized with JWT email later)
-    // For now, use a placeholder - will be updated in completeZkLoginFlow
     let userSalt = localStorage.getItem("userSalt");
     if (!userSalt) {
       // Temporary salt - will be replaced with email-derived salt
@@ -49,12 +42,35 @@ export class ZkLoginService {
       localStorage.setItem("userSalt", userSalt);
     }
 
-    // Generate nonce
-    const nonce = generateNonce(
-      ephemeralKeyPair.getPublicKey(),
-      maxEpoch,
-      randomness
+    // Get nonce from Enoki API
+    // Use toSuiPublicKey() which serializes with the Ed25519 flag (0x00) that Enoki expects
+    const ephemeralPublicKeyBase64 = ephemeralKeyPair.getPublicKey().toSuiPublicKey();
+
+    console.log("🌐 Requesting nonce from Enoki API...");
+    const nonceResponse = await fetch(
+      process.env.NEXT_PUBLIC_ENOKI_NONCE_URL!,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_ENOKI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          network: "testnet",
+          ephemeralPublicKey: ephemeralPublicKeyBase64,
+          additionalEpochs: 2, // Valid for 2 epochs
+        }),
+      }
     );
+
+    if (!nonceResponse.ok) {
+      const errorText = await nonceResponse.text();
+      console.error("Enoki nonce API error:", errorText);
+      throw new Error(`Failed to get nonce from Enoki: ${nonceResponse.status}`);
+    }
+
+    const nonceData = await nonceResponse.json();
+    const { nonce, randomness, maxEpoch } = nonceData.data;
 
     console.log("=== Session Initialization ===");
     console.log("Nonce generated:", nonce);
@@ -162,7 +178,8 @@ export class ZkLoginService {
   }
 
   /**
-   * Generate ZK Proof via Mysten Labs prover service
+   * Generate ZK Proof via Enoki API
+   * Uses the Enoki zkLogin ZKP endpoint for testnet
    */
   static async generateZkProof(params: {
     jwtToken: string;
@@ -174,16 +191,14 @@ export class ZkLoginService {
     const { jwtToken, ephemeralKeyPair, randomness, maxEpoch, userSalt } =
       params;
 
-    console.log("=== Generating ZK Proof ===");
+    console.log("=== Generating ZK Proof via Enoki API ===");
     console.log("Using randomness:", randomness);
     console.log("Using maxEpoch:", maxEpoch);
 
-    // Get extended ephemeral public key
-    const extendedEphemeralPublicKey = getExtendedEphemeralPublicKey(
-      ephemeralKeyPair.getPublicKey()
-    );
+    // Get serialized ephemeral public key (same format as nonce endpoint)
+    const ephemeralPublicKeyBase64 = ephemeralKeyPair.getPublicKey().toSuiPublicKey();
 
-    console.log("Extended ephemeral public key:", extendedEphemeralPublicKey);
+    console.log("Ephemeral public key (Base64):", ephemeralPublicKeyBase64);
 
     // Decode JWT to verify nonce
     const decodedJWT = this.decodeJWT(jwtToken);
@@ -208,47 +223,46 @@ export class ZkLoginService {
 
       throw new Error(
         `Nonce mismatch! Expected: ${expectedNonce}, Got: ${decodedJWT.nonce}. ` +
-          `This means the ephemeral keypair was not restored correctly. Please restart the flow.`
+        `This means the ephemeral keypair was not restored correctly. Please restart the flow.`
       );
     }
 
     console.log("✅ Nonce verification passed!");
 
-    // Prepare request
-    const zkProofRequest = {
-      jwt: jwtToken,
-      extendedEphemeralPublicKey,
-      maxEpoch: maxEpoch.toString(),
-      jwtRandomness: randomness,
-      salt: userSalt,
-      keyClaimName: "sub",
-    };
-
     console.log(
-      "Sending proof request to:",
-      process.env.NEXT_PUBLIC_PROVER_URL
+      "🌐 Sending ZKP request to Enoki API:",
+      process.env.NEXT_PUBLIC_ENOKI_ZKP_URL
     );
 
-    // Call prover service
-    const response = await fetch(process.env.NEXT_PUBLIC_PROVER_URL!, {
+    // Call Enoki ZKP service
+    const response = await fetch(process.env.NEXT_PUBLIC_ENOKI_ZKP_URL!, {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_ENOKI_API_KEY}`,
         "Content-Type": "application/json",
+        "zklogin-jwt": jwtToken,
       },
-      body: JSON.stringify(zkProofRequest),
+      body: JSON.stringify({
+        network: "testnet",
+        ephemeralPublicKey: ephemeralPublicKeyBase64,
+        maxEpoch: maxEpoch,
+        randomness: randomness,
+      }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Prover service error response:", errorText);
+      console.error("Enoki ZKP API error response:", errorText);
       throw new Error(
-        `Prover service error: ${response.status} - ${errorText}`
+        `Enoki ZKP service error: ${response.status} - ${errorText}`
       );
     }
 
-    const proof = await response.json();
-    console.log("✅ ZK Proof received successfully");
-    return proof;
+    const zkpData = await response.json();
+    console.log("✅ ZK Proof received successfully from Enoki");
+
+    // Enoki returns the proof in a data wrapper
+    return zkpData.data || zkpData;
   }
 
   /**
