@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { X, Copy, ExternalLink, Info } from 'lucide-react';
 import { buildExplorerUrl } from '@/config/contracts';
+import { Button } from '@/components/ui/button';
 
 interface AddressModalProps {
   isOpen: boolean;
@@ -35,87 +37,77 @@ const AddressModal: React.FC<AddressModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-99999 p-4"
-          onClick={onClose}
-        >
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+          {/* Backdrop */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="bg-[#011829] rounded-2xl md:p-8 p-6 max-w-md w-full shadow-2xl relative border border-[#4DA2FF]/30"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute md:top-6 top-4 right-6 text-white/60 hover:text-white transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
+          />
 
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border-[3px] border-primary/30 shadow-[0.2em_0.2em] max-w-md w-full max-h-[90vh] overflow-auto pointer-events-auto"
+          >
             {/* Header */}
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2 text-white">
-                Your <span className="text-[#4DA2FF]">SuiVerify</span> Address
-              </h2>
-              <p className="text-sm text-white/70">
-                Save this address for all transactions
-              </p>
+            <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b-2 border-primary/20 p-6 flex items-center justify-between rounded-t-2xl z-10">
+              <div>
+                <h2 className="text-2xl font-bold text-charcoal-text">
+                  Your <span className="text-primary">SuiVerify</span> Address
+                </h2>
+                <p className="text-sm text-charcoal-text/70 mt-1">
+                  Save this address for all transactions
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
+              >
+                <X className="w-5 h-5 text-charcoal-text" />
+              </button>
             </div>
 
             {/* Content */}
-            <div className="space-y-6">
+            <div className="p-6 space-y-6">
               {/* Address Display Box */}
-              <div className="bg-[#030f1c] border border-[#4DA2FF]/40 rounded-xl p-4">
-                <p className="text-xs text-white/60 uppercase tracking-wider font-bold mb-3">
+              <div className="rounded-xl p-4 bg-primary/5 border-2 border-primary/20">
+                <p className="text-xs font-semibold text-charcoal-text/60 uppercase tracking-wider mb-3">
                   Your Sui Address
                 </p>
                 <div className="flex items-start gap-3">
-                  <code className="flex-1 text-sm text-white font-mono break-all leading-relaxed bg-[#0a1929] px-3 py-2 rounded-lg border border-[#4DA2FF]/20">
+                  <code className="flex-1 text-sm font-mono break-all leading-relaxed bg-white px-3 py-2 rounded-lg border-2 border-primary/20 text-charcoal-text">
                     {address}
                   </code>
                   <button
                     onClick={handleCopy}
-                    className="flex-shrink-0 mt-2 p-2 hover:bg-[#4DA2FF]/20 rounded-lg transition-colors group"
+                    className="flex-shrink-0 p-2 hover:bg-primary/10 rounded-lg transition-colors group"
                     title="Copy address"
                   >
                     {copied ? (
-                      <span className="text-xs font-bold text-[#4DD0E1]">✓</span>
+                      <span className="text-sm font-bold text-success">✓</span>
                     ) : (
-                      <svg
-                        className="w-5 h-5 text-[#4DA2FF] group-hover:scale-110 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      </svg>
+                      <Copy className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                     )}
                   </button>
                 </div>
               </div>
 
               {/* Information Box */}
-              <div className="bg-[#4DA2FF]/10 border border-[#4DA2FF]/30 rounded-xl p-4">
+              <div className="rounded-xl p-4 bg-primary/10 border-2 border-primary/20">
                 <div className="flex gap-3">
-                  <span className="text-xl flex-shrink-0">ℹ️</span>
+                  <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-primary" />
                   <div>
-                    <p className="font-bold text-white mb-1 text-sm">
+                    <p className="font-semibold text-charcoal-text mb-1 text-sm">
                       Save this address
                     </p>
-                    <p className="text-xs text-white/80">
+                    <p className="text-xs text-charcoal-text/70">
                       You&apos;ll need this address for all transactions on the Sui blockchain.
                     </p>
                   </div>
@@ -124,38 +116,26 @@ const AddressModal: React.FC<AddressModalProps> = ({
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-3 pt-2">
-                <a
-                  href={explorerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-[#00BFFF] text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium text-base"
+                <Button
+                  onClick={() => window.open(explorerUrl, '_blank', 'noopener,noreferrer')}
+                  variant="primary"
+                  className="w-full"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
+                  <ExternalLink className="w-4 h-4 mr-2" />
                   View on Explorer
-                </a>
+                </Button>
 
-                <button
+                <Button
                   onClick={handleDisconnect}
-                  className="w-full py-3 px-4 rounded-lg border border-[#4DA2FF]/40 text-white hover:bg-[#4DA2FF]/10 transition-colors font-medium text-base"
+                  variant="error"
+                  className="w-full"
                 >
                   Disconnect
-                </button>
+                </Button>
               </div>
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );

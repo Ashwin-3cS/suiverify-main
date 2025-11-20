@@ -3,6 +3,8 @@ import "./globals.css";
 import { WalletProvider } from "@/components/providers/WalletProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Temporarily use system fonts to fix Turbopack build issues
 // TODO: Re-enable Google Fonts when Turbopack font loading is stable
@@ -74,6 +76,17 @@ export default function RootLayout({
           <WalletProvider>
             <ProtectedRoute>
               {children}
+              <ToastContainer
+                position="bottom-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={true}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+              />
             </ProtectedRoute>
           </WalletProvider>
         </AuthProvider>

@@ -83,9 +83,9 @@ export const getCurrentExplorerUrl = (): string => {
 };
 
 /**
- * Build explorer URL for a specific object/transaction
+ * Build explorer URL for a specific object/transaction/account
  */
-export const buildExplorerUrl = (objectId: string, type: 'object' | 'tx' = 'object'): string => {
+export const buildExplorerUrl = (objectId: string, type: 'object' | 'tx' | 'account' = 'object'): string => {
   const baseUrl = getCurrentExplorerUrl();
   return `${baseUrl}/${type}/${objectId}`;
 };
