@@ -11,7 +11,6 @@ import { SessionManager } from '@/lib/session-manager';
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { Award, ExternalLink } from 'lucide-react';
-import LightRays from '@/components/ui/lightRays';
 import CountrySelectionStep from '@/components/CountrySelectionStep';
 import DocumentTypeSelectionStep from '@/components/DocumentTypeSelectionStep';
 import AadhaarUploadStep from '@/components/AadhaarUploadStep';
@@ -93,7 +92,7 @@ function KycPage() {
   // Commented out EOA wallet hook - using zkLogin instead
   // const currentAccount = useCurrentAccount();
   const { address: zkLoginAddress, isAuthenticated } = useAuth();
-  const { verificationStatus, startListening } = useVerificationListener();
+  const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener();
 
   // Get verification type from URL parameters or default
   // const verificationType = searchParams.get('type') || 'Verify Above 18'; // Commented out - not used
@@ -158,7 +157,7 @@ function KycPage() {
   // Check wallet connection on mount and when account changes
   useEffect(() => {
     // If wallet disconnects while in verification flow, reset to country selection
-    if (!currentAccount?.address && step !== 'country') {
+    if (!zkLoginAddress && step !== 'country') {
       toast.error('Please connect wallet to continue verification', {
         position: "bottom-right",
         autoClose: 3000,
@@ -169,11 +168,11 @@ function KycPage() {
       });
       setStep('country');
     }
-  }, [currentAccount?.address, step]);
+  }, [zkLoginAddress, step]);
 
   const handleCountrySelect = (country: Country) => {
     // Check wallet connection before proceeding
-    if (!currentAccount?.address) {
+    if (!zkLoginAddress) {
       toast.error('Please connect wallet', {
         position: "bottom-right",
         autoClose: 3000,
@@ -191,7 +190,7 @@ function KycPage() {
 
   const handleDocumentTypeSelect = (documentType: DocumentType) => {
     // Check wallet connection before proceeding
-    if (!currentAccount?.address) {
+    if (!zkLoginAddress) {
       toast.error('Please connect wallet', {
         position: "bottom-right",
         autoClose: 3000,
@@ -575,6 +574,36 @@ function KycPage() {
               transition={{ duration: 0.6 }}
               className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary/20 max-w-4xl mx-auto"
             >
+            {/* Step Indicator */}
+            {!['waiting', 'encrypting', 'completed', 'error', 'nft-claimed'].includes(step) && (
+              <div className="mb-6 pb-6 border-b border-primary/20">
+                <StepIndicator
+                  steps={(() => {
+                    const baseSteps = [
+                      { id: 'country', label: 'Region', description: 'Select country' },
+                      { id: 'document-type', label: 'Select Document', description: 'Choose type' },
+                    ];
+                    
+                    if (selectedDocumentType?.id === 'pan') {
+                      return [
+                        ...baseSteps,
+                        { id: 'pan', label: 'Upload', description: 'Upload PAN' },
+                        { id: 'face', label: 'Biometric', description: 'Face verification' },
+                        { id: 'pan-verification', label: 'Verify', description: 'Final step' },
+                      ];
+                    } else {
+                      return [
+                        ...baseSteps,
+                        { id: 'aadhaar', label: 'Upload', description: 'Upload Aadhaar' },
+                        { id: 'face', label: 'Biometric', description: 'Face verification' },
+                        { id: 'otp', label: 'OTP', description: 'Verify OTP' },
+                      ];
+                    }
+                  })()}
+                  currentStep={step}
+                />
+              </div>
+            )}
               {step === 'country' && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -665,52 +694,54 @@ function KycPage() {
                   >
                     <div className="w-20 h-20 border-4 rounded-full animate-spin mx-auto mb-6"
                       style={{ borderColor: `${colors.primary}20`, borderTopColor: colors.primary }}></div>
-                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                    <h2 className="text-2xl font-bold mb-3 text-charcoal-text">
                       Waiting for Blockchain Verification
                     </h2>
-                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
-                      Your OTP has been verified. Now waiting for on-chain attestation...
+                    <p className="text-lg mb-6 text-charcoal-text/70">
+                      {selectedDocumentType?.id === 'pan' 
+                        ? 'Your PAN verification has been submitted. Now waiting for on-chain attestation...'
+                        : 'Your OTP has been verified. Now waiting for on-chain attestation...'
+                      }
                     </p>
                   </motion.div>
 
                   {zkLoginAddress && (
-                    <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                      <p className="text-sm mb-2" style={{ color: colors.white }}>
+                    <div className="rounded-2xl p-4 mb-6 bg-primary/10 border border-primary/30 hidden">
+                      <p className="text-sm mb-2 text-charcoal-text">
                         <strong>Listening for address:</strong>
                       </p>
-                      <p className="text-xs font-mono px-3 py-2 rounded-lg"
-                        style={{ backgroundColor: colors.darkNavy, color: colors.lightBlue }}>
+                      <p className="text-xs font-mono px-3 py-2 rounded-lg bg-white border border-primary/20 text-charcoal-text">
                         {zkLoginAddress}
                       </p>
                     </div>
                   )}
-                  <div className="rounded-2xl p-4" style={{ backgroundColor: `${colors.darkNavy}80`, border: `1px solid ${colors.primary}20` }}>
-                    <p className="text-sm mb-2" style={{ color: colors.white }}>
+                  <div className="rounded-2xl p-4 bg-white border border-primary/20 hidden">
+                    <p className="text-sm mb-2 text-charcoal-text">
                       <strong>Event Listener Status:</strong>
                     </p>
-                    <p className="text-sm" style={{ color: colors.lightBlue }}>
+                    <p className="text-sm text-charcoal-text/70">
                       {verificationStatus.verificationMessage || 'Initializing...'}
                     </p>
 
                     {verificationStatus.isVerified && (
-                      <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                        <p className="font-semibold mb-2" style={{ color: colors.white }}>
+                      <div className="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
+                        <p className="font-semibold mb-2 text-charcoal-text">
                           ✅ Verification completed from event listener!
                         </p>
-                        <p className="text-sm mb-3" style={{ color: colors.lightBlue }}>
+                        <p className="text-sm mb-3 text-charcoal-text/70">
                           Starting document encryption process...
                         </p>
 
                         {verificationStatus.eventData && (
-                          <div className="mt-3 p-3 rounded-lg text-xs" style={{ backgroundColor: colors.darkNavy, border: `1px solid ${colors.primary}20` }}>
-                            <p className="font-semibold mb-2" style={{ color: colors.white }}>Enhanced Event Data:</p>
-                            <div className="space-y-1" style={{ color: colors.lightBlue }}>
+                          <div className="mt-3 p-3 rounded-lg text-xs bg-white border border-primary/20">
+                            <p className="font-semibold mb-2 text-charcoal-text">Enhanced Event Data:</p>
+                            <div className="space-y-1 text-charcoal-text/70">
                               <p>🆔 DID Type: {verificationStatus.eventData.did_type}</p>
                               <p>📅 Signature Time: {new Date(parseInt(verificationStatus.eventData.signature_timestamp_ms)).toLocaleString()}</p>
                               <p>🔐 Nautilus Signature: {verificationStatus.eventData.nautilus_signature.length > 0 ? '✅ Available' : '❌ Missing'}</p>
                               <p>🔍 Evidence Hash: {verificationStatus.eventData.evidence_hash.length > 0 ? '✅ Available' : '❌ Missing'}</p>
                             </div>
-                            <p className="text-sm mt-2" style={{ color: colors.primary }}>Ready for SDK verification calls!</p>
+                            <p className="text-sm mt-2 text-primary">Ready for SDK verification calls!</p>
                           </div>
                         )}
                       </div>
@@ -728,16 +759,16 @@ function KycPage() {
                   >
                     <div className="w-20 h-20 border-4 rounded-full animate-spin mx-auto mb-6"
                       style={{ borderColor: `${colors.primary}20`, borderTopColor: colors.primary }}></div>
-                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                    <h2 className="text-2xl font-bold mb-3 text-charcoal-text">
                       Encrypting Documents
                     </h2>
-                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                    <p className="text-lg mb-6 text-charcoal-text/70">
                       Converting documents to secure encrypted format...
                     </p>
                   </motion.div>
 
-                  <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                    <div className="space-y-2 text-sm" style={{ color: colors.white }}>
+                  <div className="rounded-2xl p-4 mb-6 bg-primary/10 border border-primary/30">
+                    <div className="space-y-2 text-sm text-charcoal-text">
                       <p>🔐 Converting base64 to file format...</p>
                       <p>📄 Preparing document for encryption...</p>
                       <p>🔄 Encrypting with Seal protocol...</p>
@@ -745,8 +776,8 @@ function KycPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl p-4" style={{ backgroundColor: `${colors.darkNavy}80`, border: `1px solid ${colors.primary}20` }}>
-                    <p className="text-sm" style={{ color: colors.lightBlue }}>
+                  <div className="rounded-2xl p-4 bg-white border border-primary/20">
+                    <p className="text-sm text-charcoal-text/70">
                       <strong>Process:</strong> Document → Base64 → Python Backend → Encryption → Walrus Upload
                     </p>
                   </div>
@@ -767,82 +798,62 @@ function KycPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                    <h2 className="text-2xl font-bold mb-3 text-charcoal-text">
                       Verification Complete!
                     </h2>
-                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                    <p className="text-lg mb-6 text-charcoal-text/70">
                       Your documents have been encrypted and stored securely.
                     </p>
                   </motion.div>
 
-                  <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}>
-                    {/* <div className="space-y-2 text-sm" style={{ color: colors.white }}>
-                    <p>✅ Blockchain verification confirmed</p>
-                    <p>✅ Documents encrypted with Seal protocol</p>
-                    <p>✅ Secure storage on Walrus network</p>
-                    <p>✅ Ready to claim DID NFT</p>
-                  </div> */}
-
-                    {encryptionResult && (
-                      <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${colors.primary}30` }}>
-                        <p className="text-xs font-semibold mb-2" style={{ color: colors.white }}>Encryption Details:</p>
-                        <div className="space-y-1 text-xs font-mono" style={{ color: colors.lightBlue }}>
-                          <p><strong>Blob ID:</strong> {encryptionResult.blobId}</p>
-                          {/* <p><strong>Encryption ID:</strong> {encryptionResult.encryptionId}</p> */}
-                          {/* <p><strong>Sui Reference:</strong> {encryptionResult.suiRef}</p> */}
-                        </div>
-                        <div className="mt-2 space-y-1">
-                          {/* <a 
-                          href={DocumentEncryptionService.getBlobUrl(encryptionResult.blobId!)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs underline block hover:opacity-80 transition-opacity"
-                          style={{ color: colors.primary }}
-                        >
-                          🔗 View on Walrus
-                        </a> */}
-                          <a
-                            href={DocumentEncryptionService.getSuiExplorerUrl(encryptionResult.suiRef!, 'object')}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs underline block hover:opacity-80 transition-opacity"
-                            style={{ color: colors.primary }}
-                          >
-                            🔍 View on Sui Explorer
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
                   <div className="space-y-4">
-                    <motion.button
-                      onClick={claimDidNft}
-                      disabled={isClaimingNft || !encryptionResult?.blobId}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button
+                        onClick={claimDidNft}
+                        disabled={isClaimingNft || !encryptionResult?.blobId}
+                        variant="primary"
+                        className="flex-1 py-4 px-6 rounded-lg font-semibold transition-all duration-300 border-[3px] shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] hover:shadow-[0.15em_0.15em_0_0_rgb(0_0_0)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
+                      >
+                        <Award className="w-5 h-5 mr-2" />
+                        {isClaimingNft ? 'Claiming NFT...' : 'Claim Your DID NFT'}
+                      </Button>
+                      
+                      {encryptionResult?.suiRef && (
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="flex-1"
+                        >
+                          <Button
+                            onClick={() => {
+                              window.open(
+                                DocumentEncryptionService.getSuiExplorerUrl(encryptionResult.suiRef!, 'object'),
+                                '_blank',
+                                'noopener,noreferrer'
+                              );
+                            }}
+                            variant="secondary"
+                            className="w-full py-4"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            View on Explorer
+                          </Button>
+                        </motion.div>
+                      )}
+                    </div>
+                    
+                    <motion.div
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${isClaimingNft || !encryptionResult?.blobId
-                        ? 'text-gray-300 cursor-not-allowed'
-                        : 'text-white shadow-lg'
-                        }`}
-                      style={{
-                        background: isClaimingNft || !encryptionResult?.blobId
-                          ? '#4b5563'
-                          : colors.gradients.primary
-                      }}
                     >
-                      {isClaimingNft ? '🔄 Claiming NFT...' : '🏆 Claim Your DID NFT'}
-                    </motion.button>
-
-                    <motion.button
-                      onClick={() => router.push('/dashboard')}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 text-white"
-                      style={{ backgroundColor: colors.darkNavy, border: `1px solid ${colors.primary}40` }}
-                    >
-                      Go to Dashboard
-                    </motion.button>
+                      <Button
+                        onClick={() => router.push('/dashboard')}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Go to Dashboard
+                      </Button>
+                    </motion.div>
                   </div>
                 </div>
               )}
@@ -861,29 +872,21 @@ function KycPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold mb-3" style={{ color: colors.white }}>
+                    <h2 className="text-2xl font-bold mb-3 text-charcoal-text">
                       Process Failed
                     </h2>
-                    <p className="text-lg mb-6" style={{ color: colors.lightBlue }}>
+                    <p className="text-lg mb-6 text-charcoal-text/70">
                       There was an error during the document encryption process.
                     </p>
                   </motion.div>
 
-                  <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}>
-                    <p className="text-sm" style={{ color: colors.white }}>
-                      Please check the console for detailed error information.
-                    </p>
-                  </div>
-
-                  <motion.button
+                  <Button
                     onClick={() => setStep('waiting')}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 text-white"
-                    style={{ backgroundColor: colors.primary }}
+                    variant="primary"
+                    className="w-full"
                   >
                     Try Again
-                  </motion.button>
+                  </Button>
                 </div>
               )}
             </motion.div>
