@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { Button } from "@/components/ui/button";
-import Logo from "@/public/logo.svg";
+import Logo from "@/public/head_logo.png";
 import AuthButton from "@/components/auth/AuthButton";
 
 const DashboardHeader = () => {
