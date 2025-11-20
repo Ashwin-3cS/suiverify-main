@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { ZkLoginService } from '@/lib/zklogin';
 import { Button } from '@/components/ui/button';
-import { Loader2, User, Copy, LogOut } from 'lucide-react';
+import { Loader2, User, Copy, LogOut, UserRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { buildExplorerUrl } from '@/config/contracts';
 
@@ -94,7 +94,7 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
           className={className}
         >
           {isLoggingIn && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-          {isLoggingIn ? 'Signing In...' : 'Sign In'}
+          {isLoggingIn ? 'Signing In...' : <><UserRound className="w-4 h-4 mr-1" /> Sign In</>}
         </Button>
       </>
     );
