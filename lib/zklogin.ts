@@ -334,13 +334,9 @@ export class ZkLoginService {
 
       console.log("🔑 Our computed addressSeed:", ourAddressSeed);
 
-      // CRITICAL: Check if Enoki's addressSeed matches ours
+      // Note: Enoki's addressSeed may differ from ours (expected - Enoki uses Mysten's salt service)
       if (params.zkProof.addressSeed && params.zkProof.addressSeed !== ourAddressSeed) {
-        console.error("❌ ADDRESS SEED MISMATCH!");
-        console.error("  Enoki's addressSeed:", params.zkProof.addressSeed);
-        console.error("  Our addressSeed:    ", ourAddressSeed);
-        console.error("  Difference: Proof was generated with Enoki's salt, not ours!");
-        console.warn("⚠️ ATTEMPTING TO USE ENOKI'S ADDRESSSEED INSTEAD...");
+        console.log("ℹ️ Using Enoki's addressSeed (expected behavior)");
       }
 
       // CRITICAL: ALWAYS use Enoki's addressSeed if present
