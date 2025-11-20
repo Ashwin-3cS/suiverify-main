@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useCurrentAccount, useSignPersonalMessage } from '@mysten/dapp-kit';
 import { useRouter } from 'next/navigation';
 import { SessionKey } from '@mysten/seal';
-import { AlertCircle, Clock, FileText, Shield, Search, Download } from 'lucide-react';
+import { AlertCircle, Clock, FileText, Shield, Search, Download, Loader2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { colors } from '@/app/brand';
 import DashboardHeader from '@/components/ui/DashboardHeader';
+import { Button } from '@/components/ui/button';
 import { documentDecryptionService, DocumentDecryptionService, type DocumentMetadata } from '@/services/decryptionService';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
@@ -214,119 +215,81 @@ function GovernmentDecryptionPage() {
   };
 
   return (
-    <div className="w-full" style={{ backgroundColor: colors.darkerNavy, position: 'relative', minHeight: '100vh' }}>
-      {/* Grid Pattern Background */}
+    <div className="w-full bg-ghost-white outfit relative min-h-screen overflow-hidden">
+      {/* Blob Animations Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+      </div>
+
+      {/* Subtle gradient overlay for depth */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
+
+      {/* Subtle pattern overlay */}
       <div
-        className="fixed inset-0 z-0"
+        className="fixed inset-0 z-0 opacity-[0.02] pointer-events-none"
         style={{
-          backgroundImage: `
-            linear-gradient(to right, ${colors.primary}20 1px, transparent 1px),
-            linear-gradient(to bottom, ${colors.primary}20 1px, transparent 1px)
-          `,
-          backgroundSize: "20px 30px",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-          maskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
+          backgroundImage: `radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)`,
+          backgroundSize: "40px 40px",
         }}
-      />
+      ></div>
 
       {/* Header */}
-      <div className="relative z-10">
-        <div className="absolute top-4 w-full z-50">
-          <DashboardHeader />
-        </div>
-        
-        {/* Hero Section */}
-        <div className="pt-[10rem] pb-12">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center max-w-4xl mx-auto mb-12"
+      <div className="sticky top-0 z-50 bg-ghost-white/90 backdrop-blur-md border-b border-primary/20 shadow-sm">
+        <DashboardHeader />
+      </div>
+      
+      {/* Hero Section */}
+      <div className="relative z-10 pt-12 pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto mb-12"
+          >
+            <motion.h1
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-4xl md:text-5xl font-bold mb-3 bg-primary text-white p-4 rounded-lg w-fit mx-auto"
             >
-              <motion.h1
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-4xl md:text-6xl font-bold mb-4"
-              >
-                <motion.span style={{ color: colors.primary }}>Government</motion.span>
-                <motion.span style={{ color: colors.white }}> Document Access</motion.span>
-              </motion.h1>
+              Government Document Access
+            </motion.h1>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="text-xl"
-                style={{ color: colors.lightBlue }}
-              >
-                Access encrypted user documents for verification purposes
-              </motion.p>
-            </motion.div>
-          </div>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-base text-charcoal-text/70 max-w-2xl mx-auto"
+            >
+              Access encrypted user documents for verification purposes
+            </motion.p>
+          </motion.div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
-
-        {/* Government Access Status Card */}
-        {/* <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 hover:border-[#00BFFF] hover:shadow-lg transition-all">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Government Access Status</h3>
-          {currentAccount?.address ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-                <p className="text-green-700 font-medium">
-                  Authorized for government document access
-                </p>
-              </div>
-              {currentSessionKey && !currentSessionKey.isExpired() && (
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Key className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <p className="text-blue-700 font-medium">
-                    Active session key available
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-yellow-600" />
-              </div>
-              <p className="text-yellow-700 font-medium">
-                Please connect your government wallet to access encrypted documents
-              </p>
-            </div>
-          )}
-        </div> */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
 
         {/* User Document Lookup Card */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white/10 backdrop-blur-sm rounded-3xl border p-8 mb-8"
-          style={{ borderColor: `${colors.primary}30` }}
+          className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border-[3px] border-primary/30 shadow-[0.1em_0.1em] p-6 sm:p-8 mb-8"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-              <Search className="w-6 h-6" style={{ color: colors.primary }} />
+            <div className="p-3 rounded-2xl bg-primary/15">
+              <Search className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold" style={{ color: colors.white }}>User Document Lookup</h3>
+            <h3 className="text-2xl font-bold text-charcoal-text">User Document Lookup</h3>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label htmlFor="userAddress" className="block text-sm font-medium mb-2" style={{ color: colors.lightBlue }}>
+              <label htmlFor="userAddress" className="block text-sm font-medium mb-2 text-charcoal-text">
                 User Wallet Address
               </label>
               <input
@@ -335,31 +298,19 @@ function GovernmentDecryptionPage() {
                 value={userAddress}
                 onChange={(e) => setUserAddress(e.target.value)}
                 placeholder="Enter user's Sui wallet address (0x...)"
-                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-opacity-50"
-                style={{ 
-                  backgroundColor: `${colors.primary}10`,
-                  border: `1px solid ${colors.primary}40`
-                }}
+                className="w-full px-4 py-3 rounded-xl text-charcoal-text placeholder-gray-400 focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-all border-2 border-primary/30 bg-white"
               />
             </div>
             <div className="flex items-end">
-              <button
+              <Button
                 onClick={fetchDecryptionData}
                 disabled={loading || !currentAccount?.address}
-                className={`px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${
-                  loading || !currentAccount?.address
-                    ? 'text-gray-200 cursor-not-allowed'
-                    : 'text-white'
-                }`}
-                style={{
-                  background: loading || !currentAccount?.address 
-                    ? '#9ca3af' 
-                    : colors.gradients.primary
-                }}
+                className="flex items-center gap-2"
+                size="lg"
               >
                 {loading ? (
                   <>
-                    <Clock className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Searching...
                   </>
                 ) : (
@@ -368,7 +319,7 @@ function GovernmentDecryptionPage() {
                     Fetch Documents
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -378,13 +329,12 @@ function GovernmentDecryptionPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-6 mb-8 flex items-center gap-3"
-            style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}
+            className="rounded-2xl p-6 mb-8 flex items-center gap-3 border-2 border-error bg-error/10"
           >
-            <div className="p-2 rounded-lg" style={{ backgroundColor: `${colors.primary}20` }}>
-              <AlertCircle className="w-5 h-5 text-red-400" />
+            <div className="p-2 rounded-lg bg-error/20">
+              <AlertCircle className="w-5 h-5 text-error" />
             </div>
-            <p className="font-medium" style={{ color: colors.white }}>{error}</p>
+            <p className="font-medium text-charcoal-text">{error}</p>
           </motion.div>
         )}
         
@@ -393,13 +343,12 @@ function GovernmentDecryptionPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-6 mb-8 flex items-center gap-3"
-            style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}
+            className="rounded-2xl p-6 mb-8 flex items-center gap-3 border-2 border-primary/40 bg-primary/10"
           >
-            <div className="p-2 rounded-lg" style={{ backgroundColor: `${colors.primary}20` }}>
-              <Clock className="w-5 h-5" style={{ color: colors.primary }} />
+            <div className="p-2 rounded-lg bg-primary/20">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
             </div>
-            <p className="font-medium" style={{ color: colors.white }}>{decryptionProgress}</p>
+            <p className="font-medium text-charcoal-text">{decryptionProgress}</p>
           </motion.div>
         )}
 
@@ -409,38 +358,29 @@ function GovernmentDecryptionPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="bg-white/10 backdrop-blur-sm rounded-3xl border p-8 mb-8"
-            style={{ borderColor: `${colors.primary}30` }}
+            className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border-[3px] border-primary/30 shadow-[0.1em_0.1em] p-6 sm:p-8 mb-8"
           >
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-                  <Shield className="w-6 h-6" style={{ color: colors.primary }} />
+                <div className="p-3 rounded-2xl bg-primary/15">
+                  <Shield className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold" style={{ color: colors.white }}>
+                  <h3 className="text-2xl font-bold text-charcoal-text">
                     Accessible Documents ({decryptionData.total_documents})
                   </h3>
-                  <p className="text-sm mt-1" style={{ color: colors.lightBlue }}>Select documents to decrypt and view</p>
+                  <p className="text-sm mt-1 text-charcoal-text/70">Select documents to decrypt and view</p>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={decryptSelectedDocuments}
                 disabled={!selectedDocuments.length || !currentAccount?.address || isDecrypting}
-                className={`px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${
-                  !selectedDocuments.length || !currentAccount?.address || isDecrypting
-                    ? 'text-gray-200 cursor-not-allowed'
-                    : 'text-white'
-                }`}
-                style={{
-                  background: !selectedDocuments.length || !currentAccount?.address || isDecrypting
-                    ? '#9ca3af'
-                    : colors.gradients.primary
-                }}
+                className="flex items-center gap-2"
+                size="lg"
               >
                 {isDecrypting ? (
                   <>
-                    <Clock className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Decrypting...
                   </>
                 ) : (
@@ -449,13 +389,13 @@ function GovernmentDecryptionPage() {
                     Decrypt Documents ({selectedDocuments.length})
                   </>
                 )}
-              </button>
+              </Button>
             </div>
 
             {decryptionData.documents.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: colors.lightBlue }} />
-                <p className="text-lg" style={{ color: colors.white }}>
+                <FileText className="w-16 h-16 mx-auto mb-4 text-charcoal-text/40" />
+                <p className="text-lg text-charcoal-text">
                   No accessible documents found for this user address
                 </p>
               </div>
@@ -468,62 +408,52 @@ function GovernmentDecryptionPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     whileHover={{ y: -8, scale: 1.02 }}
-                    className="rounded-2xl p-6 transition-all duration-300 flex flex-col h-full"
-                    style={{
-                      backgroundColor: colors.darkNavy,
-                      border: `1px solid ${colors.primary}30`
-                    }}
+                    className="rounded-2xl p-6 transition-all duration-300 flex flex-col h-full bg-white border-[3px] border-primary/30 shadow-[0.1em_0.1em]"
                   >
-                    <div className="flex items-start gap-4 mb-4">
+                    <div className="flex items-start gap-4">
                       <input
                         type="checkbox"
                         id={`doc-${index}`}
                         checked={selectedDocuments.includes(doc.blob_id)}
                         onChange={(e) => handleDocumentSelection(doc.blob_id, e.target.checked)}
-                        className="mt-1 h-5 w-5 rounded flex-shrink-0"
+                        className="mt-1 h-5 w-5 rounded flex-shrink-0 cursor-pointer"
                         style={{ accentColor: colors.primary }}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="mb-3">
-                          <h4 className="font-bold text-lg" style={{ color: colors.white }}>{doc.file_name}</h4>
+                        <div className="mb-4">
+                          <h4 className="font-bold text-lg mb-3 text-charcoal-text">{doc.file_name}</h4>
                         </div>
-                        <div className="space-y-3 mb-4">
-                          <div className="grid grid-cols-3 gap-3 text-sm">
-                            <div className="rounded-xl p-3" style={{ backgroundColor: `${colors.primary}10` }}>
-                              <p className="text-xs font-medium mb-1" style={{ color: colors.lightBlue }}>Document Type</p>
-                              <p className="font-semibold" style={{ color: colors.white }}>{doc.document_type}</p>
-                            </div>
-                            <div className="rounded-xl p-3" style={{ backgroundColor: `${colors.primary}10` }}>
-                              <p className="text-xs font-medium mb-1" style={{ color: colors.lightBlue }}>DID Type</p>
-                              <p className="font-semibold" style={{ color: colors.white }}>{doc.did_type}</p>
-                            </div>
-                            <div className="rounded-xl p-3" style={{ backgroundColor: `${colors.primary}10` }}>
-                              <p className="text-xs font-medium mb-1" style={{ color: colors.lightBlue }}>Created</p>
-                              <p className="font-semibold" style={{ color: colors.white }}>{new Date(doc.created_at).toLocaleDateString()}</p>
-                            </div>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center justify-between py-2 border-b border-primary/10">
+                            <span className="text-xs font-medium text-charcoal-text/60 uppercase tracking-wider">Document Type</span>
+                            <span className="font-semibold text-sm text-charcoal-text capitalize">{doc.document_type}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2 border-b border-primary/10">
+                            <span className="text-xs font-medium text-charcoal-text/60 uppercase tracking-wider">DID Type</span>
+                            <span className="font-semibold text-sm text-charcoal-text">{doc.did_type.replace(/_/g, ' ')}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-xs font-medium text-charcoal-text/60 uppercase tracking-wider">Created</span>
+                            <span className="font-semibold text-sm text-charcoal-text">{new Date(doc.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    
-                    {/* Action buttons and blob info at bottom */}
-                    <div className="mt-auto space-y-3">
-                      <div className="flex justify-center">
-                        <a
-                          href={doc.sui_explorer_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-                          style={{ 
-                            backgroundColor: `${colors.primary}20`,
-                            color: colors.primary
-                          }}
-                        >
-                          🔍 Sui Explorer
-                        </a>
-                      </div>
-                      <div className="rounded-xl p-3 text-xs font-mono" style={{ backgroundColor: colors.darkerNavy, color: colors.lightBlue }}>
-                        <div><strong>Blob ID:</strong> {doc.blob_id}</div>
+                        <div className="flex justify-end mt-4">
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                          >
+                            <a
+                              href={doc.sui_explorer_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2"
+                            >
+                              <Search className="w-4 h-4" />
+                              View on Explorer
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -535,20 +465,26 @@ function GovernmentDecryptionPage() {
 
         {/* Decrypted Files Dialog */}
         {isDialogOpen && decryptedFileUrls.length > 0 && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="rounded-3xl p-6 max-w-6xl max-h-[90vh] overflow-auto" style={{ backgroundColor: colors.darkNavy }}>
-              <div className="flex justify-between items-center mb-4" style={{ borderBottom: `1px solid ${colors.primary}30` }}>
-                <h3 className="text-xl font-semibold" style={{ color: colors.white }}>Decrypted Documents</h3>
-                <button
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="rounded-3xl p-6 max-w-6xl max-h-[90vh] overflow-auto border-[3px] border-primary/30 bg-white shadow-[0.1em_0.1em]"
+            >
+              <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-primary/30">
+                <h3 className="text-2xl font-bold text-charcoal-text">Decrypted Documents</h3>
+                <Button
                   onClick={closeDialog}
-                  className="text-white hover:opacity-80 text-2xl font-bold p-2 rounded-lg transition-opacity"
-                  style={{ backgroundColor: `${colors.primary}20` }}
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-primary/20"
                 >
-                  ×
-                </button>
+                  <X className="w-5 h-5" />
+                </Button>
               </div>
               
-              <p className="mb-4" style={{ color: colors.lightBlue }}>
+              <p className="mb-4 text-charcoal-text/70">
                 These documents have been successfully decrypted using Seal protocol and are only visible to authorized government personnel.
               </p>
               
@@ -558,36 +494,51 @@ function GovernmentDecryptionPage() {
                     doc => selectedDocuments.includes(doc.blob_id)
                   )[index];
                   return (
-                    <div key={index} className="rounded-2xl p-4" style={{ border: `1px solid ${colors.primary}30` }}>
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold" style={{ color: colors.white }}>
-                          {selectedDoc?.file_name || `Document ${index + 1}`}
-                        </h4>
-                        <button
+                    <div key={index} className="rounded-2xl p-6 border-[3px] border-primary/30 bg-white shadow-[0.1em_0.1em]">
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <h4 className="font-bold text-lg mb-1 text-charcoal-text">
+                            {selectedDoc?.file_name || `Document ${index + 1}`}
+                          </h4>
+                          {selectedDoc && (
+                            <p className="text-xs text-charcoal-text/70">
+                              {selectedDoc.document_type} • {selectedDoc.did_type}
+                            </p>
+                          )}
+                        </div>
+                        <Button
                           onClick={() => downloadDecryptedFile(
                             url, 
                             selectedDoc?.file_name || `decrypted-document-${index + 1}.jpg`
                           )}
-                          className="px-3 py-1 text-white rounded-xl hover:opacity-90 text-sm transition-opacity flex items-center gap-1"
-                          style={{ backgroundColor: colors.primary }}
+                          size="sm"
+                          className="flex items-center gap-2"
                         >
-                          <Download className="w-3 h-3" />
+                          <Download className="w-4 h-4" />
                           Download
-                        </button>
+                        </Button>
                       </div>
-                      <div className="w-full">
+                      <div className="w-full mb-4">
                         <img 
                           src={url} 
                           alt={`Decrypted document ${index + 1}`} 
-                          className="w-full h-auto border rounded-2xl"
-                          style={{ borderColor: `${colors.primary}30` }}
+                          className="w-full h-auto border-2 border-primary/30 rounded-2xl"
                         />
                       </div>
                       {selectedDoc && (
-                        <div className="mt-2 text-xs space-y-1" style={{ color: colors.lightBlue }}>
-                          <div><strong>Document Type:</strong> {selectedDoc.document_type}</div>
-                          <div><strong>DID Type:</strong> {selectedDoc.did_type}</div>
-                          <div><strong>Verification Status:</strong> {selectedDoc.verification_status || 'Pending'}</div>
+                        <div className="rounded-xl p-4 border-2 border-primary/30 bg-ghost-white space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-charcoal-text/70">Document Type:</span>
+                            <span className="font-semibold text-charcoal-text">{selectedDoc.document_type}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-charcoal-text/70">DID Type:</span>
+                            <span className="font-semibold text-charcoal-text">{selectedDoc.did_type}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-charcoal-text/70">Verification Status:</span>
+                            <span className="font-semibold text-charcoal-text">{selectedDoc.verification_status || 'Pending'}</span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -595,16 +546,16 @@ function GovernmentDecryptionPage() {
                 })}
               </div>
               
-              <div className="flex justify-end mt-4">
-                <button
+              <div className="flex justify-end mt-6">
+                <Button
                   onClick={closeDialog}
-                  className="px-6 py-2 text-white rounded-xl hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: colors.darkerNavy, border: `1px solid ${colors.primary}40` }}
+                  variant="outline"
+                  size="lg"
                 >
                   Close
-                </button>
+                </Button>
               </div>
-            </div>
+            </motion.div>
           </div>
         )}
       </div>
