@@ -77,10 +77,10 @@ const DashboardHeader = () => {
         router.push('/adminLogin');
     };
     return (
-        <div className="relative z-50">
+        <div className="relative z-50 bg-transparent">
             {/* Navigation Bar */}
             <nav className="px-4 sm:px-6 lg:px-8 py-4 relative z-50">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="max-w-[72%] mx-auto flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center space-x-3">
                         <Image src={Logo} alt="SuiVerify" className="w-10 h-auto sm:w-12" />
@@ -103,12 +103,6 @@ const DashboardHeader = () => {
                         {/* zkLogin Sign In Button */}
                         <AuthButton size="sm" />
 
-                        {/* Mobile Menu Button */}
-                        <button className="md:hidden p-2 rounded-lg hover:bg-primary/10 transition-colors">
-                            <svg className="w-6 h-6 text-charcoal-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </nav>
