@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@suiverify",
-    creator: "@suiverify",
+    creator: "@suiver1fy",
     title: "SuiVerify - Digital Identity Infrastructure",
     description: "One Identity Layer to Bridge Old and New Internets.",
     images: ["https://suiverify.xyz/head_logo.png"],
