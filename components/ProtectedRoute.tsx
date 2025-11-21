@@ -13,8 +13,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Don't protect adminLogin and admin pages
-    if (pathname === '/adminLogin' || pathname === '/admin') {
+    // Don't protect adminLogin, admin, and dashboard pages
+    // Dashboard is the main entry point where users can connect their wallet
+    if (pathname === '/adminLogin' || pathname === '/admin' || pathname === '/dashboard' || pathname === '/') {
       setIsAuthenticated(true);
       return;
     }
@@ -28,7 +29,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const checkAuth = () => {
       // Check if user has valid session
       const authData = localStorage.getItem('suiverify_auth');
-      
+
       if (!authData) {
         // No auth data, redirect to dashboard (where they can sign in)
         router.push('/dashboard');
@@ -70,7 +71,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           <div className="blob blob-2"></div>
           <div className="blob blob-3"></div>
         </div>
-        
+
         <div className="relative z-10 text-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-[0.1em_0.1em] border-[3px] border-primary/30">
             <div className="relative mx-auto w-16 h-16 mb-6">
@@ -95,7 +96,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           <div className="blob blob-2"></div>
           <div className="blob blob-3"></div>
         </div>
-        
+
         <div className="relative z-10 text-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-[0.1em_0.1em] border-[3px] border-primary/30">
             <h2 className="text-xl font-bold text-charcoal-text mb-2">Redirecting to Login</h2>
