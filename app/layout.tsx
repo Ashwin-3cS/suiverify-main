@@ -18,7 +18,7 @@ const geistMono = {
 
 export const metadata: Metadata = {
   title: "SuiVerify - Digital Identity Infrastructure",
-  description: "Secure identity verification powered by blockchain technology. Verify your identity using Aadhaar documents and claim DID NFTs on the Sui blockchain.",
+  description: "One Identity Layer to Bridge Old and New Internets.",
   keywords: ["digital identity", "blockchain", "verification", "Aadhaar", "DID", "NFT", "Sui", "KYC", "government"],
   authors: [{ name: "SuiVerify" }],
   robots: "index, follow",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://suiverify.xyz/",
     title: "SuiVerify - Digital Identity Infrastructure",
-    description: "Secure identity verification powered by blockchain technology. Verify your identity using Aadhaar documents and claim DID NFTs on the Sui blockchain.",
+    description: "One Identity Layer to Bridge Old and New Internets.",
     siteName: "SuiVerify",
     locale: "en_US",
     images: [
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     site: "@suiverify",
     creator: "@suiverify",
     title: "SuiVerify - Digital Identity Infrastructure",
-    description: "Secure identity verification powered by blockchain technology. Verify your identity using Aadhaar documents and claim DID NFTs on the Sui blockchain.",
+    description: "One Identity Layer to Bridge Old and New Internets.",
     images: ["https://suiverify.xyz/head_logo.png"],
   },
   appleWebApp: {
