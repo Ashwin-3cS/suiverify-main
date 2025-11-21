@@ -183,7 +183,7 @@ function KycPage() {
       });
       return;
     }
-    
+
     setSelectedCountry(country);
     setStep('document-type');
   };
@@ -201,7 +201,7 @@ function KycPage() {
       });
       return;
     }
-    
+
     setSelectedDocumentType(documentType);
     if (documentType.id === 'aadhaar') {
       setStep('aadhaar');
@@ -259,12 +259,28 @@ function KycPage() {
   }, [zkLoginAddress]);
 
   const handleDocumentEncryption = useCallback(async () => {
+    console.log('🔍 handleDocumentEncryption called');
+    console.log('📍 zkLoginAddress:', zkLoginAddress);
+    console.log('📍 zkLoginAddress type:', typeof zkLoginAddress);
+    console.log('📍 zkLoginAddress is truthy:', !!zkLoginAddress);
+
     const photoBase64 = selectedDocumentType?.id === 'pan'
       ? panData?.pan_photo_base64
       : aadhaarData?.aadhaar_photo_base64;
 
+    console.log('📄 photoBase64 exists:', !!photoBase64);
+    console.log('📄 photoBase64 length:', photoBase64?.length || 0);
+
     if (!photoBase64 || !zkLoginAddress) {
-      console.error('Missing document data or zkLogin address');
+      console.error('❌ Missing document data or zkLogin address');
+      console.error('   - photoBase64:', !!photoBase64);
+      console.error('   - zkLoginAddress:', zkLoginAddress);
+      console.error('   - Please ensure you are signed in with zkLogin');
+
+      toast.error('Missing authentication. Please sign in and try again.', {
+        position: "bottom-right",
+        autoClose: 5000,
+      });
       return;
     }
 
@@ -300,7 +316,7 @@ function KycPage() {
       console.error('❌ Error in document encryption:', error);
       setStep('error');
     }
-  }, [selectedDocumentType?.id, zkLoginAddress, encryptAndUploadDocument]);
+  }, [selectedDocumentType?.id, zkLoginAddress, encryptAndUploadDocument, panData, aadhaarData]);
 
   // Handle successful verification from event listener
   // Only process if we're in the waiting step (after OTP/PAN verification)
@@ -512,12 +528,12 @@ function KycPage() {
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
       </div>
-      
+
       {/* Subtle gradient overlay for depth */}
       <div className="fixed inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
-      
+
       {/* Subtle pattern overlay */}
-      <div 
+      <div
         className="fixed inset-0 z-0 opacity-[0.02] pointer-events-none"
         style={{
           backgroundImage: `radial-gradient(circle at 2px 2px, var(--color-primary) 1px, transparent 0)`,
@@ -577,36 +593,36 @@ function KycPage() {
               transition={{ duration: 0.6 }}
               className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] border-primary/20 max-w-4xl mx-auto"
             >
-            {/* Step Indicator */}
-            {!['waiting', 'encrypting', 'completed', 'error', 'nft-claimed'].includes(step) && (
-              <div className="mb-6 pb-6 border-b border-primary/20">
-                <StepIndicator
-                  steps={(() => {
-                    const baseSteps = [
-                      { id: 'country', label: 'Region', description: 'Select country' },
-                      { id: 'document-type', label: 'Select Document', description: 'Choose type' },
-                    ];
-                    
-                    if (selectedDocumentType?.id === 'pan') {
-                      return [
-                        ...baseSteps,
-                        { id: 'pan', label: 'Upload', description: 'Upload PAN' },
-                        { id: 'face', label: 'Biometric', description: 'Face verification' },
-                        { id: 'pan-verification', label: 'Verify', description: 'Final step' },
+              {/* Step Indicator */}
+              {!['waiting', 'encrypting', 'completed', 'error', 'nft-claimed'].includes(step) && (
+                <div className="mb-6 pb-6 border-b border-primary/20">
+                  <StepIndicator
+                    steps={(() => {
+                      const baseSteps = [
+                        { id: 'country', label: 'Region', description: 'Select country' },
+                        { id: 'document-type', label: 'Select Document', description: 'Choose type' },
                       ];
-                    } else {
-                      return [
-                        ...baseSteps,
-                        { id: 'aadhaar', label: 'Upload', description: 'Upload Aadhaar' },
-                        { id: 'face', label: 'Biometric', description: 'Face verification' },
-                        { id: 'otp', label: 'OTP', description: 'Verify OTP' },
-                      ];
-                    }
-                  })()}
-                  currentStep={step}
-                />
-              </div>
-            )}
+
+                      if (selectedDocumentType?.id === 'pan') {
+                        return [
+                          ...baseSteps,
+                          { id: 'pan', label: 'Upload', description: 'Upload PAN' },
+                          { id: 'face', label: 'Biometric', description: 'Face verification' },
+                          { id: 'pan-verification', label: 'Verify', description: 'Final step' },
+                        ];
+                      } else {
+                        return [
+                          ...baseSteps,
+                          { id: 'aadhaar', label: 'Upload', description: 'Upload Aadhaar' },
+                          { id: 'face', label: 'Biometric', description: 'Face verification' },
+                          { id: 'otp', label: 'OTP', description: 'Verify OTP' },
+                        ];
+                      }
+                    })()}
+                    currentStep={step}
+                  />
+                </div>
+              )}
               {step === 'country' && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -701,7 +717,7 @@ function KycPage() {
                       Waiting for Blockchain Verification
                     </h2>
                     <p className="text-lg mb-6 text-charcoal-text/70">
-                      {selectedDocumentType?.id === 'pan' 
+                      {selectedDocumentType?.id === 'pan'
                         ? 'Your PAN verification has been submitted. Now waiting for on-chain attestation...'
                         : 'Your OTP has been verified. Now waiting for on-chain attestation...'
                       }
@@ -805,7 +821,7 @@ function KycPage() {
                         <Award className="w-5 h-5 mr-2" />
                         {isClaimingNft ? 'Claiming NFT...' : 'Claim Your DID NFT'}
                       </Button>
-                      
+
                       {encryptionResult?.suiRef && (
                         <motion.div
                           whileHover={{ scale: 1.02 }}
@@ -829,7 +845,7 @@ function KycPage() {
                         </motion.div>
                       )}
                     </div>
-                    
+
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}

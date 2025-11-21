@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { WalletProvider } from "@/components/providers/WalletProvider";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -74,20 +73,18 @@ export default function RootLayout({
       >
         <AuthProvider>
           <WalletProvider>
-            <ProtectedRoute>
-              {children}
-              <ToastContainer
-                position="bottom-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={true}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-              />
-            </ProtectedRoute>
+            {children}
+            <ToastContainer
+              position="bottom-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={true}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
           </WalletProvider>
         </AuthProvider>
       </body>
