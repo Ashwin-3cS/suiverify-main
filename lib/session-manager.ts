@@ -37,13 +37,28 @@ export class SessionManager {
     if (typeof window === "undefined") return false;
 
     const cached = localStorage.getItem(PROOF_CACHE_KEY);
-    if (!cached) return false;
+    console.log(`🔍 Checking cache validity for key: "${PROOF_CACHE_KEY}"`);
+    console.log(`📦 Cached data exists:`, cached !== null);
+
+    if (!cached) {
+      console.log('❌ No cached data found');
+      return false;
+    }
 
     try {
       const data: CachedProofData = JSON.parse(cached);
       const now = Date.now();
-      return now < data.expiresAt;
-    } catch {
+      const isValid = now < data.expiresAt;
+
+      console.log(`⏰ Cache timestamps:`);
+      console.log(`   Created: ${new Date(data.createdAt).toLocaleString()}`);
+      console.log(`   Expires: ${new Date(data.expiresAt).toLocaleString()}`);
+      console.log(`   Now: ${new Date(now).toLocaleString()}`);
+      console.log(`   Is valid: ${isValid}`);
+
+      return isValid;
+    } catch (error) {
+      console.error('❌ Error parsing cached data:', error);
       return false;
     }
   }
@@ -79,7 +94,19 @@ export class SessionManager {
    * This data is required to create zkLogin signatures for transactions
    */
   static cacheProof(data: Omit<CachedProofData, "createdAt" | "expiresAt">): void {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      console.warn('⚠️ cacheProof called on server side - skipping');
+      return;
+    }
+
+    console.log('💾 cacheProof() called with data:');
+    console.log('   - address:', data.address);
+    console.log('   - userSalt:', data.userSalt?.substring(0, 20) + '...');
+    console.log('   - maxEpoch:', data.maxEpoch);
+    console.log('   - has zkProof:', !!data.zkProof);
+    console.log('   - has jwtToken:', !!data.jwtToken);
+    console.log('   - has randomness:', !!data.randomness);
+    console.log('   - has ephemeralPrivateKey:', !!data.ephemeralPrivateKey);
 
     const now = Date.now();
     const cacheData = {
@@ -88,8 +115,13 @@ export class SessionManager {
       expiresAt: now + CACHE_TTL,
     };
 
+    console.log('💾 Storing to localStorage with key:', PROOF_CACHE_KEY);
     localStorage.setItem(PROOF_CACHE_KEY, JSON.stringify(cacheData));
-    console.log("✅ zkLogin proof cached (valid for 24h) - includes proof data for transactions");
+
+    // Verify it was stored
+    const stored = localStorage.getItem(PROOF_CACHE_KEY);
+    console.log('✅ Verification - Data stored:', stored !== null);
+    console.log('✅ zkLogin proof cached (valid for 24h) - includes proof data for transactions');
   }
 
   /**

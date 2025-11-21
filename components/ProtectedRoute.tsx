@@ -13,9 +13,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Don't protect adminLogin, admin, and dashboard pages
+    // Don't protect adminLogin, admin, dashboard, and callback pages
     // Dashboard is the main entry point where users can connect their wallet
-    if (pathname === '/adminLogin' || pathname === '/admin' || pathname === '/dashboard' || pathname === '/') {
+    // Callback is where OAuth returns and zkLogin proof is generated
+    if (pathname === '/adminLogin' || pathname === '/admin' || pathname === '/dashboard' || pathname === '/' || pathname === '/callback') {
       setIsAuthenticated(true);
       return;
     }

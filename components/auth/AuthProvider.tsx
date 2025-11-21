@@ -53,11 +53,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuth = () => {
     console.log('🔍 Checking authentication status...');
 
+    // Debug: Log all localStorage keys
+    console.log('📦 LocalStorage keys:', Object.keys(localStorage));
+    console.log('📦 zkLoginProofCache exists?', localStorage.getItem('zkLoginProofCache') !== null);
+    console.log('📦 zkLoginSession exists?', localStorage.getItem('zkLoginSession') !== null);
+
     try {
       const isAuth = SessionManager.isAuthenticated();
+      console.log('🔐 SessionManager.isAuthenticated():', isAuth);
 
       if (isAuth) {
         const cachedProof = SessionManager.getCachedProof();
+        console.log('📋 Cached proof data:', cachedProof);
+
         if (cachedProof && cachedProof.address) {
           console.log('✅ User is authenticated (cached address valid)');
           console.log('📍 Address:', cachedProof.address);
@@ -78,6 +86,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           // Log cache TTL for debugging
           console.log(`⏰ Address cache valid for: ${SessionManager.getFormattedTTL()}`);
+        } else {
+          console.log('⚠️ isAuth=true but no cached proof or address');
         }
       } else {
         console.log('❌ User is not authenticated (no valid cached address)');
