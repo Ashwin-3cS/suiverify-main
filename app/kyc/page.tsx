@@ -430,6 +430,10 @@ function KycPage() {
           transactionBlockKindBytes: base64TxBytes,
           sender: cached.address,
           jwtToken: cached.jwtToken, // Include JWT for zkLogin authentication
+          // Whitelist: Only allow this user's address
+          allowedAddresses: [cached.address],
+          // Whitelist: Only allow claim_did_nft function call
+          allowedMoveCallTargets: [CONTRACT_FUNCTIONS.DID_REGISTRY.CLAIM_DID_NFT],
         }),
       });
 
