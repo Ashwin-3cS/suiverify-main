@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import {
   credentialService,
@@ -22,12 +22,13 @@ import {
 import { colors } from "@/app/brand";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import ZkLoginTransactionTest from "@/components/zklogin/ZkLoginTransactionTest";
+import SponsoredTransactionTest from "@/components/zklogin/SponsoredTransactionTest";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 
 const User: React.FC = () => {
   const router = useRouter();
-  const currentAccount = useCurrentAccount();
+  const { address: zkLoginAddress, isAuthenticated } = useAuth();
   const [activeNav, setActiveNav] = useState("verifications");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -69,9 +70,9 @@ const User: React.FC = () => {
     verificationType: string,
     verificationDescription: string
   ) => {
-    // Check if wallet is connected before starting verification
-    if (!currentAccount?.address) {
-      toast.error("Please connect wallet", {
+    // Check if user is authenticated with zkLogin before starting verification
+    if (!isAuthenticated || !zkLoginAddress) {
+      toast.error("Please sign in with zkLogin to start verification", {
         position: "bottom-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -93,14 +94,14 @@ const User: React.FC = () => {
   // Fetch credentials from backend
   useEffect(() => {
     const fetchCredentials = async () => {
-      if (!currentAccount?.address) return;
+      if (!zkLoginAddress || !isAuthenticated) return;
 
       setLoading(true);
       setError(null);
 
       try {
         const { credentials: fetchedCredentials, stats: fetchedStats } =
-          await credentialService.getUserCredentials(currentAccount.address);
+          await credentialService.getUserCredentials(zkLoginAddress);
         setCredentials(fetchedCredentials);
         setStats(fetchedStats);
       } catch (error) {
@@ -112,7 +113,7 @@ const User: React.FC = () => {
     };
 
     fetchCredentials();
-  }, [currentAccount?.address]);
+  }, [zkLoginAddress, isAuthenticated]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -228,18 +229,18 @@ const User: React.FC = () => {
               className="mb-8"
             >
               <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-2 border-[3px] border-primary/30 shadow-[0.1em_0.1em] inline-flex">
-                <nav className="flex gap-2">
-                  {["verifications", "credentials"].map((tab) => (
+                <nav className="flex gap-2 flex-wrap">
+                  {["verifications", "credentials", "test"].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveNav(tab)}
-                      className={`px-8 py-3 rounded-xl font-bold text-sm capitalize transition-all duration-200 ${
+                      className={`px-6 py-3 rounded-xl font-bold text-sm capitalize transition-all duration-200 ${
                         activeNav === tab
                           ? "text-white shadow-[0.1em_0.1em] bg-primary border-[3px] border-primary"
                           : "text-charcoal-text/70 hover:text-charcoal-text bg-transparent hover:bg-primary/5"
                       }`}
                     >
-                      {tab}
+                      {tab === "test" ? "🧪 Test Sponsored TX" : tab}
                     </button>
                   ))}
                 </nav>
@@ -375,26 +376,32 @@ const User: React.FC = () => {
               </motion.div>
             )}
 
-            {/* zkLogin Transaction Test Section */}
-            {activeNav === "zkLogin" && (
+            {/* Test Sponsored Transactions Section */}
+            {activeNav === "test" && (
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <div className="mb-8">
-                  <h2
-                    className="text-2xl font-bold mb-2"
-                    style={{ color: colors.white }}
-                  >
-                    zkLogin Testnet Test
+                  <h2 className="text-3xl font-bold mb-2 text-charcoal-text">
+                    🧪 Test Gas Sponsorship
                   </h2>
-                  <p className="text-sm" style={{ color: colors.lightBlue }}>
-                    Test your zkLogin integration on Sui Testnet
+                  <p className="text-base text-charcoal-text/70">
+                    Test zkLogin with sponsored transactions - send SUI without paying gas fees!
                   </p>
                 </div>
 
-                <ZkLoginTransactionTest />
+                <div className="space-y-6">
+                  <SponsoredTransactionTest />
+
+                  <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border-2 border-primary/20">
+                    <p className="text-sm text-charcoal-text/70 mb-2">
+                      <strong>💡 Tip:</strong> After sending, check the transaction on SuiScan and look at the <strong>"Gas Payment"</strong> section.
+                      You'll see the gas was NOT paid by your address - it was sponsored by Enoki! 🎉
+                    </p>
+                  </div>
+                </div>
               </motion.div>
             )}
 

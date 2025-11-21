@@ -382,18 +382,62 @@ function KycPage() {
           tx.object(CLOCK_ID), // clock
         ],
       });
-      tx.setGasBudget(GAS_CONFIG.NFT_CLAIM_GAS_BUDGET);
+
+      // Note: Gas budget not needed for sponsored transactions
+      // tx.setGasBudget(GAS_CONFIG.NFT_CLAIM_GAS_BUDGET);
 
       // Set sender to zkLogin address
       tx.setSender(cached.address);
 
-      // Build the transaction
-      console.log('Building transaction...');
-      const txBytes = await tx.build({ client: suiClient });
+      // Build the transaction with onlyTransactionKind flag for sponsorship
+      console.log('Building transaction for sponsorship...');
+      const transactionBlockKindBytes = await tx.build({
+        client: suiClient,
+        onlyTransactionKind: true // Required for sponsored transactions
+      });
 
-      // Sign with ephemeral key
-      console.log('Signing with ephemeral key...');
-      const { signature: ephemeralSignature } = await ephemeralKeyPair.signTransaction(txBytes);
+      // Convert Uint8Array to base64 string (required by Enoki API)
+      const base64TxBytes = btoa(
+        String.fromCharCode.apply(null, Array.from(transactionBlockKindBytes))
+      );
+
+      console.log('📦 Transaction bytes (base64):', base64TxBytes.substring(0, 50) + '...');
+
+      // Step 1: Create sponsored transaction via backend
+      console.log('📞 Requesting sponsored transaction from backend...');
+      const sponsorCreateResponse = await fetch('/api/transactions/sponsor-create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactionBlockKindBytes: base64TxBytes,
+          sender: cached.address,
+          jwtToken: cached.jwtToken, // Include JWT for zkLogin authentication
+        }),
+      });
+
+      if (!sponsorCreateResponse.ok) {
+        const errorData = await sponsorCreateResponse.json();
+        throw new Error(`Failed to create sponsored transaction: ${errorData.error || 'Unknown error'}`);
+      }
+
+      const sponsorCreateData = await sponsorCreateResponse.json();
+      const { digest, bytes } = sponsorCreateData.data;
+
+      console.log('✅ Sponsored transaction created');
+      console.log('   Digest:', digest);
+
+      // Step 2: Sign the sponsored transaction bytes
+      console.log('🔐 Signing sponsored transaction with ephemeral key...');
+      // Convert base64 to Uint8Array (browser-compatible)
+      const binaryString = atob(bytes);
+      const sponsoredTxBytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        sponsoredTxBytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const { signature: ephemeralSignature } = await ephemeralKeyPair.signTransaction(sponsoredTxBytes);
 
       // Verify cached data
       if (!cached.jwtToken || !cached.userSalt) {
@@ -401,17 +445,40 @@ function KycPage() {
       }
 
       // Create zkLogin signature using cached proof data
-      console.log('Creating zkLogin signature from cached proof...');
+      console.log('🎯 Creating zkLogin signature from cached proof...');
       const zkLoginSignature = ZkLoginService.getTransactionSignature({
         ephemeralSignature,
         useCache: true, // Use cached proof data
       });
 
-      // Execute transaction
-      console.log('Executing transaction on testnet...');
-      const result = await suiClient.executeTransactionBlock({
-        transactionBlock: txBytes,
-        signature: zkLoginSignature,
+      // Step 3: Submit signed transaction to backend for execution
+      console.log('📤 Submitting signed transaction to backend...');
+      const sponsorSubmitResponse = await fetch('/api/transactions/sponsor-submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          digest: digest,
+          signature: zkLoginSignature,
+        }),
+      });
+
+      if (!sponsorSubmitResponse.ok) {
+        const errorData = await sponsorSubmitResponse.json();
+        throw new Error(`Failed to submit sponsored transaction: ${errorData.error || 'Unknown error'}`);
+      }
+
+      const sponsorSubmitData = await sponsorSubmitResponse.json();
+      const transactionDigest = sponsorSubmitData.data.digest;
+
+      console.log('✅ Sponsored transaction submitted successfully!');
+      console.log('   Transaction Digest:', transactionDigest);
+
+      // Wait for transaction to be confirmed and get full result
+      console.log('⏳ Waiting for transaction confirmation...');
+      const result = await suiClient.waitForTransaction({
+        digest: transactionDigest,
         options: {
           showEffects: true,
           showObjectChanges: true,

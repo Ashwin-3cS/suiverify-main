@@ -26,34 +26,35 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
 
     const checkAuth = () => {
-      // Check if user has valid session
-      const authData = localStorage.getItem('suiverify_auth');
-      
-      if (!authData) {
-        // No auth data, redirect to dashboard (where they can sign in)
-        router.push('/dashboard');
+      // Check for zkLogin authentication
+      const zkLoginCache = localStorage.getItem('zkLoginProofCache');
+
+      if (!zkLoginCache) {
+        // No zkLogin auth, allow access (dashboard handles sign-in)
+        setIsAuthenticated(true);
         return;
       }
 
       try {
-        const parsed = JSON.parse(authData);
+        const parsed = JSON.parse(zkLoginCache);
         const now = Date.now();
-        const sessionAge = now - parsed.timestamp;
-        const sessionTimeout = 3600000; // 1 hour
+        const expiryTime = parsed.expiryTime;
 
-        if (sessionAge > sessionTimeout) {
-          // Session expired, clear and redirect
-          localStorage.removeItem('suiverify_auth');
-          router.push('/dashboard');
+        if (now >= expiryTime) {
+          // Session expired, clear cache
+          localStorage.removeItem('zkLoginProofCache');
+          localStorage.removeItem('zkLoginSession');
+          setIsAuthenticated(true); // Still allow access, user needs to sign in again
           return;
         }
 
-        // Valid session
+        // Valid zkLogin session
         setIsAuthenticated(true);
       } catch {
-        // Invalid auth data, redirect
-        localStorage.removeItem('suiverify_auth');
-        router.push('/dashboard');
+        // Invalid cache data, clear and allow access
+        localStorage.removeItem('zkLoginProofCache');
+        localStorage.removeItem('zkLoginSession');
+        setIsAuthenticated(true);
       }
     };
 
