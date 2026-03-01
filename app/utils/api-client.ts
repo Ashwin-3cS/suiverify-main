@@ -13,10 +13,10 @@ export const getZkLoginJwt = (): string | null => {
 };
 
 const handleApiError = async (response: Response) => {
-    let errorData;
+    let errorData: { detail?: string; message?: string } = {};
     try {
         errorData = await response.json();
-    } catch (e) {
+    } catch {
         errorData = { detail: response.statusText };
     }
 
@@ -53,10 +53,10 @@ export const apiFetch = async (url: string, options: RequestInit = {}): Promise<
     return response;
 };
 
-export const apiPost = async (url: string, body: any, isFormData: boolean = false): Promise<any> => {
+export const apiPost = async <T = unknown>(url: string, body: unknown, isFormData: boolean = false): Promise<T> => {
     const options: RequestInit = {
         method: 'POST',
-        body: isFormData ? body : JSON.stringify(body),
+        body: isFormData ? (body as FormData) : JSON.stringify(body),
     };
 
     if (!isFormData) {
@@ -69,7 +69,7 @@ export const apiPost = async (url: string, body: any, isFormData: boolean = fals
     return response.json();
 };
 
-export const apiGet = async (url: string): Promise<any> => {
+export const apiGet = async <T = unknown>(url: string): Promise<T> => {
     const response = await apiFetch(url, { method: 'GET' });
     return response.json();
 };
