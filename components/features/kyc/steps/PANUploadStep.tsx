@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { ExtractedDataModal } from "../modals/ExtractedDataModal";
+import { apiFetch, apiPost } from "@/app/utils/api-client";
 
 interface PANData {
   pan_number?: string;
@@ -54,7 +55,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
       const timestamp = Date.now();
       const urlWithTimestamp = `${url}?t=${timestamp}`;
 
-      const response = await fetch(urlWithTimestamp, {
+      const response = await apiFetch(urlWithTimestamp, {
         method: "POST",
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -148,7 +149,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
         setEditedData(completeData);
         setUploadedFile(file);
         onFileUpload(completeData, file);
-        
+
         // Show success message
         toast.success("PAN card data extracted successfully!");
       } else {
@@ -192,26 +193,15 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
 
       console.log("🔧 Sending corrected PAN data to backend...");
 
-      const response = await fetch(
+      const result = await apiPost(
         buildApiUrl(API_ENDPOINTS.CORRECT_PAN_DATA),
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(correctionData),
-        }
+        correctionData
       );
 
-      if (response.ok) {
-        await response.json();
-        setPanData(editedData);
-        onFileUpload(editedData, uploadedFile || undefined);
-        setIsEditing(false);
-        toast.success('PAN data corrected successfully!');
-      } else {
-        throw new Error("Failed to save corrections");
-      }
+      setPanData(editedData);
+      onFileUpload(editedData, uploadedFile || undefined);
+      setIsEditing(false);
+      toast.success('PAN data corrected successfully!');
     } catch (err) {
       console.error("Error saving corrections:", err);
       toast.error("Failed to save corrections. Please try again.");
@@ -284,17 +274,15 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
           {/* Upload Area */}
           {!previewUrl ? (
             <div
-              className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
-                error
-                  ? "border-error/50 bg-error/5"
-                  : "border-primary/30 bg-primary/5 hover:border-primary/50"
-              }`}
+              className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${error
+                ? "border-error/50 bg-error/5"
+                : "border-primary/30 bg-primary/5 hover:border-primary/50"
+                }`}
             >
               <div className="w-20 h-20 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
                 <FileText
-                  className={`w-10 h-10 ${
-                    error ? "text-error" : "text-primary"
-                  }`}
+                  className={`w-10 h-10 ${error ? "text-error" : "text-primary"
+                    }`}
                 />
               </div>
               <h3 className="text-xl font-bold mb-2 text-charcoal-text">
@@ -410,29 +398,29 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
         </div>
       </form>
 
-    {/* View Data Modal */}
-    {panData && (
-      <ExtractedDataModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        documentType="pan"
-        data={panData}
-        mode="view"
-      />
-    )}
+      {/* View Data Modal */}
+      {panData && (
+        <ExtractedDataModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          documentType="pan"
+          data={panData}
+          mode="view"
+        />
+      )}
 
-    {/* Edit Data Modal */}
-    {panData && (
-      <ExtractedDataModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        documentType="pan"
-        data={panData}
-        mode="edit"
-        onSave={handleEditSave}
-        isLoading={isLoading}
-      />
-    )}
+      {/* Edit Data Modal */}
+      {panData && (
+        <ExtractedDataModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          documentType="pan"
+          data={panData}
+          mode="edit"
+          onSave={handleEditSave}
+          isLoading={isLoading}
+        />
+      )}
     </>
   );
 };

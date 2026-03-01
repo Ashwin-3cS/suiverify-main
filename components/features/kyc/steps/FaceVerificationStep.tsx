@@ -4,6 +4,7 @@ import Webcam from 'react-webcam';
 import { colors } from '@/app/brand';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
+import { apiFetch } from '@/app/utils/api-client';
 
 interface PANData {
   name?: string;
@@ -72,18 +73,12 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
       const liveImageBlob = new Blob([byteArray], { type: 'image/jpeg' });
       formData.append('live_image', liveImageBlob, 'live_image.jpg');
 
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.VERIFY_PAN_FACE), {
+      const response = await apiFetch(buildApiUrl(API_ENDPOINTS.VERIFY_PAN_FACE), {
         method: 'POST',
         body: formData
       });
 
       const result = await response.json();
-
-      if (!response.ok) {
-        const errorMessage = result.detail || result.message || `HTTP error! status: ${response.status}`;
-        setError(errorMessage);
-        return;
-      }
 
       if (result.success && result.data) {
         setFaceResult(result.data);
