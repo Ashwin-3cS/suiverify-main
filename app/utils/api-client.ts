@@ -13,6 +13,16 @@ export const getZkLoginJwt = (): string | null => {
     }
 };
 
+const isLikelyJwt = (token: string): boolean => {
+    // Basic structural validation: three base64url-ish parts separated by dots.
+    // This avoids sending garbage (e.g., "undefined", binary, or other keys) as Authorization.
+    const trimmed = token.trim();
+    const parts = trimmed.split('.');
+    if (parts.length !== 3) return false;
+    const base64UrlPart = /^[A-Za-z0-9_-]+$/;
+    return parts.every(p => p.length > 0 && base64UrlPart.test(p));
+};
+
 const handleApiError = async (response: Response) => {
     let errorData: { detail?: string; message?: string } = {};
     try {
@@ -41,6 +51,13 @@ export const apiFetch = async (url: string, options: RequestInit = {}): Promise<
 
     const headers = new Headers(options.headers || {});
     if (jwt) {
+        if (!isLikelyJwt(jwt)) {
+            // If we ever have a corrupted token, force a clean auth flow.
+            localStorage.removeItem('zkLoginProofCache');
+            localStorage.removeItem('zkLoginSession');
+            window.location.href = '/auth';
+            throw new Error('Authentication token is invalid. Please log in again.');
+        }
         headers.set('Authorization', `Bearer ${jwt}`);
     }
 
