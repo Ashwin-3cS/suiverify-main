@@ -5,9 +5,10 @@ export const getZkLoginJwt = (): string | null => {
 
     try {
         const config = JSON.parse(configStr);
-        return config.jwt || null;
-    } catch (e) {
-        console.warn('Failed to parse zkLoginProofCache for JWT', e);
+        // SessionManager stores it as jwtToken, fallback to jwt just in case
+        return config.jwtToken || config.jwt || null;
+    } catch {
+        console.warn('Failed to parse zkLoginProofCache for JWT');
         return null;
     }
 };
