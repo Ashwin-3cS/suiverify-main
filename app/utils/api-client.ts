@@ -21,11 +21,13 @@ const handleApiError = async (response: Response) => {
         errorData = { detail: response.statusText };
     }
 
-    // If 401 Unauthorized, the zkLogin JWT is likely expired or invalid
+    // If 401 Unauthorized, the zkLogin JWT is expired or invalid
     if (response.status === 401) {
-        // We could potentially try to silently refresh here in the future
-        // For now, redirect to auth
         if (typeof window !== 'undefined') {
+            // Clear stale session data so the auth page triggers a fresh login
+            // instead of reading the expired JWT and looping back to 401
+            localStorage.removeItem('zkLoginProofCache');
+            localStorage.removeItem('zkLoginSession');
             window.location.href = '/auth';
         }
         throw new Error('Authentication expired. Please log in again.');

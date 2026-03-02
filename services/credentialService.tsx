@@ -1,4 +1,5 @@
 import { API_CONFIG } from '@/config/api';
+import { apiFetch } from '@/app/utils/api-client';
 
 export interface CredentialData {
     id: string;
@@ -35,11 +36,8 @@ export interface CredentialData {
       stats: CredentialStats;
     }> {
       try {
-        const response = await fetch(`${this.baseUrl}/credentials/user/${userAddress}`, {
+        const response = await apiFetch(`${this.baseUrl}/credentials/user/${userAddress}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
         });
   
         if (!response.ok) {
@@ -83,7 +81,7 @@ export interface CredentialData {
       transactionHash: string;
     }): Promise<{ success: boolean; error?: string; credentialId?: string }> {
       try {
-        const response = await fetch(`${this.baseUrl}/credentials/nft`, {
+        const response = await apiFetch(`${this.baseUrl}/credentials/nft`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -122,7 +120,7 @@ export interface CredentialData {
       status: 'verified' | 'pending' | 'expired'
     ): Promise<{ success: boolean; error?: string; credentialId?: string }> {
       try {
-        const response = await fetch(`${this.baseUrl}/credentials/${credentialId}/status`, {
+        const response = await apiFetch(`${this.baseUrl}/credentials/${credentialId}/status`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
