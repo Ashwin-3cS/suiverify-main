@@ -5,7 +5,7 @@
 SuiVerify represents a paradigm shift from centralized KYC services to a **decentralized, interoperable, and government-compliant** identity verification protocol. Unlike traditional KYC providers, SuiVerify creates **portable, verifiable DIDs** that can be used across multiple protocols and chains while maintaining privacy and regulatory compliance.
 
 ---
-
+.
 ## 🔄 Complete Verification Flow
 
 ### **Phase 1: Initial User Verification**
