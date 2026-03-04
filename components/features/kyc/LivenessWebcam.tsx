@@ -43,7 +43,7 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
       setStatusMsg("New session started");
       setStatusType("");
       setIsRunning(true);
-    } catch (err: unknown) {
+    } catch (err: unknown) { //TODO
       console.error(err);
       setStatusMsg("Reset failed");
       setStatusType("error");
@@ -214,10 +214,10 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
               <div
                 key={i}
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${i < progress
-                    ? "bg-success text-white border-success"
-                    : i === progress
-                      ? "bg-primary text-white scale-110 shadow-[0_0_0_4px_rgba(102,126,234,0.2)]"
-                      : "bg-gray-200 text-gray-400"
+                  ? "bg-success text-white border-success"
+                  : i === progress
+                    ? "bg-primary text-white scale-110 shadow-[0_0_0_4px_rgba(102,126,234,0.2)]"
+                    : "bg-gray-200 text-gray-400"
                   }`}
               >
                 {i + 1}
