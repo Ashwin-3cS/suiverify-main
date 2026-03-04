@@ -32,7 +32,7 @@ const handleApiError = async (response: Response) => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("zkLoginProofCache");
       localStorage.removeItem("zkLoginSession");
-      window.location.href = "/auth";
+      window.location.href = "/dashboard";
     }
     throw new Error("Authentication expired. Please log in again.");
   }
@@ -53,7 +53,7 @@ export const apiFetch = async (
     if (!isLikelyJwt(jwt)) {
       localStorage.removeItem("zkLoginProofCache");
       localStorage.removeItem("zkLoginSession");
-      window.location.href = "/auth";
+      window.location.href = "/dashboard";
       throw new Error("Authentication token is invalid. Please log in again.");
     }
     headers.set("Authorization", `Bearer ${jwt}`);

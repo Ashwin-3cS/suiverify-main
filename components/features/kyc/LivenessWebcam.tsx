@@ -205,11 +205,10 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
           {instruction}
         </div>
 
-        {/* Progress Dots */}
         <div className="flex gap-2 justify-center mb-4">
           {isPassiveScan ? (
             <div className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-semibold animate-pulse">
-              🛡️ Passive Security Scan in Progress...
+              Security Scan in Progress...
             </div>
           ) : total > 0 ? (
             Array.from({ length: total }).map((_, i) => (

@@ -1,10 +1,15 @@
-import React, { useRef, useState } from 'react';
-import { ChevronLeft, Camera, RotateCcw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import Webcam from 'react-webcam';
-import { colors } from '@/app/brand';
-import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
-import { Button } from '@/components/ui/button';
-import { apiFetch } from '@/app/utils/api-client';
+import React, { useState } from "react";
+import {
+  ChevronLeft,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+  RotateCcw,
+} from "lucide-react";
+import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
+import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/app/utils/api-client";
+import { LivenessWebcam } from "@/components/features/kyc/LivenessWebcam";
 
 interface PANData {
   name?: string;
@@ -22,16 +27,6 @@ interface FaceVerificationResult {
   face_distance?: number;
   verification_status: string;
   threshold?: number;
-  validation?: {
-    pan_photo: {
-      reason: string;
-      detection_method: string;
-    };
-    live_image: {
-      reason: string;
-      detection_method: string;
-    };
-  };
 }
 
 interface FaceVerificationStepProps {
@@ -41,72 +36,89 @@ interface FaceVerificationStepProps {
   panCardImage?: File | null;
 }
 
-const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onBack, panData, panCardImage }) => {
-  const webcamRef = useRef<Webcam>(null);
-  const [faceImage, setFaceImage] = useState<string | null>(null);
+const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({
+  onNext,
+  onBack,
+  panData,
+  panCardImage,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [faceResult, setFaceResult] = useState<FaceVerificationResult | null>(null);
+  const [faceResult, setFaceResult] = useState<FaceVerificationResult | null>(
+    null,
+  );
+  const [liveImage, setLiveImage] = useState<string | null>(null);
 
-  const handleFaceVerification = async (liveImageBase64: string) => {
+  const handleLivenessVerified = async (capturedImage: string) => {
+    setLiveImage(capturedImage);
     setIsLoading(true);
     setError(null);
 
     try {
       if (!panCardImage) {
-        setError('PAN card image not found. Please upload PAN card first.');
+        setError(
+          "PAN card image not found. Please go back and re-upload your PAN card.",
+        );
+        setIsLoading(false);
         return;
       }
 
-      // Create FormData for the API call
       const formData = new FormData();
-      formData.append('pan_card_image', panCardImage);
+      formData.append("pan_card_image", panCardImage);
 
-      // Convert base64 to blob for live image
-      const base64Data = liveImageBase64.includes(',') ? liveImageBase64.split(',')[1] : liveImageBase64;
+      const base64Data = capturedImage.includes(",")
+        ? capturedImage.split(",")[1]
+        : capturedImage;
       const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const liveImageBlob = new Blob([byteArray], { type: 'image/jpeg' });
-      formData.append('live_image', liveImageBlob, 'live_image.jpg');
-
-      const response = await apiFetch(buildApiUrl(API_ENDPOINTS.VERIFY_PAN_FACE), {
-        method: 'POST',
-        body: formData
+      const liveImageBlob = new Blob([new Uint8Array(byteNumbers)], {
+        type: "image/jpeg",
       });
+      formData.append("live_image", liveImageBlob, "live_image.jpg");
+
+      const response = await apiFetch(
+        buildApiUrl(API_ENDPOINTS.VERIFY_PAN_FACE),
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       const result = await response.json();
 
       if (result.success && result.data) {
         setFaceResult(result.data);
+        if (result.data.verified) {
+          setTimeout(() => onNext(), 1500);
+        } else {
+          setError(
+            `Face does not match. Confidence: ${result.data.confidence?.toFixed(1) ?? 0}%. ` +
+              `Please ensure good lighting and try again.`,
+          );
+        }
       } else {
-        const failureMessage = result.data?.message || result.message || 'Face verification failed.';
-        setError(`Face verification failed: ${failureMessage}`);
+        const failureMessage =
+          result.detail ||
+          result.message ||
+          "Face verification failed. Please try again.";
+        setError(failureMessage);
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Face verification failed';
+      const errorMsg =
+        err instanceof Error ? err.message : "Face verification failed";
       setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const capturePhoto = () => {
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (imageSrc) {
-      setFaceImage(imageSrc);
-      // Trigger actual face verification
-      handleFaceVerification(imageSrc);
-    }
-  };
-
-  const retakePhoto = () => {
-    setFaceImage(null);
-    setError(null);
+  const handleRetry = () => {
+    setLiveImage(null);
     setFaceResult(null);
+    setError(null);
   };
 
   return (
@@ -120,108 +132,89 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({ onNext, onB
           <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-charcoal-text">Face Verification</h2>
-          <p className="text-sm text-charcoal-text/60 mt-1">Verify your identity with a live photo</p>
+          <h2 className="text-2xl font-bold text-charcoal-text">
+            Liveness Verification
+          </h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">
+            Complete the challenges to confirm you are a real person
+          </p>
         </div>
       </div>
 
       <div className="space-y-6">
-        {/* Error Display */}
         {error && (
-          <div className="p-4 rounded-lg flex items-center gap-3 bg-error/10 border border-error/30">
-            <AlertCircle className="w-5 h-5 text-error flex-shrink-0" />
-            <p className="text-sm text-charcoal-text">{error}</p>
+          <div className="p-4 rounded-lg flex items-start gap-3 bg-error/10 border border-error/30">
+            <AlertCircle className="w-5 h-5 text-error shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-charcoal-text font-medium">{error}</p>
+              {liveImage && (
+                <button
+                  onClick={handleRetry}
+                  className="text-xs text-primary underline mt-1"
+                >
+                  Try again
+                </button>
+              )}
+            </div>
           </div>
         )}
 
-        <div className="text-center mb-6">
-          <div className="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-            <Camera className="w-10 h-10 text-primary" />
+        {faceResult?.verified && (
+          <div className="p-4 rounded-lg flex items-center gap-3 bg-success/10 border border-success/30">
+            <CheckCircle className="w-5 h-5 text-success shrink-0" />
+            <div>
+              <p className="text-sm text-charcoal-text font-medium">
+                Identity verified — {faceResult.confidence.toFixed(1)}%
+                confidence
+              </p>
+              <p className="text-xs text-charcoal-text/60">
+                Proceeding to next step...
+              </p>
+            </div>
           </div>
-          <h3 className="text-xl font-bold mb-2 text-charcoal-text">Live Face Capture</h3>
-          <p className="text-sm text-charcoal-text/70">Position your face in the center and take a clear photo</p>
-        </div>
+        )}
 
-        <div className="relative max-w-md mx-auto mb-8">
-          {!faceImage ? (
-            <div className="relative">
-              <Webcam
-                audio={false}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                className="w-full rounded-lg border-2 border-primary/30 shadow-lg"
-                videoConstraints={{
-                  width: 640,
-                  height: 480,
-                  facingMode: "user"
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-48 h-60 border-2 border-primary rounded-full opacity-50"></div>
-              </div>
-            </div>
-          ) : (
-            <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={faceImage}
-                alt="Captured face"
-                className="w-full rounded-2xl border-2"
-                style={{
-                  borderColor: faceResult?.verified ? '#10b981' : `${colors.primary}40`,
-                  borderWidth: faceResult?.verified ? '3px' : '2px'
-                }}
-              />
-              {isLoading && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg backdrop-blur-sm">
-                  <div className="text-center text-white">
-                    <Loader2 className="w-10 h-10 animate-spin mx-auto mb-3 text-primary" />
-                    <p className="text-base font-medium">Verifying face...</p>
-                  </div>
-                </div>
-              )}
-              {faceResult?.verified && (
-                <div className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#10b981' }}>
-                  <CheckCircle className="w-5 h-5 text-white" />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="flex gap-4">
-          {!faceImage ? (
-            <Button
-              onClick={capturePhoto}
-              variant="primary"
-              disabled={isLoading}
-              className="flex-1"
-            >
-              <Camera className="w-5 h-5" />
-              Take Photo
-            </Button>
-          ) : (
-            <>
-              <Button
-                onClick={retakePhoto}
-                variant="outline"
-                disabled={isLoading}
-                className="flex-1"
-              >
-                <RotateCcw className="w-5 h-5" />
-                Retake
-              </Button>
-              {faceResult?.verified && (
+        {isLoading && (
+          <div className="text-center py-8">
+            <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto mb-3" />
+            <p className="text-charcoal-text/70 font-medium">
+              Comparing face with document...
+            </p>
+            <p className="text-xs text-charcoal-text/40 mt-1">
+              This takes a few seconds
+            </p>
+          </div>
+        )}
+
+        {!isLoading && !faceResult?.verified && (
+          <div className="relative max-w-md mx-auto">
+            {liveImage && error ? (
+              <div className="text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={liveImage}
+                  alt="Captured face"
+                  className="w-full rounded-lg border-2 border-error/40 mb-4"
+                />
                 <Button
-                  onClick={onNext}
-                  variant="success"
-                  className="flex-1"
+                  onClick={handleRetry}
+                  variant="outline"
+                  className="gap-2"
                 >
-                  Next: PAN Verification
+                  <RotateCcw className="w-4 h-4" />
+                  Retry Liveness Check
                 </Button>
-              )}
-            </>
-          )}
-        </div>
+              </div>
+            ) : (
+              <LivenessWebcam
+                onVerified={handleLivenessVerified}
+                onError={(err) => {
+                  setError(err);
+                }}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
