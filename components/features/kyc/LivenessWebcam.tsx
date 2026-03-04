@@ -61,10 +61,29 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
 
     isProcessingRef.current = true;
 
+    interface ChallengeData {
+      instruction?: string;
+      progress?: number;
+      total?: number;
+      passive_active?: boolean;
+      calibrating?: boolean;
+      blink_score?: number | null;
+      mouth_score?: number | null;
+      all_complete?: boolean;
+    }
+
+    interface FrameResponse {
+      data?: {
+        challenge?: ChallengeData;
+        is_live?: boolean;
+        face_detected?: boolean;
+      };
+    }
+
     try {
       const b64 = imageSrc.includes(",") ? imageSrc.split(",")[1] : imageSrc;
 
-      const response = await apiPost<any>(
+      const response = await apiPost<FrameResponse>(
         buildApiUrl(API_ENDPOINTS.LIVENESS_CHECK_FRAME),
         { frame_base64: b64 }
       );
@@ -78,8 +97,8 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
       setInstruction(ch.instruction || "Waiting...");
       setProgress(ch.progress || 0);
       setTotal(ch.total !== undefined ? ch.total : 3);
-      setIsPassiveScan(ch.passive_active);
-      setIsCalibrating(ch.calibrating);
+      setIsPassiveScan(ch.passive_active || false);
+      setIsCalibrating(ch.calibrating || false);
 
       if (ch.passive_active) {
         setScoreLabel("Analyzing Depth & Texture");
