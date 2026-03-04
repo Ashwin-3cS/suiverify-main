@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Webcam from "react-webcam";
-import { Camera, CheckCircle, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CheckCircle } from "lucide-react";
 
 interface LivenessWebcamProps {
   onVerified: (base64Image: string) => void;
@@ -13,7 +12,6 @@ const FRAME_SKIP = 2;
 
 export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
   onVerified,
-  onError,
 }) => {
   const webcamRef = useRef<Webcam>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -45,7 +43,7 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
       setStatusMsg("New session started");
       setStatusType("");
       setIsRunning(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setStatusMsg("Reset failed");
       setStatusType("error");
@@ -124,7 +122,7 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
           onVerified(imageSrc);
         }, 1500); // Give user time to see success
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Frame send error:", err);
       // Don't kill loop on intermittent network error
     } finally {
@@ -161,6 +159,7 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
   if (lastImage && isVerified) {
     return (
       <div className="relative">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={lastImage}
           alt="Verified face"
@@ -214,13 +213,12 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
             Array.from({ length: total }).map((_, i) => (
               <div
                 key={i}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  i < progress
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${i < progress
                     ? "bg-success text-white border-success"
                     : i === progress
                       ? "bg-primary text-white scale-110 shadow-[0_0_0_4px_rgba(102,126,234,0.2)]"
                       : "bg-gray-200 text-gray-400"
-                }`}
+                  }`}
               >
                 {i + 1}
               </div>
