@@ -4,7 +4,7 @@
 
 All user credentials are stored in `/access-control.json` in the main app repository.
 
-### **Current Structure:**
+### **Current Structure:**.
 
 ```json
 {
