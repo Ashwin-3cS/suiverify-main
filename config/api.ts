@@ -24,6 +24,10 @@ export const API_ENDPOINTS = {
   VALIDATE_DOCUMENT_FACE: "/api/face/validate-document-face",
   VERIFY_PAN_FACE: "/api/face/verify-pan-face-yolo",
 
+  // Liveness endpoints
+  LIVENESS_CHECK_FRAME: "/api/liveness/check-frame",
+  LIVENESS_RESET_SESSION: "/api/liveness/reset-session",
+
   // OTP endpoints (for Aadhaar flow only)
   GENERATE_OTP: "/api/otp/generate-otp",
   VERIFY_OTP_ENDPOINT: "/api/otp/verify-otp",

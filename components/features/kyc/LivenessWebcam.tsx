@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Webcam from "react-webcam";
 import { CheckCircle } from "lucide-react";
-
+import { apiPost } from "@/app/utils/api-client";
+import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 interface LivenessWebcamProps {
   onVerified: (base64Image: string) => void;
   onError: (error: string) => void;
 }
 
-const API_BASE = "http://localhost:8000/api/liveness";
 const FRAME_SKIP = 2;
 
 export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
@@ -34,16 +34,13 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
   // Restart the session fully
   const resetSession = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/reset-session`, {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Reset session failed");
+      await apiPost(buildApiUrl(API_ENDPOINTS.LIVENESS_RESET_SESSION), {});
       setIsVerified(false);
       setLastImage(null);
       setStatusMsg("New session started");
       setStatusType("");
       setIsRunning(true);
-    } catch (err: unknown) { //TODO
+    } catch (err: unknown) {
       console.error(err);
       setStatusMsg("Reset failed");
       setStatusType("error");
@@ -67,14 +64,11 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
     try {
       const b64 = imageSrc.includes(",") ? imageSrc.split(",")[1] : imageSrc;
 
-      const response = await fetch(`${API_BASE}/check-frame`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ frame_base64: b64 }),
-      });
-
-      if (!response.ok) throw new Error("API error");
-      const { data } = await response.json();
+      const response = await apiPost<any>(
+        buildApiUrl(API_ENDPOINTS.LIVENESS_CHECK_FRAME),
+        { frame_base64: b64 }
+      );
+      const { data } = response;
 
       if (!data) return;
 
