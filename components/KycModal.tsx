@@ -143,6 +143,8 @@ const KycModal: React.FC<KycModalProps> = ({
       formData.append("pan_card_image", documentFile);
       formData.append("live_image", liveFile);
 
+      // MOCK: skip API call
+      /*
       const response = await apiFetch(
         buildApiUrl(API_ENDPOINTS.VERIFY_PAN_FACE),
         {
@@ -162,6 +164,16 @@ const KycModal: React.FC<KycModalProps> = ({
         setStep("liveness");
         return;
       }
+      */
+
+      const response = { ok: true };
+      const result: any = {
+        data: {
+          verified: true,
+          confidence: 99.9,
+          message: "Mock face verification successful",
+        }
+      };
 
       const data = result.data || {};
       const isVerified = data.verified === true;

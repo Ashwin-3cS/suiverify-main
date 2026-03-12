@@ -63,6 +63,8 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({
         return;
       }
 
+      // MOCK: skip API call
+      /*
       const formData = new FormData();
       formData.append("pan_card_image", panCardImage);
 
@@ -88,6 +90,19 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({
       );
 
       const result = await response.json();
+      */
+
+      const result: any = {
+        success: true,
+        data: {
+          verified: true,
+          confidence: 99.9,
+          message: "Mock face verification successful",
+          face_distance: 0.1,
+          verification_status: "SUCCESS",
+          threshold: 50.0
+        } as FaceVerificationResult
+      };
 
       if (result.success && result.data) {
         setFaceResult(result.data);
