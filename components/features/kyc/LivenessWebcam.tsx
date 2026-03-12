@@ -34,7 +34,8 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
   // Restart the session fully
   const resetSession = useCallback(async () => {
     try {
-      await apiPost(buildApiUrl(API_ENDPOINTS.LIVENESS_RESET_SESSION), {});
+      // MOCK: skip API call
+      // await apiPost(buildApiUrl(API_ENDPOINTS.LIVENESS_RESET_SESSION), {});
       setIsVerified(false);
       setLastImage(null);
       setStatusMsg("New session started");
@@ -61,84 +62,42 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
 
     isProcessingRef.current = true;
 
-    interface ChallengeData {
-      instruction?: string;
-      progress?: number;
-      total?: number;
-      passive_active?: boolean;
-      calibrating?: boolean;
-      blink_score?: number | null;
-      mouth_score?: number | null;
-      all_complete?: boolean;
-    }
-
-    interface FrameResponse {
-      data?: {
-        challenge?: ChallengeData;
-        is_live?: boolean;
-        face_detected?: boolean;
-      };
-    }
-
     try {
+      // --- MOCKED LIVENESS VERIFICATION ---
+      // We simulate a successful liveness check without calling the backend.
+      /*
       const b64 = imageSrc.includes(",") ? imageSrc.split(",")[1] : imageSrc;
-
       const response = await apiPost<FrameResponse>(
         buildApiUrl(API_ENDPOINTS.LIVENESS_CHECK_FRAME),
         { frame_base64: b64 }
       );
-      const { data } = response;
+      // ...
+      */
 
-      if (!data) return;
+      setInstruction("MOCK: Verification Successful!");
+      setProgress(3);
+      setTotal(3);
+      setIsPassiveScan(false);
+      setIsCalibrating(false);
+      setScoreLabel("Detection Score");
+      setScoreValue("1.00");
+      setScorePercent(100);
+      setStatusMsg("All challenges completed!");
+      setStatusType("success");
 
-      const ch = data.challenge || {};
-      const isLive = data.is_live;
-
-      setInstruction(ch.instruction || "Waiting...");
-      setProgress(ch.progress || 0);
-      setTotal(ch.total !== undefined ? ch.total : 3);
-      setIsPassiveScan(ch.passive_active || false);
-      setIsCalibrating(ch.calibrating || false);
-
-      if (ch.passive_active) {
-        setScoreLabel("Analyzing Depth & Texture");
-        setScoreValue("SCANNING");
-        setScorePercent(100);
-      } else {
-        setScoreLabel("Detection Score");
-        let scoreVal = 0;
-        if (ch.blink_score !== null && ch.blink_score !== undefined) {
-          scoreVal = ch.blink_score;
-        } else if (ch.mouth_score !== null && ch.mouth_score !== undefined) {
-          scoreVal = ch.mouth_score;
-        }
-        setScoreValue(scoreVal.toFixed(2));
-        setScorePercent(scoreVal * 100);
-      }
-
-      if (!data.face_detected) {
-        setStatusMsg("No face detected — move closer");
-        setStatusType("error");
-      } else if (ch.all_complete) {
-        setStatusMsg("All challenges completed!");
-        setStatusType("success");
-      } else {
-        setStatusMsg("Awaiting challenge...");
-        setStatusType("");
-      }
-
-      if (isLive && !isVerified) {
+      // Give a tiny delay for visual effect
+      setTimeout(() => {
         setIsVerified(true);
         setIsRunning(false); // Stop loop
         setLastImage(imageSrc);
         setTimeout(() => {
           onVerified(imageSrc);
-        }, 1500); // Give user time to see success
-      }
+          isProcessingRef.current = false;
+        }, 1000); // Give user time to see success
+      }, 500);
+
     } catch (err: unknown) {
       console.error("Frame send error:", err);
-      // Don't kill loop on intermittent network error
-    } finally {
       isProcessingRef.current = false;
     }
   }, [isRunning, isVerified, onVerified]);
