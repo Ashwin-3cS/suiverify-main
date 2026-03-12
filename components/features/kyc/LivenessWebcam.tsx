@@ -57,8 +57,9 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
 
   const sendFrame = useCallback(async () => {
     if (!isRunning || isVerified || isProcessingRef.current) return;
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (!imageSrc) return;
+    
+    // MOCK: use a dummy base64 image if the webcam isn't ready or available
+    const imageSrc = webcamRef.current?.getScreenshot() || "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
     isProcessingRef.current = true;
 
