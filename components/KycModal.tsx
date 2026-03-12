@@ -166,8 +166,8 @@ const KycModal: React.FC<KycModalProps> = ({
       }
       */
 
-      const response = { ok: true };
-      const result: any = {
+      // const response = { ok: true };
+      const result: { data: { verified: boolean, confidence: number, message: string }, detail?: string, message?: string } = {
         data: {
           verified: true,
           confidence: 99.9,

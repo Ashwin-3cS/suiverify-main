@@ -92,7 +92,7 @@ const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({
       const result = await response.json();
       */
 
-      const result: any = {
+      const result: { success: boolean, data?: FaceVerificationResult, detail?: string, message?: string } = {
         success: true,
         data: {
           verified: true,
