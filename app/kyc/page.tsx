@@ -61,6 +61,9 @@ interface PANData {
   father_name?: string;
   dob?: string;
   pan_photo_base64?: string;
+  document_content_base64?: string;
+  document_content_type?: string;
+  document_file_name?: string;
 }
 
 function KycContent() {
@@ -272,21 +275,18 @@ function KycContent() {
     console.log('zkLoginAddress type:', typeof zkLoginAddress);
     console.log('zkLoginAddress is truthy:', !!zkLoginAddress);
 
-    const photoBase64 = selectedDocumentType?.id === 'pan'
+    const documentBase64 = selectedDocumentType?.id === 'digilocker_pan'
+      ? panData?.document_content_base64
+      : selectedDocumentType?.id === 'pan'
       ? panData?.pan_photo_base64
       : aadhaarData?.aadhaar_photo_base64;
 
-    console.log('photoBase64 exists:', !!photoBase64);
-    console.log('photoBase64 length:', photoBase64?.length || 0);
+    console.log('documentBase64 exists:', !!documentBase64);
+    console.log('documentBase64 length:', documentBase64?.length || 0);
 
-    if (selectedDocumentType?.id === 'digilocker_pan' && !photoBase64) {
-      setStep('completed');
-      return;
-    }
-
-    if (!photoBase64 || !zkLoginAddress) {
+    if (!documentBase64 || !zkLoginAddress) {
       console.error('Missing document data or zkLogin address');
-      console.error('   - photoBase64:', !!photoBase64);
+      console.error('   - documentBase64:', !!documentBase64);
       console.error('   - zkLoginAddress:', zkLoginAddress);
       console.error('   - Please ensure you are signed in with zkLogin');
 
@@ -302,7 +302,7 @@ function KycContent() {
       setStep('encrypting');
 
       // Convert base64 to File object for encryption
-      const base64Data = photoBase64;
+      const base64Data = documentBase64;
       console.log('Base64 data received:', base64Data.length, 'characters');
 
       const byteCharacters = atob(base64Data);
@@ -316,8 +316,15 @@ function KycContent() {
       console.log('Byte array created:', byteArray.length, 'bytes');
       console.log('First 20 bytes:', Array.from(byteArray.slice(0, 20)));
 
-      const fileName = selectedDocumentType?.id === 'pan' ? 'pan-document.jpg' : 'aadhaar-document.jpg';
-      const file = new File([byteArray], fileName, { type: 'image/jpeg' });
+      const fileName = selectedDocumentType?.id === 'digilocker_pan'
+        ? (panData?.document_file_name || 'digilocker-pan-document')
+        : selectedDocumentType?.id === 'pan'
+        ? 'pan-document.jpg'
+        : 'aadhaar-document.jpg';
+      const fileType = selectedDocumentType?.id === 'digilocker_pan'
+        ? (panData?.document_content_type || 'application/octet-stream')
+        : 'image/jpeg';
+      const file = new File([byteArray], fileName, { type: fileType });
 
       console.log('Document converted to file:', file.name, file.size, 'bytes');
       console.log('Ready to encrypt full size image:', file.size, 'bytes');
@@ -778,6 +785,9 @@ function KycContent() {
                         name: data.name,
                         father_name: data.father_name,
                         dob: data.dob,
+                        document_content_base64: data.document_content_base64,
+                        document_content_type: data.document_content_type,
+                        document_file_name: data.document_file_name,
                       })
                     }
                   />

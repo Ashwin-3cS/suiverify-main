@@ -11,6 +11,9 @@ import { useAuth } from "@/hooks/useAuth";
 
 type DigiLockerPanPayload = {
   session_id: string;
+  document_content_base64?: string;
+  document_content_type?: string;
+  document_file_name?: string;
   document_fields: {
     pan?: string;
     name?: string;
@@ -36,6 +39,9 @@ interface DigiLockerPANStepProps {
     name?: string;
     father_name?: string;
     dob?: string;
+    document_content_base64?: string;
+    document_content_type?: string;
+    document_file_name?: string;
   }) => void;
 }
 
@@ -112,6 +118,9 @@ const DigiLockerPANStep: React.FC<DigiLockerPANStepProps> = ({ onNext, onBack, o
         name: result.data.document_fields.name,
         father_name: result.data.document_fields.father_name,
         dob: result.data.document_fields.date_of_birth,
+        document_content_base64: result.data.document_content_base64,
+        document_content_type: result.data.document_content_type,
+        document_file_name: result.data.document_file_name,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch PAN data from DigiLocker";
