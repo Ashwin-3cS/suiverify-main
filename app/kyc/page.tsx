@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 // Commented out EOA wallet imports - using zkLogin instead
 // import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
@@ -62,7 +62,7 @@ interface PANData {
   pan_photo_base64?: string;
 }
 
-function KycPage() {
+function KycContent() {
   const [step, setStep] = useState('country');
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType | null>(null);
@@ -986,4 +986,16 @@ function KycPage() {
   );
 }
 
-export default KycPage;
+export default function KycPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-ghost-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <KycContent />
+    </Suspense>
+  );
+}
+
+

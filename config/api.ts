@@ -6,36 +6,44 @@ export const API_CONFIG = {
 // Helper function to build API URLs
 export const buildApiUrl = (endpoint: string): string => {
   // Remove leading slash if present to avoid double slashes
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
   return `${API_CONFIG.BASE_URL}/${cleanEndpoint}`;
 };
 
 // Common API endpoints
 export const API_ENDPOINTS = {
   // Aadhaar endpoints
-  EXTRACT_AADHAAR_DATA: '/api/aadhaar/extract-aadhaar-data',
-  
+  EXTRACT_AADHAAR_DATA: "/api/aadhaar/extract-aadhaar-data",
+
   // PAN endpoints
-  EXTRACT_PAN_DATA: '/api/pan/extract-pan-data',
-  CORRECT_PAN_DATA: '/api/pan/correct-pan-data',
-  VERIFY_PAN: '/api/pan/verify-pan',
-  
+  EXTRACT_PAN_DATA: "/api/pan/extract-pan-data",
+  CORRECT_PAN_DATA: "/api/pan/correct-pan-data",
+  VERIFY_PAN: "/api/pan/verify-pan",
+
   // Face verification endpoints
-  VERIFY_PAN_FACE: '/api/face/verify-pan-face-yolo',
-  
+  VALIDATE_DOCUMENT_FACE: "/api/face/validate-document-face",
+  VERIFY_PAN_FACE: "/api/face/verify-pan-face-yolo",
+
+  // Liveness endpoints
+  LIVENESS_CHECK_FRAME: "/api/liveness/check-frame",
+  LIVENESS_RESET_SESSION: "/api/liveness/reset-session",
+
   // OTP endpoints (for Aadhaar flow only)
-  GENERATE_OTP: '/api/otp/generate-otp',
-  VERIFY_OTP_ENDPOINT: '/api/otp/verify-otp',
-  
+  GENERATE_OTP: "/api/otp/generate-otp",
+  VERIFY_OTP_ENDPOINT: "/api/otp/verify-otp",
+
   // Encryption endpoints
-  ENCRYPTION_STORE: '/api/encryption/store',
-  ENCRYPTION_GOVERNMENT_DECRYPTION_DATA: (userAddress: string, governmentWallet: string) => 
+  ENCRYPTION_STORE: "/api/encryption/store",
+  ENCRYPTION_GOVERNMENT_DECRYPTION_DATA: (
+    userAddress: string,
+    governmentWallet: string,
+  ) =>
     `/api/encryption/government/decryption-data/${userAddress}?government_wallet=${governmentWallet}`,
-  
+
   // Verification endpoints
-  VERIFY_AADHAAR: '/api/verify-aadhaar',
-  VERIFY_OTP: '/api/verify-otp',
-  
+  VERIFY_AADHAAR: "/api/verify-aadhaar",
+  VERIFY_OTP: "/api/verify-otp",
+
   // Credential endpoints
-  CREDENTIALS: '/api/credentials',
+  CREDENTIALS: "/api/credentials",
 } as const;

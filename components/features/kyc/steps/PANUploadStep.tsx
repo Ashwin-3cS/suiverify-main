@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { ExtractedDataModal } from "../modals/ExtractedDataModal";
+import { apiFetch, apiPost } from "@/app/utils/api-client";
 
 interface PANData {
   pan_number?: string;
@@ -50,11 +51,10 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
 
   const handleApiCall = async (url: string, formData: FormData) => {
     try {
-      // Add timestamp to prevent caching
       const timestamp = Date.now();
       const urlWithTimestamp = `${url}?t=${timestamp}`;
 
-      const response = await fetch(urlWithTimestamp, {
+      const response = await apiFetch(urlWithTimestamp, {
         method: "POST",
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -75,7 +75,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
       console.error("API call failed:", err);
       if (err instanceof TypeError && err.message.includes("fetch")) {
         throw new Error(
-          "Network error: Please ensure the backend server is running"
+          "Network error: Please ensure the backend server is running",
         );
       }
       throw err;
@@ -89,37 +89,34 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
     try {
       console.log("📄 Processing PAN file:", file.name, file.size, "bytes");
 
-      // STEP 1: Convert uploaded file to base64 (full size) - run in parallel with API call
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve) => {
         reader.onload = (e) => {
           const base64String = e.target?.result as string;
-          const base64Data = base64String.split(",")[1]; // Remove data:image/jpeg;base64, prefix
+          const base64Data = base64String.split(",")[1];
           console.log(
             "📊 Full PAN image base64 created:",
             base64Data.length,
-            "characters"
+            "characters",
           );
           console.log(
             "📊 Full PAN image decoded size:",
             Math.floor(base64Data.length * 0.75),
-            "bytes"
+            "bytes",
           );
           resolve(base64Data);
         };
         reader.readAsDataURL(file);
       });
 
-      // STEP 2: Call backend API to extract PAN text data (PAN number, name, DOB, etc.)
       console.log("🔍 Calling backend API to extract PAN data...");
       const formData = new FormData();
       formData.append("file", file);
       const result = await handleApiCall(
         buildApiUrl(API_ENDPOINTS.EXTRACT_PAN_DATA),
-        formData
+        formData,
       );
 
-      // STEP 3: Wait for full image base64 to complete
       const fullImageBase64 = await base64Promise;
 
       console.log("✅ Backend API returned extracted PAN data");
@@ -128,10 +125,9 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
       if (result.data) {
         const data = result.data as PANData;
 
-        // Use backend's extracted text data BUT replace with full-size image
         const completeData: PANData = {
-          ...data, // Use real extracted PAN number, name, DOB, father's name from backend
-          pan_photo_base64: fullImageBase64, // Replace with full-size image!
+          ...data,
+          pan_photo_base64: fullImageBase64,
         };
 
         console.log("📋 Complete PAN data prepared:", {
@@ -140,7 +136,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
           father_name: completeData.father_name,
           dob: completeData.dob,
           image_size: `${fullImageBase64.length} chars (${Math.floor(
-            fullImageBase64.length * 0.75
+            fullImageBase64.length * 0.75,
           )} bytes)`,
         });
 
@@ -148,8 +144,25 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
         setEditedData(completeData);
         setUploadedFile(file);
         onFileUpload(completeData, file);
-        
-        // Show success message
+
+        const faceFormData = new FormData();
+        faceFormData.append("file", file);
+        const faceResponse = await apiFetch(
+          buildApiUrl(API_ENDPOINTS.VALIDATE_DOCUMENT_FACE),
+          { method: "POST", body: faceFormData },
+        );
+        const faceResult = await faceResponse.json();
+
+        if (!faceResponse.ok) {
+          const reason =
+            faceResult.detail ||
+            "No face detected in your PAN card photo. Please upload a clearer, well-lit image where your face is fully visible.";
+          setError(reason);
+          setPanData(null);
+          toast.error("Invalid document — no face detected");
+          return;
+        }
+
         toast.success("PAN card data extracted successfully!");
       } else {
         setError(result.message || "Failed to process PAN card image.");
@@ -181,7 +194,6 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
     try {
       setIsLoading(true);
 
-      // Call the correction endpoint
       const correctionData = {
         pan_number: editedData.pan_number,
         name: editedData.name,
@@ -192,26 +204,15 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
 
       console.log("🔧 Sending corrected PAN data to backend...");
 
-      const response = await fetch(
+      const result = await apiPost(
         buildApiUrl(API_ENDPOINTS.CORRECT_PAN_DATA),
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(correctionData),
-        }
+        correctionData,
       );
 
-      if (response.ok) {
-        await response.json();
-        setPanData(editedData);
-        onFileUpload(editedData, uploadedFile || undefined);
-        setIsEditing(false);
-        toast.success('PAN data corrected successfully!');
-      } else {
-        throw new Error("Failed to save corrections");
-      }
+      setPanData(editedData);
+      onFileUpload(editedData, uploadedFile || undefined);
+      setIsEditing(false);
+      toast.success("PAN data corrected successfully!");
     } catch (err) {
       console.error("Error saving corrections:", err);
       toast.error("Failed to save corrections. Please try again.");
@@ -410,29 +411,29 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
         </div>
       </form>
 
-    {/* View Data Modal */}
-    {panData && (
-      <ExtractedDataModal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        documentType="pan"
-        data={panData}
-        mode="view"
-      />
-    )}
+      {/* View Data Modal */}
+      {panData && (
+        <ExtractedDataModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          documentType="pan"
+          data={panData}
+          mode="view"
+        />
+      )}
 
-    {/* Edit Data Modal */}
-    {panData && (
-      <ExtractedDataModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        documentType="pan"
-        data={panData}
-        mode="edit"
-        onSave={handleEditSave}
-        isLoading={isLoading}
-      />
-    )}
+      {/* Edit Data Modal */}
+      {panData && (
+        <ExtractedDataModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          documentType="pan"
+          data={panData}
+          mode="edit"
+          onSave={handleEditSave}
+          isLoading={isLoading}
+        />
+      )}
     </>
   );
 };

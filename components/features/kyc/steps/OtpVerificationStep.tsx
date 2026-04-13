@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { Button } from '@/components/ui/button';
+import { apiFetch } from '@/app/utils/api-client';
 
 interface AadhaarData {
   name?: string;
@@ -42,8 +43,8 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
       // Add timestamp to prevent caching
       const timestamp = Date.now();
       const urlWithTimestamp = `${url}?t=${timestamp}`;
-      
-      const response = await fetch(urlWithTimestamp, {
+
+      const response = await apiFetch(urlWithTimestamp, {
         method: 'POST',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -54,10 +55,6 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
       });
 
       const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       return result;
     } catch (err) {
@@ -186,9 +183,9 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 mb-8">
-        <button 
-          type="button" 
-          onClick={onBack} 
+        <button
+          type="button"
+          onClick={onBack}
           className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
           <ChevronLeft className="w-5 h-5 text-primary" />

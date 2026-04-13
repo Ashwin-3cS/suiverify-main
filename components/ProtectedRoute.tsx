@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,24 +16,24 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     // Don't protect adminLogin, admin, dashboard, and callback pages
     // Dashboard is the main entry point where users can connect their wallet
     // Callback is where OAuth returns and zkLogin proof is generated
-    if (pathname === '/adminLogin' || pathname === '/admin' || pathname === '/dashboard' || pathname === '/' || pathname === '/callback') {
+    if (
+      pathname === "/adminLogin" ||
+      pathname === "/admin" ||
+      pathname === "/dashboard" ||
+      pathname === "/" ||
+      pathname === "/callback"
+    ) {
       setIsAuthenticated(true);
-      return;
-    }
-
-    // Redirect /auth to /dashboard
-    if (pathname === '/auth') {
-      router.replace('/dashboard');
       return;
     }
 
     const checkAuth = () => {
       // Check if user has valid session
-      const authData = localStorage.getItem('suiverify_auth');
+      const authData = localStorage.getItem("suiverify_auth");
 
       if (!authData) {
         // No auth data, redirect to dashboard (where they can sign in)
-        router.push('/dashboard');
+        router.push("/dashboard");
         return;
       }
 
@@ -45,8 +45,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
         if (sessionAge > sessionTimeout) {
           // Session expired, clear and redirect
-          localStorage.removeItem('suiverify_auth');
-          router.push('/dashboard');
+          localStorage.removeItem("suiverify_auth");
+          router.push("/dashboard");
           return;
         }
 
@@ -54,8 +54,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         setIsAuthenticated(true);
       } catch {
         // Invalid auth data, redirect
-        localStorage.removeItem('suiverify_auth');
-        router.push('/dashboard');
+        localStorage.removeItem("suiverify_auth");
+        router.push("/dashboard");
       }
     };
 
@@ -79,8 +79,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary"></div>
               <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-2 border-primary/30"></div>
             </div>
-            <h2 className="text-xl font-bold text-charcoal-text mb-2">Verifying Authentication</h2>
-            <p className="text-sm text-charcoal-text/70">Please wait while we verify your session...</p>
+            <h2 className="text-xl font-bold text-charcoal-text mb-2">
+              Verifying Authentication
+            </h2>
+            <p className="text-sm text-charcoal-text/70">
+              Please wait while we verify your session...
+            </p>
           </div>
         </div>
       </div>
@@ -100,7 +104,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
         <div className="relative z-10 text-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-[0.1em_0.1em] border-[3px] border-primary/30">
-            <h2 className="text-xl font-bold text-charcoal-text mb-2">Redirecting to Login</h2>
+            <h2 className="text-xl font-bold text-charcoal-text mb-2">
+              Redirecting to Login
+            </h2>
             <p className="text-sm text-charcoal-text/70">Please wait...</p>
           </div>
         </div>

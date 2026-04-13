@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
+import { apiPost } from '@/app/utils/api-client';
 
 interface PANData {
   pan_number?: string;
@@ -21,11 +22,11 @@ interface PANVerificationStepProps {
   verificationType?: string; // 'above18' or 'citizenship'
 }
 
-const PANVerificationStep: React.FC<PANVerificationStepProps> = ({ 
-  onNext, 
-  onBack, 
-  panData, 
-  verificationType = 'above18' 
+const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
+  onNext,
+  onBack,
+  panData,
+  verificationType = 'above18'
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +48,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
       setError(null);
 
       console.log('🔄 Starting PAN verification process...');
-      
+
       // Send PAN data to Redis stream for enclave processing
       const verificationPayload = {
         user_address: address,
@@ -65,23 +66,14 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
       console.log('📤 Sending PAN verification to Redis stream:', verificationPayload);
 
       // Call the verification endpoint that sends to Redis
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.VERIFY_PAN), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(verificationPayload),
-      });
+      const result = await apiPost(
+        buildApiUrl(API_ENDPOINTS.VERIFY_PAN),
+        verificationPayload
+      );
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ PAN verification request sent to enclave:', result);
-        toast.success('PAN verification initiated! Waiting for blockchain attestation...');
-        onNext(); // Move to waiting step
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to initiate PAN verification');
-      }
+      console.log('✅ PAN verification request sent to enclave:', result);
+      toast.success('PAN verification initiated! Waiting for blockchain attestation...');
+      onNext(); // Move to waiting step
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred during PAN verification';
       setError(errorMsg);
@@ -95,9 +87,9 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 mb-8">
-        <button 
-          type="button" 
-          onClick={onBack} 
+        <button
+          type="button"
+          onClick={onBack}
           className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
         >
           <ChevronLeft className="w-5 h-5 text-primary" />
@@ -166,7 +158,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
           </div>
         )}
 
-      
+
         {/* Proceed Button */}
         <Button
           onClick={handleProceed}

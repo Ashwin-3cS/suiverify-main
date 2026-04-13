@@ -273,10 +273,10 @@ export default function SponsoredTransactionTest() {
           className="text-sm font-semibold mb-1"
           style={{ color: colors.charcoalText }}
         >
-          ✨ What's different?
+          ✨ What&apos;s different?
         </p>
         <p className="text-xs" style={{ color: colors.charcoalText }}>
-          This transaction is <strong>sponsored by Enoki</strong>. You don't
+          This transaction is <strong>sponsored by Enoki</strong>. You don&apos;t
           need any SUI tokens in your wallet - the gas fees are paid for you!
         </p>
       </div>
@@ -445,7 +445,7 @@ export default function SponsoredTransactionTest() {
               ✅ No SUI needed!
             </p>
             <p className="text-xs" style={{ color: "rgb(21, 128, 61)" }}>
-              Unlike regular transactions, you don't need testnet SUI. The gas
+              Unlike regular transactions, you don&apos;t need testnet SUI. The gas
               is sponsored by Enoki!
             </p>
           </div>
