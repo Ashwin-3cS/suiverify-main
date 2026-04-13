@@ -20,6 +20,14 @@ export const API_ENDPOINTS = {
   CORRECT_PAN_DATA: "/api/pan/correct-pan-data",
   VERIFY_PAN: "/api/pan/verify-pan",
 
+  // DigiLocker endpoints
+  DIGILOCKER_VERIFY_USER: "/api/digilocker/user/verify",
+  DIGILOCKER_INIT_SESSION: "/api/digilocker/init-session",
+  DIGILOCKER_SESSION_STATUS: (sessionId: string) =>
+    `/api/digilocker/sessions/${sessionId}/status`,
+  DIGILOCKER_FETCH_PAN_DATA: "/api/digilocker/fetch-pan-data",
+  DIGILOCKER_CONFIRM_AND_ATTEST: "/api/digilocker/confirm-and-attest",
+
   // Face verification endpoints
   VALIDATE_DOCUMENT_FACE: "/api/face/validate-document-face",
   VERIFY_PAN_FACE: "/api/face/verify-pan-face-yolo",
