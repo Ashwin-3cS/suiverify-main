@@ -47,7 +47,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
       setIsLoading(true);
       setError(null);
 
-      console.log('🔄 Starting PAN verification process...');
+      console.log('Starting PAN verification process...');
 
       // Send PAN data to Redis stream for enclave processing
       const verificationPayload = {
@@ -63,7 +63,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         timestamp: Date.now()
       };
 
-      console.log('📤 Sending PAN verification to Redis stream:', verificationPayload);
+      console.log('Sending PAN verification to Redis stream:', verificationPayload);
 
       // Call the verification endpoint that sends to Redis
       const result = await apiPost(
@@ -71,14 +71,14 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         verificationPayload
       );
 
-      console.log('✅ PAN verification request sent to enclave:', result);
+      console.log('PAN verification request sent to enclave:', result);
       toast.success('PAN verification initiated! Waiting for blockchain attestation...');
       onNext(); // Move to waiting step
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred during PAN verification';
       setError(errorMsg);
       toast.error(errorMsg);
-      console.error('❌ PAN verification error:', err);
+      console.error('PAN verification error:', err);
     } finally {
       setIsLoading(false);
     }
