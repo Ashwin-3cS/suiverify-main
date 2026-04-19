@@ -146,10 +146,6 @@ const DigiLockerPANStep: React.FC<DigiLockerPANStepProps> = ({ onNext, onBack, o
           session_id: sessionId,
           user_wallet: address,
           did_id: 0,
-          document_type: "pan",
-          document_fields: payload.document_fields,
-          profile_fields: payload.profile_fields || {},
-          document_metadata: payload.document_metadata || {},
         },
       );
       toast.success("DigiLocker PAN attestation submitted");
