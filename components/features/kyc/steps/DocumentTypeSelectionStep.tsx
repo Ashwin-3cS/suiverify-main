@@ -39,10 +39,10 @@ const getDocumentTypesForCountry = (countryCode: string): DocumentType[] => {
         },
         {
           id: 'digilocker_pan',
-          name: 'DigiLocker Verification',
-          description: 'Government-consent flow via DigiLocker — PAN today, Aadhaar and more coming',
+          name: 'PAN via DigiLocker',
+          description: 'Consent-based PAN retrieval through DigiLocker',
           icon: <CreditCard className="w-6 h-6" />,
-          features: ['Consent-based retrieval', 'No manual upload', 'Signed government source'],
+          features: ['Government-sourced PAN retrieval', 'Aadhaar OTP consent flow', 'No manual upload required'],
           available: true
         },
         {

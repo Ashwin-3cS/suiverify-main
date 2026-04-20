@@ -55,23 +55,13 @@ const User: React.FC = () => {
     const verificationOptions = [
         {
             id: 1,
-            title: "Verify Above 18",
+            title: "Identity Verification",
             description:
-                "Verify your age using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.",
+                "Complete once to unlock 18+ eligibility and tax-linked financial apps on SUI via your DID.",
             icon: Calendar,
             status: "not_verified",
             delay: 0.1,
             color: "primary",
-        },
-        {
-            id: 2,
-            title: "Citizenship Verification",
-            description:
-                "Verify your citizenship status using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.",
-            icon: Users,
-            status: "not_verified",
-            delay: 0.2,
-            color: "secondary",
         },
     ];
 

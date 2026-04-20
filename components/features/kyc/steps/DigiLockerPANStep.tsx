@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { AlertCircle, CheckCircle, ChevronLeft, ExternalLink, Loader2, Shield } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { AlertCircle, ChevronLeft, ExternalLink, Loader2, Shield } from "lucide-react";
 import { toast } from "react-toastify";
 
 import { apiGet, apiPost } from "@/app/utils/api-client";
@@ -21,13 +21,7 @@ type DigiLockerPanPayload = {
     date_of_birth?: string;
     raw_text?: string;
   };
-  profile_fields?: {
-    name?: string;
-    date_of_birth?: string;
-    gender?: string;
-    mobile?: string;
-    email?: string;
-  };
+  profile_fields?: Record<string, unknown>;
   document_metadata?: Record<string, string>;
 };
 
@@ -45,119 +39,129 @@ interface DigiLockerPANStepProps {
   }) => void;
 }
 
+type Phase = "idle" | "starting" | "awaiting_consent" | "polling" | "attesting" | "done" | "error";
+
 const DigiLockerPANStep: React.FC<DigiLockerPANStepProps> = ({ onNext, onBack, onDataReady }) => {
   const { address } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null);
-  const [sessionStatus, setSessionStatus] = useState<string | null>(null);
-  const [payload, setPayload] = useState<DigiLockerPanPayload | null>(null);
+  const popupRef = useRef<Window | null>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const attestingRef = useRef<boolean>(false);
 
   const redirectUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
-    return `${window.location.origin}/kyc`;
+    return `${window.location.origin}/kyc/digilocker-callback`;
   }, []);
 
-  const startSession = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await apiPost<{ data: { session_id: string; authorization_url: string } }>(
-        buildApiUrl(API_ENDPOINTS.DIGILOCKER_INIT_SESSION),
-        {
-          flow: "signin",
-          doc_types: ["pan"],
-          redirect_url: redirectUrl,
-        },
-      );
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+    };
+  }, []);
 
-      setSessionId(result.data.session_id);
-      setAuthorizationUrl(result.data.authorization_url);
-      setSessionStatus("created");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to create DigiLocker session";
-      setError(message);
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
+  const runAttestation = async (sid: string) => {
+    setPhase("attesting");
+    const fetched = await apiPost<{ data: DigiLockerPanPayload }>(
+      buildApiUrl(API_ENDPOINTS.DIGILOCKER_FETCH_PAN_DATA),
+      { session_id: sid },
+    );
+    onDataReady({
+      pan_number: fetched.data.document_fields.pan,
+      name: fetched.data.document_fields.name,
+      father_name: fetched.data.document_fields.father_name,
+      dob: fetched.data.document_fields.date_of_birth,
+      document_content_base64: fetched.data.document_content_base64,
+      document_content_type: fetched.data.document_content_type,
+      document_file_name: fetched.data.document_file_name,
+    });
+
+    await apiPost(
+      buildApiUrl(API_ENDPOINTS.DIGILOCKER_CONFIRM_AND_ATTEST),
+      { session_id: sid, user_wallet: address, did_id: 0 },
+    );
+    setPhase("done");
+    toast.success("DigiLocker verification submitted");
+    onNext();
   };
 
-  const checkStatus = async () => {
-    if (!sessionId) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await apiGet<{ data: { status: string } }>(
-        buildApiUrl(API_ENDPOINTS.DIGILOCKER_SESSION_STATUS(sessionId)),
-      );
-      setSessionStatus(result.data.status);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch DigiLocker session status";
-      setError(message);
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
+  const startPolling = (sid: string) => {
+    if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+    setPhase("polling");
+
+    pollTimerRef.current = setInterval(async () => {
+      try {
+        const popupClosed = popupRef.current?.closed ?? false;
+        const statusResp = await apiGet<{ data: { status: string } }>(
+          buildApiUrl(API_ENDPOINTS.DIGILOCKER_SESSION_STATUS(sid)),
+        );
+        const status = statusResp.data.status;
+
+        if (status === "succeeded") {
+          if (attestingRef.current) return;
+          attestingRef.current = true;
+          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+          pollTimerRef.current = null;
+          try {
+            popupRef.current?.close();
+          } catch {}
+          await runAttestation(sid);
+        } else if (popupClosed && status !== "succeeded") {
+          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+          setPhase("error");
+          setError("Consent tab closed before completion");
+          toast.error("Consent not completed");
+        }
+      } catch (err) {
+        if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        const message = err instanceof Error ? err.message : "Verification failed";
+        setPhase("error");
+        setError(message);
+        toast.error(message);
+      }
+    }, 2500);
   };
 
-  const fetchPanData = async () => {
-    if (!sessionId) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await apiPost<{ data: DigiLockerPanPayload }>(
-        buildApiUrl(API_ENDPOINTS.DIGILOCKER_FETCH_PAN_DATA),
-        { session_id: sessionId },
-      );
-
-      setPayload(result.data);
-      onDataReady({
-        pan_number: result.data.document_fields.pan,
-        name: result.data.document_fields.name,
-        father_name: result.data.document_fields.father_name,
-        dob: result.data.document_fields.date_of_birth,
-        document_content_base64: result.data.document_content_base64,
-        document_content_type: result.data.document_content_type,
-        document_file_name: result.data.document_file_name,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch PAN data from DigiLocker";
-      setError(message);
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const submitForAttestation = async () => {
-    if (!sessionId || !payload || !address) {
-      setError("Missing DigiLocker session, PAN data, or wallet connection");
+  const startFlow = async () => {
+    if (!address) {
+      setError("Wallet not connected");
       return;
     }
-
     try {
-      setIsLoading(true);
       setError(null);
-      await apiPost(
-        buildApiUrl(API_ENDPOINTS.DIGILOCKER_CONFIRM_AND_ATTEST),
-        {
-          session_id: sessionId,
-          user_wallet: address,
-          did_id: 0,
-        },
+      attestingRef.current = false;
+      setPhase("starting");
+      const result = await apiPost<{ data: { session_id: string; authorization_url: string } }>(
+        buildApiUrl(API_ENDPOINTS.DIGILOCKER_INIT_SESSION),
+        { flow: "signin", doc_types: ["pan"], redirect_url: redirectUrl },
       );
-      toast.success("DigiLocker PAN attestation submitted");
-      onNext();
+      setSessionId(result.data.session_id);
+      setAuthorizationUrl(result.data.authorization_url);
+
+      popupRef.current = window.open(result.data.authorization_url, "_blank", "noopener,noreferrer,width=540,height=720");
+      setPhase("awaiting_consent");
+      startPolling(result.data.session_id);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to submit DigiLocker attestation";
+      const message = err instanceof Error ? err.message : "Failed to start DigiLocker session";
+      setPhase("error");
       setError(message);
       toast.error(message);
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const phaseMessage: Record<Phase, string> = {
+    idle: "Start the DigiLocker flow. A new tab will open for consent.",
+    starting: "Creating DigiLocker session...",
+    awaiting_consent: "Complete consent in the DigiLocker tab. We will continue automatically.",
+    polling: "Waiting for DigiLocker consent...",
+    attesting: "Consent received. Submitting attestation...",
+    done: "Attestation submitted.",
+    error: error ?? "Something went wrong.",
+  };
+
+  const busy = phase === "starting" || phase === "awaiting_consent" || phase === "polling" || phase === "attesting";
 
   return (
     <div className="w-full space-y-6">
@@ -166,12 +170,15 @@ const DigiLockerPANStep: React.FC<DigiLockerPANStepProps> = ({ onNext, onBack, o
           type="button"
           onClick={onBack}
           className="p-2 rounded-lg transition-colors hover:bg-primary/10 bg-primary/5"
+          disabled={busy}
         >
           <ChevronLeft className="w-5 h-5 text-primary" />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-charcoal-text">DigiLocker PAN</h2>
-          <p className="text-sm text-charcoal-text/60 mt-1">Fetch PAN directly from DigiLocker with user consent</p>
+          <h2 className="text-2xl font-bold text-charcoal-text">DigiLocker Verification</h2>
+          <p className="text-sm text-charcoal-text/60 mt-1">
+            Consent-based identity verification via DigiLocker
+          </p>
         </div>
       </div>
 
@@ -185,81 +192,46 @@ const DigiLockerPANStep: React.FC<DigiLockerPANStepProps> = ({ onNext, onBack, o
       <div className="p-5 rounded-lg bg-primary/10 border border-primary/30">
         <div className="flex items-center gap-3 mb-3">
           <Shield className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold text-charcoal-text">Consent-based verification</h3>
+          <h3 className="font-semibold text-charcoal-text">{phaseMessage[phase]}</h3>
         </div>
-        <p className="text-sm text-charcoal-text/70">
-          Start a DigiLocker session, complete Aadhaar OTP on the government page, then fetch the PAN details here.
-        </p>
+        {phase === "awaiting_consent" || phase === "polling" ? (
+          <p className="text-sm text-charcoal-text/70">
+            If the DigiLocker tab did not open, use the button below. The tab will close itself once consent is granted.
+          </p>
+        ) : (
+          <p className="text-sm text-charcoal-text/70">
+            You will be asked for Aadhaar OTP consent on the government page. No document upload needed.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
-        <Button onClick={startSession} variant="primary" disabled={isLoading}>
-          {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Start DigiLocker Session"}
-        </Button>
+        {phase === "idle" || phase === "error" ? (
+          <Button onClick={startFlow} variant="primary" disabled={!address}>
+            Start DigiLocker Verification
+          </Button>
+        ) : (
+          <Button variant="primary" disabled>
+            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+            {phaseMessage[phase]}
+          </Button>
+        )}
 
-        {authorizationUrl && (
+        {authorizationUrl && phase === "awaiting_consent" && (
           <Button
-            onClick={() => window.open(authorizationUrl, "_blank", "noopener,noreferrer")}
+            onClick={() => {
+              popupRef.current = window.open(authorizationUrl, "_blank", "noopener,noreferrer,width=540,height=720");
+            }}
             variant="secondary"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
-            Open DigiLocker Consent Page
-          </Button>
-        )}
-
-        {sessionId && (
-          <Button onClick={checkStatus} variant="outline" disabled={isLoading}>
-            Check Session Status
-          </Button>
-        )}
-
-        {sessionStatus === "succeeded" && (
-          <Button onClick={fetchPanData} variant="outline" disabled={isLoading}>
-            Fetch PAN Data
-          </Button>
-        )}
-
-        {payload && (
-          <Button onClick={submitForAttestation} variant="primary" disabled={isLoading}>
-            Submit For Attestation
+            Reopen DigiLocker Consent
           </Button>
         )}
       </div>
 
       {sessionId && (
-        <div className="p-4 rounded-lg bg-white border border-primary/20">
-          <p className="text-sm text-charcoal-text/70">Session ID</p>
-          <p className="text-sm font-mono text-charcoal-text break-all">{sessionId}</p>
-          <p className="text-sm text-charcoal-text/70 mt-3">Current Status</p>
-          <p className="text-sm font-semibold text-charcoal-text">{sessionStatus || "created"}</p>
-        </div>
-      )}
-
-      {payload && (
-        <div className="p-5 rounded-lg bg-success/10 border border-success/30">
-          <div className="flex items-center gap-3 mb-4">
-            <CheckCircle className="w-5 h-5 text-success" />
-            <h4 className="font-semibold text-charcoal-text">Fetched PAN Data</h4>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-charcoal-text">
-            <div className="p-3 rounded-lg bg-white/70">
-              <span className="text-charcoal-text/60 block">PAN</span>
-              <span>{payload.document_fields.pan || "-"}</span>
-            </div>
-            <div className="p-3 rounded-lg bg-white/70">
-              <span className="text-charcoal-text/60 block">Name</span>
-              <span>{payload.document_fields.name || "-"}</span>
-            </div>
-            <div className="p-3 rounded-lg bg-white/70">
-              <span className="text-charcoal-text/60 block">Date of Birth</span>
-              <span>{payload.document_fields.date_of_birth || "-"}</span>
-            </div>
-            <div className="p-3 rounded-lg bg-white/70">
-              <span className="text-charcoal-text/60 block">Issuer</span>
-              <span>{payload.document_metadata?.issuer || "-"}</span>
-            </div>
-          </div>
-        </div>
+        <p className="text-xs text-charcoal-text/50 font-mono break-all">Session: {sessionId}</p>
       )}
     </div>
   );
