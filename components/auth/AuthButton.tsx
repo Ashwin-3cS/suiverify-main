@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { ZkLoginService } from '@/lib/zklogin';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
   className = '',
   size = 'sm',
 }) => {
+  const router = useRouter();
   const { address, isAuthenticated, isLoading, logout } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -56,10 +58,11 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
   const handleDisconnect = (e: React.MouseEvent) => {
     e.stopPropagation();
     logout();
-    toast.success('Wallet disconnected', {
+    toast.info('Wallet disconnected', {
       position: "bottom-right",
       autoClose: 2000,
     });
+    router.push('/');
   };
 
   const handleAddressClick = () => {

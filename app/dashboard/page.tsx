@@ -31,6 +31,16 @@ const User: React.FC = () => {
     const [activeNav, setActiveNav] = useState("verifications");
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Format date to match the display format
+    const formatIssuedDate = (dateString: string): string => {
+        try {
+            const date = new Date(dateString);
+            return date.toISOString();
+        } catch (error) {
+            return dateString;
+        }
+    };
+
     // Backend data state
     const [credentials, setCredentials] = useState<CredentialData[]>([]);
     const [stats, setStats] = useState<CredentialStats>({
@@ -45,23 +55,13 @@ const User: React.FC = () => {
     const verificationOptions = [
         {
             id: 1,
-            title: "Verify Above 18",
+            title: "Identity Verification",
             description:
-                "Verify your age using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.",
+                "Complete once to unlock 18+ eligibility and tax-linked financial apps on SUI via your DID.",
             icon: Calendar,
             status: "not_verified",
             delay: 0.1,
             color: "primary",
-        },
-        {
-            id: 2,
-            title: "Citizenship Verification",
-            description:
-                "Verify your citizenship status using a valid government issued document. Required for DeFi protocols and Gaming protocols on SUI ecosystem.",
-            icon: Users,
-            status: "not_verified",
-            delay: 0.2,
-            color: "secondary",
         },
     ];
 
@@ -498,15 +498,6 @@ const User: React.FC = () => {
                                                         </div>
                                                     </div>
 
-                                                    <div className="mb-5 p-4 rounded-xl bg-primary/10 border-2 border-primary/20">
-                                                        <p className="text-xs font-semibold text-charcoal-text/60 mb-1.5 uppercase tracking-wider">
-                                                            Expiry Date
-                                                        </p>
-                                                        <p className="text-lg font-bold text-charcoal-text">
-                                                            {credential.expiryDate}
-                                                        </p>
-                                                    </div>
-
                                                     <div className="flex items-center justify-between pt-4 border-t-2 border-primary/20">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-12 h-12 rounded-xl bg-primary/15 border-2 border-primary/20 flex items-center justify-center">
@@ -519,13 +510,13 @@ const User: React.FC = () => {
                                                                     Issued
                                                                 </p>
                                                                 <p className="text-sm font-medium text-charcoal-text">
-                                                                    {credential.issuedDate}
+                                                                    {formatIssuedDate(credential.issuedDate)}
                                                                 </p>
                                                             </div>
                                                         </div>
                                                         {credential.type === "nft" && (
                                                             <span className="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary/15 text-primary border-2 border-primary/20">
-                                                                NFT
+                                                                DID
                                                             </span>
                                                         )}
                                                     </div>

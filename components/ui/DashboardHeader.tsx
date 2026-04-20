@@ -45,17 +45,7 @@ const DashboardHeader = () => {
                 draggable: true,
             });
         }
-        // Wallet disconnected (changed from connected to disconnected)
-        else if (!currentAddress && previousAddress !== null) {
-            toast.info('Wallet disconnected', {
-                position: "bottom-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-        }
+        // Wallet disconnected toast is handled by AuthButton component, so we skip it here
         // Wallet changed (different address)
         else if (currentAddress && previousAddress !== null && currentAddress !== previousAddress) {
             const shortAddress = `${currentAddress.slice(0, 6)}...${currentAddress.slice(-4)}`;

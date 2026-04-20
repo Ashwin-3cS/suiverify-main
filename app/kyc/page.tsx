@@ -16,6 +16,7 @@ import DocumentTypeSelectionStep from '@/components/features/kyc/steps/DocumentT
 import AadhaarUploadStep from '@/components/features/kyc/steps/AadhaarUploadStep';
 import PANUploadStep from '@/components/features/kyc/steps/PANUploadStep';
 import PANVerificationStep from '@/components/features/kyc/steps/PANVerificationStep';
+import DigiLockerPANStep from '@/components/features/kyc/steps/DigiLockerPANStep';
 import FaceVerificationStep from '@/components/features/kyc/steps/FaceVerificationStep';
 import OtpVerificationStep from '@/components/features/kyc/steps/OtpVerificationStep';
 import { useVerificationListener } from '@/hooks/useEventListener';
@@ -60,6 +61,9 @@ interface PANData {
   father_name?: string;
   dob?: string;
   pan_photo_base64?: string;
+  document_content_base64?: string;
+  document_content_type?: string;
+  document_file_name?: string;
 }
 
 function KycContent() {
@@ -120,6 +124,11 @@ function KycContent() {
   const handleNext = () => {
     if (step === 'aadhaar') setStep('face');
     else if (step === 'pan') setStep('face');
+    else if (step === 'digilocker-pan') {
+      setOtpVerified(true);
+      setStep('waiting');
+      startListening();
+    }
     else if (step === 'face') {
       // For PAN, go to PAN verification (no OTP)
       if (selectedDocumentType?.id === 'pan') {
@@ -207,13 +216,15 @@ function KycContent() {
       setStep('aadhaar');
     } else if (documentType.id === 'pan') {
       setStep('pan');
+    } else if (documentType.id === 'digilocker_pan') {
+      setStep('digilocker-pan');
     }
     // Add more document types as needed
   };
 
   const encryptAndUploadDocument = useCallback(async (file: File) => {
     try {
-      console.log('🔄 Starting real encryption and upload process...');
+      console.log('Starting real encryption and upload process...');
 
       const result = await documentEncryptionService.encryptAndUploadDocument(
         file,
@@ -221,8 +232,8 @@ function KycContent() {
       );
 
       if (result.success) {
-        console.log('✅ Encryption and upload successful!');
-        console.log('📋 Results:', result);
+        console.log('Encryption and upload successful');
+        console.log('Results:', result);
 
         // Store the encryption results
         setEncryptionResult({
@@ -259,21 +270,23 @@ function KycContent() {
   }, [zkLoginAddress]);
 
   const handleDocumentEncryption = useCallback(async () => {
-    console.log('🔍 handleDocumentEncryption called');
-    console.log('📍 zkLoginAddress:', zkLoginAddress);
-    console.log('📍 zkLoginAddress type:', typeof zkLoginAddress);
-    console.log('📍 zkLoginAddress is truthy:', !!zkLoginAddress);
+    console.log('handleDocumentEncryption called');
+    console.log('zkLoginAddress:', zkLoginAddress);
+    console.log('zkLoginAddress type:', typeof zkLoginAddress);
+    console.log('zkLoginAddress is truthy:', !!zkLoginAddress);
 
-    const photoBase64 = selectedDocumentType?.id === 'pan'
+    const documentBase64 = selectedDocumentType?.id === 'digilocker_pan'
+      ? panData?.document_content_base64
+      : selectedDocumentType?.id === 'pan'
       ? panData?.pan_photo_base64
       : aadhaarData?.aadhaar_photo_base64;
 
-    console.log('📄 photoBase64 exists:', !!photoBase64);
-    console.log('📄 photoBase64 length:', photoBase64?.length || 0);
+    console.log('documentBase64 exists:', !!documentBase64);
+    console.log('documentBase64 length:', documentBase64?.length || 0);
 
-    if (!photoBase64 || !zkLoginAddress) {
-      console.error('❌ Missing document data or zkLogin address');
-      console.error('   - photoBase64:', !!photoBase64);
+    if (!documentBase64 || !zkLoginAddress) {
+      console.error('Missing document data or zkLogin address');
+      console.error('   - documentBase64:', !!documentBase64);
       console.error('   - zkLoginAddress:', zkLoginAddress);
       console.error('   - Please ensure you are signed in with zkLogin');
 
@@ -285,35 +298,42 @@ function KycContent() {
     }
 
     try {
-      console.log('🔐 Starting document encryption and upload process...');
+      console.log('Starting document encryption and upload process...');
       setStep('encrypting');
 
       // Convert base64 to File object for encryption
-      const base64Data = photoBase64;
-      console.log('📊 Base64 data received:', base64Data.length, 'characters');
+      const base64Data = documentBase64;
+      console.log('Base64 data received:', base64Data.length, 'characters');
 
       const byteCharacters = atob(base64Data);
-      console.log('📊 Decoded byte characters:', byteCharacters.length, 'bytes');
+      console.log('Decoded byte characters:', byteCharacters.length, 'bytes');
 
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      console.log('📊 Byte array created:', byteArray.length, 'bytes');
-      console.log('📊 First 20 bytes (should be JPEG signature):', Array.from(byteArray.slice(0, 20)));
+      console.log('Byte array created:', byteArray.length, 'bytes');
+      console.log('First 20 bytes:', Array.from(byteArray.slice(0, 20)));
 
-      const fileName = selectedDocumentType?.id === 'pan' ? 'pan-document.jpg' : 'aadhaar-document.jpg';
-      const file = new File([byteArray], fileName, { type: 'image/jpeg' });
+      const fileName = selectedDocumentType?.id === 'digilocker_pan'
+        ? (panData?.document_file_name || 'digilocker-pan-document')
+        : selectedDocumentType?.id === 'pan'
+        ? 'pan-document.jpg'
+        : 'aadhaar-document.jpg';
+      const fileType = selectedDocumentType?.id === 'digilocker_pan'
+        ? (panData?.document_content_type || 'application/octet-stream')
+        : 'image/jpeg';
+      const file = new File([byteArray], fileName, { type: fileType });
 
-      console.log('📄 Document converted to file:', file.name, file.size, 'bytes');
-      console.log('✅ Ready to encrypt FULL size image:', file.size, 'bytes');
+      console.log('Document converted to file:', file.name, file.size, 'bytes');
+      console.log('Ready to encrypt full size image:', file.size, 'bytes');
 
       // Use the encryption logic from EncryptAndUpload.tsx
       await encryptAndUploadDocument(file);
 
     } catch (error) {
-      console.error('❌ Error in document encryption:', error);
+      console.error('Error in document encryption:', error);
       setStep('error');
     }
   }, [selectedDocumentType?.id, zkLoginAddress, encryptAndUploadDocument, panData, aadhaarData]);
@@ -325,17 +345,17 @@ function KycContent() {
       // Store the UserDID object ID from the verification event
       if (verificationStatus.userDidId) {
         setUserDidId(verificationStatus.userDidId);
-        console.log('🎯 UserDID object ID captured from event:', verificationStatus.userDidId);
+        console.log('UserDID object ID captured from event:', verificationStatus.userDidId);
       }
 
       // Log enhanced event data for SDK verification
       if (verificationStatus.eventData) {
-        console.log('📋 Enhanced Event Data Available:');
-        console.log('   🔐 Nautilus Signature Length:', verificationStatus.eventData.nautilus_signature.length);
-        console.log('   📅 Signature Timestamp:', verificationStatus.eventData.signature_timestamp_ms);
-        console.log('   🔍 Evidence Hash Length:', verificationStatus.eventData.evidence_hash.length);
-        console.log('   🆔 DID Type:', verificationStatus.eventData.did_type);
-        console.log('   📋 Registry ID:', verificationStatus.eventData.registry_id);
+        console.log('Enhanced event data available:');
+        console.log('   Nautilus Signature Length:', verificationStatus.eventData.nautilus_signature.length);
+        console.log('   Signature Timestamp:', verificationStatus.eventData.signature_timestamp_ms);
+        console.log('   Evidence Hash Length:', verificationStatus.eventData.evidence_hash.length);
+        console.log('   DID Type:', verificationStatus.eventData.did_type);
+        console.log('   Registry ID:', verificationStatus.eventData.registry_id);
 
         // This enhanced data can now be used for SDK verification calls
         // Example: await enclave.verify_signature(enclave_id, 1, parseInt(eventData.signature_timestamp_ms), payload, eventData.nautilus_signature);
@@ -349,21 +369,21 @@ function KycContent() {
   // NFT Claiming function - using zkLogin
   const claimDidNft = async () => {
     if (!encryptionResult?.blobId || !zkLoginAddress) {
-      console.error('❌ Missing blob ID or zkLogin address');
+      console.error('Missing blob ID or zkLogin address');
       return;
     }
 
     if (!userDidId) {
-      console.error('❌ Missing UserDID object ID from verification event');
+      console.error('Missing UserDID object ID from verification event');
       alert('Error: UserDID object ID not found. Please complete verification first.');
       return;
     }
 
     try {
       setIsClaimingNft(true);
-      console.log('🏆 Starting DID NFT claim process with zkLogin...');
-      console.log('🎯 Using UserDID object ID from event:', userDidId);
-      console.log('🔐 zkLogin Address:', zkLoginAddress);
+      console.log('Starting DID NFT claim process with zkLogin...');
+      console.log('Using UserDID object ID from event:', userDidId);
+      console.log('zkLogin Address:', zkLoginAddress);
 
       // Get cached zkLogin proof
       const cached = SessionManager.getCachedProof();
@@ -377,11 +397,11 @@ function KycContent() {
 
       // Log enhanced verification data available for future SDK integration
       if (verificationStatus.eventData) {
-        console.log('📋 Enhanced verification data available:');
-        console.log('   📅 Signature Timestamp (ms):', verificationStatus.eventData.signature_timestamp_ms);
-        console.log('   🔐 Nautilus Signature Available:', verificationStatus.eventData.nautilus_signature.length > 0);
-        console.log('   🔍 Evidence Hash Available:', verificationStatus.eventData.evidence_hash.length > 0);
-        console.log('   🆔 DID Type:', verificationStatus.eventData.did_type);
+        console.log('Enhanced verification data available:');
+        console.log('   Signature Timestamp (ms):', verificationStatus.eventData.signature_timestamp_ms);
+        console.log('   Nautilus Signature Available:', verificationStatus.eventData.nautilus_signature.length > 0);
+        console.log('   Evidence Hash Available:', verificationStatus.eventData.evidence_hash.length > 0);
+        console.log('   DID Type:', verificationStatus.eventData.did_type);
       }
 
       // Recreate ephemeral key pair from cached proof
@@ -417,10 +437,10 @@ function KycContent() {
         String.fromCharCode.apply(null, Array.from(transactionBlockKindBytes))
       );
 
-      console.log('📦 Transaction bytes (base64):', base64TxBytes.substring(0, 50) + '...');
+      console.log('Transaction bytes (base64):', base64TxBytes.substring(0, 50) + '...');
 
       // Step 1: Create sponsored transaction via backend
-      console.log('📞 Requesting sponsored transaction from backend...');
+      console.log('Requesting sponsored transaction from backend...');
       const sponsorCreateResponse = await fetch('/api/transactions/sponsor-create', {
         method: 'POST',
         headers: {
@@ -445,11 +465,11 @@ function KycContent() {
       const sponsorCreateData = await sponsorCreateResponse.json();
       const { digest, bytes } = sponsorCreateData.data;
 
-      console.log('✅ Sponsored transaction created');
+      console.log('Sponsored transaction created');
       console.log('   Digest:', digest);
 
       // Step 2: Sign the sponsored transaction bytes
-      console.log('🔐 Signing sponsored transaction with ephemeral key...');
+      console.log('Signing sponsored transaction with ephemeral key...');
       // Convert base64 to Uint8Array (browser-compatible)
       const binaryString = atob(bytes);
       const sponsoredTxBytes = new Uint8Array(binaryString.length);
@@ -465,14 +485,14 @@ function KycContent() {
       }
 
       // Create zkLogin signature using cached proof data
-      console.log('🎯 Creating zkLogin signature from cached proof...');
+      console.log('Creating zkLogin signature from cached proof...');
       const zkLoginSignature = ZkLoginService.getTransactionSignature({
         ephemeralSignature,
         useCache: true, // Use cached proof data
       });
 
       // Step 3: Submit signed transaction to backend for execution
-      console.log('📤 Submitting signed transaction to backend...');
+      console.log('Submitting signed transaction to backend...');
       const sponsorSubmitResponse = await fetch('/api/transactions/sponsor-submit', {
         method: 'POST',
         headers: {
@@ -492,11 +512,11 @@ function KycContent() {
       const sponsorSubmitData = await sponsorSubmitResponse.json();
       const transactionDigest = sponsorSubmitData.data.digest;
 
-      console.log('✅ Sponsored transaction submitted successfully!');
+      console.log('Sponsored transaction submitted successfully');
       console.log('   Transaction Digest:', transactionDigest);
 
       // Wait for transaction to be confirmed and get full result
-      console.log('⏳ Waiting for transaction confirmation...');
+      console.log('Waiting for transaction confirmation...');
       const result = await suiClient.waitForTransaction({
         digest: transactionDigest,
         options: {
@@ -505,7 +525,7 @@ function KycContent() {
         },
       });
 
-      console.log('🎉 NFT Claim Transaction Success:', result);
+      console.log('NFT claim transaction success:', result);
 
       // Extract the NFT object ID from the transaction result
       const nftObject = result.effects?.created?.find(
@@ -516,10 +536,10 @@ function KycContent() {
       );
       const nftId = nftObject?.reference?.objectId;
 
-      console.log('🏆 DID NFT Created:', nftId);
+      console.log('DID NFT created:', nftId);
 
       if (nftId) {
-        console.log('🎉 NFT Claimed Successfully! Saving to backend...');
+        console.log('NFT claimed successfully, saving to backend...');
 
         // Prepare NFT data for modal and backend
         const nftData = {
@@ -547,12 +567,12 @@ function KycContent() {
           });
 
           if (saveResult.success) {
-            console.log('✅ NFT credential saved to backend:', saveResult.credentialId);
+            console.log('NFT credential saved to backend:', saveResult.credentialId);
           } else {
-            console.error('❌ Failed to save NFT credential:', saveResult.error);
+            console.error('Failed to save NFT credential:', saveResult.error);
           }
         } catch (error) {
-          console.error('❌ Error saving NFT credential to backend:', error);
+          console.error('Error saving NFT credential to backend:', error);
         }
 
         // Show success modal
@@ -561,7 +581,7 @@ function KycContent() {
         setStep('nft-claimed');
       }
     } catch (error: unknown) {
-      console.error('❌ Error claiming NFT:', error);
+      console.error('Error claiming NFT:', error);
       alert(`Error claiming NFT: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsClaimingNft(false);
@@ -570,7 +590,7 @@ function KycContent() {
 
   const handleBack = () => {
     if (step === 'document-type') setStep('country');
-    else if (step === 'aadhaar' || step === 'pan') setStep('document-type');
+    else if (step === 'aadhaar' || step === 'pan' || step === 'digilocker-pan') setStep('document-type');
     else if (step === 'face') {
       if (selectedDocumentType?.id === 'aadhaar') setStep('aadhaar');
       else if (selectedDocumentType?.id === 'pan') setStep('pan');
@@ -681,6 +701,11 @@ function KycContent() {
                           { id: 'face', label: 'Biometric', description: 'Face verification' },
                           { id: 'pan-verification', label: 'Verify', description: 'Final step' },
                         ];
+                      } else if (selectedDocumentType?.id === 'digilocker_pan') {
+                        return [
+                          ...baseSteps,
+                          { id: 'digilocker-pan', label: 'DigiLocker', description: 'Consent and fetch' },
+                        ];
                       } else {
                         return [
                           ...baseSteps,
@@ -745,6 +770,29 @@ function KycContent() {
                   />
                 </motion.div>
               )}
+              {step === 'digilocker-pan' && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <DigiLockerPANStep
+                    onNext={handleNext}
+                    onBack={handleBack}
+                    onDataReady={(data) =>
+                      setPanData({
+                        pan_number: data.pan_number,
+                        name: data.name,
+                        father_name: data.father_name,
+                        dob: data.dob,
+                        document_content_base64: data.document_content_base64,
+                        document_content_type: data.document_content_type,
+                        document_file_name: data.document_file_name,
+                      })
+                    }
+                  />
+                </motion.div>
+              )}
               {step === 'face' && (aadhaarData || panData) && (
                 <FaceVerificationStep
                   onNext={handleNext}
@@ -790,6 +838,8 @@ function KycContent() {
                     <p className="text-lg mb-6 text-charcoal-text/70">
                       {selectedDocumentType?.id === 'pan'
                         ? 'Your PAN verification has been submitted. Now waiting for on-chain attestation...'
+                        : selectedDocumentType?.id === 'digilocker_pan'
+                        ? 'Your DigiLocker PAN attestation has been submitted. Now waiting for on-chain attestation...'
                         : 'Your OTP has been verified. Now waiting for on-chain attestation...'
                       }
                     </p>
@@ -816,7 +866,7 @@ function KycContent() {
                     {verificationStatus.isVerified && (
                       <div className="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/30">
                         <p className="font-semibold mb-2 text-charcoal-text">
-                          ✅ Verification completed from event listener!
+                          Verification completed from event listener
                         </p>
                         <p className="text-sm mb-3 text-charcoal-text/70">
                           Starting document encryption process...
@@ -826,10 +876,10 @@ function KycContent() {
                           <div className="mt-3 p-3 rounded-lg text-xs bg-white border border-primary/20">
                             <p className="font-semibold mb-2 text-charcoal-text">Enhanced Event Data:</p>
                             <div className="space-y-1 text-charcoal-text/70">
-                              <p>🆔 DID Type: {verificationStatus.eventData.did_type}</p>
-                              <p>📅 Signature Time: {new Date(parseInt(verificationStatus.eventData.signature_timestamp_ms)).toLocaleString()}</p>
-                              <p>🔐 Nautilus Signature: {verificationStatus.eventData.nautilus_signature.length > 0 ? '✅ Available' : '❌ Missing'}</p>
-                              <p>🔍 Evidence Hash: {verificationStatus.eventData.evidence_hash.length > 0 ? '✅ Available' : '❌ Missing'}</p>
+                              <p>DID Type: {verificationStatus.eventData.did_type}</p>
+                              <p>Signature Time: {new Date(parseInt(verificationStatus.eventData.signature_timestamp_ms)).toLocaleString()}</p>
+                              <p>Nautilus Signature: {verificationStatus.eventData.nautilus_signature.length > 0 ? 'Available' : 'Missing'}</p>
+                              <p>Evidence Hash: {verificationStatus.eventData.evidence_hash.length > 0 ? 'Available' : 'Missing'}</p>
                             </div>
                             <p className="text-sm mt-2 text-primary">Ready for SDK verification calls!</p>
                           </div>
@@ -997,5 +1047,3 @@ export default function KycPage() {
     </Suspense>
   );
 }
-
-
