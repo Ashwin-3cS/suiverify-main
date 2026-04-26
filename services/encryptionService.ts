@@ -14,8 +14,14 @@ const PACKAGE_ID = getCurrentPackageId();
 // Government whitelist ID from centralized config
 const GOVERNMENT_WHITELIST_ID = SHARED_OBJECTS.GOVERNMENT_WHITELIST;
 
-// HTTPS-only Walrus publishers (for production use)
+// Use SuiVerify-owned publisher (10-epoch storage configured)
 const WALRUS_PUBLISHERS = [
+  'https://publisher.suiverify.xyz',
+];
+
+// Public testnet publishers (kept for reference / fallback)
+/*
+const WALRUS_PUBLISHERS_FALLBACK = [
   'https://publisher.testnet.walrus.atalma.io',
   'https://publisher.walrus-01.tududes.com',
   'https://publisher.walrus-testnet.h2o-nodes.com',
@@ -56,6 +62,7 @@ const WALRUS_PUBLISHERS = [
   'https://walrus-testnet.validators.services.kyve.network/publish',
   'https://walrus.testnet.publisher.stakepool.dev.br'
 ];
+*/
 
 // Fallback aggregator URLs
 const WALRUS_AGGREGATORS = [
