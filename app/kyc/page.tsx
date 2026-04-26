@@ -22,6 +22,7 @@ import OtpVerificationStep from '@/components/features/kyc/steps/OtpVerification
 import { useVerificationListener } from '@/hooks/useEventListener';
 import { documentEncryptionService, DocumentEncryptionService } from '@/services/encryptionService';
 import { credentialService } from '@/services/credentialService';
+import { partnerService } from '@/services/partnerService';
 import { NFTClaimSuccessModal } from '@/components/NFTClaimSuccess';
 import { colors } from '@/app/brand';
 import { SHARED_OBJECTS, CONTRACT_FUNCTIONS, GAS_CONFIG, buildExplorerUrl } from '@/config/contracts';
@@ -579,6 +580,27 @@ function KycContent() {
         setNftClaimData(nftData);
         setShowSuccessModal(true);
         setStep('nft-claimed');
+
+        // If user came in through a partner-flow context, record the
+        // event and redirect back to the partner's redirect_uri.
+        const partnerCtx = partnerService.loadCtx();
+        if (partnerCtx) {
+          await partnerService.recordEvent({
+            client_id: partnerCtx.client_id,
+            user_wallet: zkLoginAddress,
+            nft_id: nftId,
+            did_type: partnerCtx.did_type,
+            reused_existing: false,
+            state: partnerCtx.state,
+          });
+          partnerService.clearCtx();
+          const url = partnerService.buildRedirectUrl(partnerCtx, {
+            nft_id: nftId,
+            owner: zkLoginAddress,
+            status: 'success',
+          });
+          window.location.replace(url);
+        }
       }
     } catch (error: unknown) {
       console.error('Error claiming NFT:', error);
