@@ -85,11 +85,20 @@ function CallbackContent() {
 
         setStatus('Authentication successful! Redirecting...');
 
-        // Redirect to dashboard after a short delay
-        console.log('⏰ Redirecting to dashboard in 1.2s...');
+        // If a partner-flow ctx is in sessionStorage, return to /connect to resume
+        // the partner handoff. Otherwise default to dashboard.
+        const partnerCtx = (() => {
+          try {
+            return sessionStorage.getItem('suiverify:partner_ctx');
+          } catch {
+            return null;
+          }
+        })();
+        const nextRoute = partnerCtx ? '/connect?step=resume' : '/dashboard';
+        console.log(`Redirecting to ${nextRoute} in 1.2s...`);
         setTimeout(() => {
-          console.log('🚀 Redirecting now...');
-          router.replace('/dashboard');
+          console.log('Redirecting now...');
+          router.replace(nextRoute);
         }, 1200);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
