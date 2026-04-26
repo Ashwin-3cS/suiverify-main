@@ -99,11 +99,14 @@ function ConnectInner() {
       try {
         const { credentials } = await credentialService.getUserCredentials(address);
         const now = Date.now();
+        // Note: backend credentials.did_type currently stores the UserDID
+        // object id (a 0x... hex), not the partner's integer did_type. Until
+        // schema is fixed, accept any verified NFT for the wallet. Granular
+        // matching (age vs citizenship vs ...) lands when did_type column
+        // is split into a separate verification_kind field.
         const match = credentials.find((c) => {
           if (c.type !== 'nft' || !c.nftId) return false;
-          if (String(c.didType) !== String(ctx.did_type)) return false;
           if (c.status !== 'verified') return false;
-          // expiryDate is ISO/string — best-effort filter; keep if unparseable
           if (c.expiryDate) {
             const exp = Date.parse(c.expiryDate);
             if (!Number.isNaN(exp) && exp <= now) return false;
