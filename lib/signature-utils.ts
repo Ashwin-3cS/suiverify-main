@@ -271,17 +271,17 @@ export function printValidationResults(
   console.log("Valid:", result.valid);
 
   if (result.errors.length > 0) {
-    console.error("❌ Errors:");
+    console.error(" Errors:");
     result.errors.forEach((err) => console.error(`  - ${err}`));
   }
 
   if (result.warnings.length > 0) {
-    console.warn("⚠️ Warnings:");
+    console.warn(" Warnings:");
     result.warnings.forEach((warn) => console.warn(`  - ${warn}`));
   }
 
   if (result.valid && result.warnings.length === 0) {
-    console.log("✅ All validations passed!");
+    console.log(" All validations passed!");
   }
 
   console.groupEnd();
@@ -309,7 +309,7 @@ export function debugAuthenticationData(
   ephemeralSignature: any,
   jwtToken: string
 ): void {
-  console.group("🔍 Authentication Data Debug");
+  console.group(" Authentication Data Debug");
 
   console.log("--- Session ---");
   const sessionValidation = validateSession(session);

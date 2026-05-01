@@ -37,11 +37,11 @@ export class SessionManager {
     if (typeof window === "undefined") return false;
 
     const cached = localStorage.getItem(PROOF_CACHE_KEY);
-    logger.log(`🔍 Checking cache validity for key: "${PROOF_CACHE_KEY}"`);
-    logger.log(`📦 Cached data exists:`, cached !== null);
+    logger.log(` Checking cache validity for key: "${PROOF_CACHE_KEY}"`);
+    logger.log(` Cached data exists:`, cached !== null);
 
     if (!cached) {
-      logger.log('❌ No cached data found');
+      logger.log(' No cached data found');
       return false;
     }
 
@@ -58,7 +58,7 @@ export class SessionManager {
 
       return isValid;
     } catch (error) {
-      logger.error('❌ Error parsing cached data:', error);
+      logger.error(' Error parsing cached data:', error);
       return false;
     }
   }
@@ -95,11 +95,11 @@ export class SessionManager {
    */
   static cacheProof(data: Omit<CachedProofData, "createdAt" | "expiresAt">): void {
     if (typeof window === "undefined") {
-      logger.warn('⚠️ cacheProof called on server side - skipping');
+      logger.warn(' cacheProof called on server side - skipping');
       return;
     }
 
-    logger.log('💾 cacheProof() called with data:');
+    logger.log(' cacheProof() called with data:');
     logger.log('   - address:', data.address);
     logger.log('   - userSalt:', data.userSalt?.substring(0, 20) + '...');
     logger.log('   - maxEpoch:', data.maxEpoch);
@@ -115,13 +115,13 @@ export class SessionManager {
       expiresAt: now + CACHE_TTL,
     };
 
-    logger.log('💾 Storing to localStorage with key:', PROOF_CACHE_KEY);
+    logger.log(' Storing to localStorage with key:', PROOF_CACHE_KEY);
     localStorage.setItem(PROOF_CACHE_KEY, JSON.stringify(cacheData));
 
     // Verify it was stored
     const stored = localStorage.getItem(PROOF_CACHE_KEY);
-    logger.log('✅ Verification - Data stored:', stored !== null);
-    logger.log('✅ zkLogin proof cached (valid for 24h) - includes proof data for transactions');
+    logger.log(' Verification - Data stored:', stored !== null);
+    logger.log(' zkLogin proof cached (valid for 24h) - includes proof data for transactions');
   }
 
   /**
@@ -130,7 +130,7 @@ export class SessionManager {
   static clearProofCache(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(PROOF_CACHE_KEY);
-    logger.log("🗑️ Proof cache cleared");
+    logger.log(" Proof cache cleared");
   }
 
   /**
@@ -191,7 +191,7 @@ export class SessionManager {
     if (typeof window === "undefined") return;
     localStorage.removeItem(SESSION_KEY);
     this.clearProofCache();
-    logger.log("🗑️ Session and proof cache cleared");
+    logger.log(" Session and proof cache cleared");
   }
 
   /**

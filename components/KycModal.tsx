@@ -274,7 +274,7 @@ const KycModal: React.FC<KycModalProps> = ({
                           : "bg-light-gray"
                     }`}
                   >
-                    {stepDone(n) ? "✓" : n}
+                    {stepDone(n) ? "" : n}
                   </div>
                   <span className="text-xs text-charcoal-text/60">{label}</span>
                 </div>
@@ -371,7 +371,7 @@ const KycModal: React.FC<KycModalProps> = ({
                   <div className="mb-4 p-3 bg-success/10 border border-success/30 rounded-lg flex items-center gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-success shrink-0" />
                     <p className="text-charcoal-text">
-                      Face detected in document ✓
+                      Face detected in document 
                     </p>
                   </div>
                 )}

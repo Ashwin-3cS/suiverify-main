@@ -70,7 +70,7 @@ export default function ZkLoginTransactionTest() {
       // Convert SUI to MIST (1 SUI = 1e9 MIST)
       const amountInMist = Math.floor(parseFloat(amount) * 1e9);
 
-      console.log("🔐 zkLogin Transaction Test:");
+      console.log(" zkLogin Transaction Test:");
       console.log("  From:", cached.address);
       console.log("  To:", receiverAddress);
       console.log("  Amount:", amount, "SUI");
@@ -122,7 +122,7 @@ export default function ZkLoginTransactionTest() {
         },
       });
 
-      console.log("✅ Transaction successful!");
+      console.log(" Transaction successful!");
       setTxDigest(result.digest);
     } catch (err: unknown) {
       console.error("Transaction error:", err);
@@ -187,7 +187,7 @@ export default function ZkLoginTransactionTest() {
             className="text-sm font-semibold mb-2"
             style={{ color: colors.white }}
           >
-            Transaction Successful! ✅
+            Transaction Successful! 
           </p>
           <div className="flex items-center justify-between gap-2">
             <p
@@ -201,7 +201,7 @@ export default function ZkLoginTransactionTest() {
               className="flex-shrink-0 p-2 hover:opacity-80 transition-opacity"
               style={{ color: colors.primary }}
             >
-              📋
+              
             </button>
           </div>
           <a
@@ -291,7 +291,7 @@ export default function ZkLoginTransactionTest() {
               color: "rgb(234, 179, 8)",
             }}
           >
-            <p className="font-semibold mb-1">⚠️ Note:</p>
+            <p className="font-semibold mb-1"> Note:</p>
             <p>Make sure your address has testnet SUI tokens!</p>
             <p className="text-xs mt-2">
               Get from Discord:{" "}

@@ -201,7 +201,7 @@ export const LivenessWebcam: React.FC<LivenessWebcamProps> = ({
 
         {isCalibrating && (
           <div className="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold mb-3">
-            ⚙️ Calibrating head position... Hold still
+             Calibrating head position... Hold still
           </div>
         )}
 

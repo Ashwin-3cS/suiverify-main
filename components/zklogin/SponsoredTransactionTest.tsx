@@ -66,11 +66,11 @@ export default function SponsoredTransactionTest() {
       // Convert SUI to MIST (1 SUI = 1e9 MIST)
       const amountInMist = Math.floor(parseFloat(amount) * 1e9);
 
-      console.log("⚡ Sponsored Transaction Test:");
+      console.log(" Sponsored Transaction Test:");
       console.log("  From:", cached.address);
       console.log("  To:", receiverAddress);
       console.log("  Amount:", amount, "SUI");
-      console.log("  Gas: SPONSORED by Enoki ✨");
+      console.log("  Gas: SPONSORED by Enoki ");
       console.log("  Method: Get coins from sender's balance");
 
       // For sponsored transactions, we need to get coins from sender's balance
@@ -97,7 +97,7 @@ export default function SponsoredTransactionTest() {
       tx.setSender(cached.address);
 
       // Build the transaction with onlyTransactionKind flag for sponsorship
-      console.log("📦 Building transaction for sponsorship...");
+      console.log(" Building transaction for sponsorship...");
       const transactionBlockKindBytes = await tx.build({
         client: suiClient,
         onlyTransactionKind: true, // Required for sponsored transactions
@@ -108,10 +108,10 @@ export default function SponsoredTransactionTest() {
         String.fromCharCode.apply(null, Array.from(transactionBlockKindBytes))
       );
 
-      console.log("📦 Transaction bytes (base64):", base64TxBytes.substring(0, 50) + "...");
+      console.log(" Transaction bytes (base64):", base64TxBytes.substring(0, 50) + "...");
 
       // Step 1: Create sponsored transaction via backend
-      console.log("📞 Requesting sponsored transaction from backend...");
+      console.log(" Requesting sponsored transaction from backend...");
       const sponsorCreateResponse = await fetch(
         "/api/transactions/sponsor-create",
         {
@@ -130,7 +130,7 @@ export default function SponsoredTransactionTest() {
 
       if (!sponsorCreateResponse.ok) {
         const errorData = await sponsorCreateResponse.json();
-        console.error("❌ Sponsor create error details:", errorData);
+        console.error(" Sponsor create error details:", errorData);
         throw new Error(
           `Failed to create sponsored transaction: ${errorData.enokiError || errorData.error || "Unknown error"}`
         );
@@ -140,11 +140,11 @@ export default function SponsoredTransactionTest() {
       const { digest, bytes } = sponsorCreateData.data;
 
       setSponsorDigest(digest);
-      console.log("✅ Sponsored transaction created");
+      console.log(" Sponsored transaction created");
       console.log("   Digest:", digest);
 
       // Step 2: Sign the sponsored transaction bytes
-      console.log("🔐 Signing sponsored transaction with ephemeral key...");
+      console.log(" Signing sponsored transaction with ephemeral key...");
       // Convert base64 to Uint8Array (browser-compatible)
       const binaryString = atob(bytes);
       const sponsoredTxBytes = new Uint8Array(binaryString.length);
@@ -163,14 +163,14 @@ export default function SponsoredTransactionTest() {
       }
 
       // Create zkLogin signature using cached proof data
-      console.log("🎯 Creating zkLogin signature from cached proof...");
+      console.log(" Creating zkLogin signature from cached proof...");
       const zkLoginSignature = ZkLoginService.getTransactionSignature({
         ephemeralSignature,
         useCache: true, // Use cached proof data
       });
 
       // Step 3: Submit signed transaction to backend for execution
-      console.log("📤 Submitting signed transaction to backend...");
+      console.log(" Submitting signed transaction to backend...");
       const sponsorSubmitResponse = await fetch(
         "/api/transactions/sponsor-submit",
         {
@@ -195,7 +195,7 @@ export default function SponsoredTransactionTest() {
       const sponsorSubmitData = await sponsorSubmitResponse.json();
       const transactionDigest = sponsorSubmitData.data.digest;
 
-      console.log("✅ Sponsored transaction submitted successfully!");
+      console.log(" Sponsored transaction submitted successfully!");
       console.log("   Transaction Digest:", transactionDigest);
 
       // Wait for transaction to be confirmed and get full result
@@ -208,10 +208,10 @@ export default function SponsoredTransactionTest() {
         },
       });
 
-      console.log("🎉 Sponsored Transaction Success:", result);
+      console.log(" Sponsored Transaction Success:", result);
       setTxDigest(result.digest);
     } catch (err: unknown) {
-      console.error("❌ Sponsored transaction error:", err);
+      console.error(" Sponsored transaction error:", err);
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(`Transaction failed: ${errorMessage}`);
     } finally {
@@ -257,7 +257,7 @@ export default function SponsoredTransactionTest() {
             color: colors.white,
           }}
         >
-          ⚡ GAS FREE
+           GAS FREE
         </div>
       </div>
 
@@ -273,7 +273,7 @@ export default function SponsoredTransactionTest() {
           className="text-sm font-semibold mb-1"
           style={{ color: colors.charcoalText }}
         >
-          ✨ What&apos;s different?
+           What&apos;s different?
         </p>
         <p className="text-xs" style={{ color: colors.charcoalText }}>
           This transaction is <strong>sponsored by Enoki</strong>. You don&apos;t
@@ -290,7 +290,7 @@ export default function SponsoredTransactionTest() {
             borderColor: "rgb(239, 68, 68)",
           }}
         >
-          <p className="text-red-600 text-sm font-semibold mb-1">❌ Error</p>
+          <p className="text-red-600 text-sm font-semibold mb-1"> Error</p>
           <p className="text-red-500 text-xs">{error}</p>
         </div>
       )}
@@ -305,10 +305,10 @@ export default function SponsoredTransactionTest() {
           }}
         >
           <p className="text-green-600 text-sm font-semibold mb-2">
-            🎉 Sponsored Transaction Successful!
+             Sponsored Transaction Successful!
           </p>
           <p className="text-xs text-gray-600 mb-3">
-            Gas fees were paid by Enoki - you spent 0 SUI! ⚡
+            Gas fees were paid by Enoki - you spent 0 SUI! 
           </p>
 
           <div className="space-y-2">
@@ -325,7 +325,7 @@ export default function SponsoredTransactionTest() {
                   className="flex-shrink-0 p-2 hover:opacity-80 transition-opacity"
                   style={{ color: colors.primary }}
                 >
-                  📋
+                  
                 </button>
               </div>
             </div>
@@ -344,7 +344,7 @@ export default function SponsoredTransactionTest() {
                     className="flex-shrink-0 p-2 hover:opacity-80 transition-opacity"
                     style={{ color: colors.primary }}
                   >
-                    📋
+                    
                   </button>
                 </div>
               </div>
@@ -442,7 +442,7 @@ export default function SponsoredTransactionTest() {
               className="font-semibold mb-1"
               style={{ color: "rgb(34, 197, 94)" }}
             >
-              ✅ No SUI needed!
+               No SUI needed!
             </p>
             <p className="text-xs" style={{ color: "rgb(21, 128, 61)" }}>
               Unlike regular transactions, you don&apos;t need testnet SUI. The gas

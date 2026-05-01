@@ -15,61 +15,61 @@ function CallbackContent() {
 
   useEffect(() => {
     if (hasProcessedRef.current) {
-      console.log('⏭️ Callback already processed - skipping second StrictMode run.');
+      console.log('⏭ Callback already processed - skipping second StrictMode run.');
       return;
     }
     hasProcessedRef.current = true;
 
     const handleCallback = async () => {
       try {
-        console.log('🔄 Processing OAuth callback...');
-        console.log('📍 Current URL:', window.location.href);
+        console.log(' Processing OAuth callback...');
+        console.log(' Current URL:', window.location.href);
 
         // Extract JWT from URL fragment (#id_token=...)
         const fragment = window.location.hash;
-        console.log('🔍 Fragment length:', fragment.length);
-        console.log('🔍 Fragment preview:', fragment.substring(0, 50) + '...');
+        console.log(' Fragment length:', fragment.length);
+        console.log(' Fragment preview:', fragment.substring(0, 50) + '...');
 
         const idTokenMatch = fragment.match(/id_token=([^&]+)/);
         if (!idTokenMatch) {
-          console.error('❌ No id_token found in URL fragment');
+          console.error(' No id_token found in URL fragment');
           console.error('Full fragment:', fragment);
           throw new Error('No id_token found in URL fragment. OAuth authentication may have failed.');
         }
 
         const jwtToken = decodeURIComponent(idTokenMatch[1]);
-        console.log('✅ JWT token extracted (length:', jwtToken.length, ')');
+        console.log(' JWT token extracted (length:', jwtToken.length, ')');
 
         // Update status
         setStatus('Generating ZK proof (this takes 2-3 seconds)...');
 
         // Complete the entire zkLogin flow in one step
         // This includes: initialization, proof generation, and caching
-        console.log('🔐 Starting completeZkLoginFlow...');
+        console.log(' Starting completeZkLoginFlow...');
         console.log('⏰ Time:', new Date().toISOString());
 
         const result = await ZkLoginService.completeZkLoginFlow(jwtToken);
 
-        console.log('✅ zkLogin flow completed successfully!');
-        console.log('📍 Address:', result.address);
-        console.log(`👤 User type: ${result.isNewUser ? 'NEW' : 'EXISTING'}`);
-        console.log('🔑 Has zkProof:', !!result.zkProof);
-        console.log('🔑 Has jwtToken:', !!result.jwtToken);
-        console.log('🔑 Has userSalt:', !!result.userSalt);
-        console.log('🔑 Has ephemeralPrivateKey:', !!result.ephemeralPrivateKey);
+        console.log(' zkLogin flow completed successfully!');
+        console.log(' Address:', result.address);
+        console.log(` User type: ${result.isNewUser ? 'NEW' : 'EXISTING'}`);
+        console.log(' Has zkProof:', !!result.zkProof);
+        console.log(' Has jwtToken:', !!result.jwtToken);
+        console.log(' Has userSalt:', !!result.userSalt);
+        console.log(' Has ephemeralPrivateKey:', !!result.ephemeralPrivateKey);
 
         // Verify cache was created
-        console.log('🔍 Checking if proof was cached...');
+        console.log(' Checking if proof was cached...');
         const cachedProof = localStorage.getItem('zkLoginProofCache');
-        console.log('📦 zkLoginProofCache exists in localStorage:', cachedProof !== null);
+        console.log(' zkLoginProofCache exists in localStorage:', cachedProof !== null);
         if (cachedProof) {
-          console.log('✅ Proof successfully cached!');
+          console.log(' Proof successfully cached!');
         } else {
-          console.error('❌ WARNING: Proof was NOT cached to localStorage!');
+          console.error(' WARNING: Proof was NOT cached to localStorage!');
         }
 
         // Store auth data in React context (not localStorage)
-        console.log('💾 Setting auth data in React context...');
+        console.log(' Setting auth data in React context...');
         setAuthData({
           address: result.address,
           zkProof: result.zkProof,
@@ -80,7 +80,7 @@ function CallbackContent() {
           randomness: result.randomness,
         });
 
-        console.log('🔄 Calling checkAuth()...');
+        console.log(' Calling checkAuth()...');
         checkAuth();
 
         setStatus('Authentication successful! Redirecting...');
@@ -102,9 +102,9 @@ function CallbackContent() {
         }, 1200);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        console.error('❌ Callback error:', errorMessage);
-        console.error('❌ Full error:', err);
-        console.error('❌ Error stack:', err instanceof Error ? err.stack : 'No stack');
+        console.error(' Callback error:', errorMessage);
+        console.error(' Full error:', err);
+        console.error(' Error stack:', err instanceof Error ? err.stack : 'No stack');
 
         setError(errorMessage);
         setStatus('Authentication failed');
@@ -142,7 +142,7 @@ function CallbackContent() {
 
         {/* Status Message */}
         <h1 className="text-2xl font-bold text-charcoal-text mb-3">
-          {error ? '❌ Authentication Failed' : '🔐 Signing You In'}
+          {error ? ' Authentication Failed' : ' Signing You In'}
         </h1>
 
         <p className={`text-sm mb-6 ${error ? 'text-red-600' : 'text-charcoal-text/70'}`}>

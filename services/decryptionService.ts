@@ -98,8 +98,8 @@ export class DocumentDecryptionService {
     onProgress?: (progress: string) => void
   ): Promise<DecryptionResult> {
     try {
-      logger.log('🔓 Starting document decryption process...');
-      logger.log('📄 Documents to decrypt:', documents.length);
+      logger.log(' Starting document decryption process...');
+      logger.log(' Documents to decrypt:', documents.length);
 
       if (!documents.length) {
         return {
@@ -134,16 +134,16 @@ export class DocumentDecryptionService {
           }
 
           // Step 2: Parse encrypted object and decrypt using Seal SDK
-          logger.log(`🔓 Decrypting with Seal SDK for blob ${doc.blob_id}`);
-          logger.log(`🔑 Using encryption ID: ${doc.encryption_id}`);
-          logger.log(`📦 Encrypted data size: ${encryptedData.byteLength} bytes`);
+          logger.log(` Decrypting with Seal SDK for blob ${doc.blob_id}`);
+          logger.log(` Using encryption ID: ${doc.encryption_id}`);
+          logger.log(` Encrypted data size: ${encryptedData.byteLength} bytes`);
 
           // Convert ArrayBuffer to Uint8Array if needed
           const encryptedBytes = encryptedData instanceof ArrayBuffer
             ? new Uint8Array(encryptedData)
             : encryptedData;
 
-          logger.log(`📦 Encrypted bytes length: ${encryptedBytes.length}`);
+          logger.log(` Encrypted bytes length: ${encryptedBytes.length}`);
 
           // Parse the encrypted object to get the full ID (same as main frontend)
           const fullId = EncryptedObject.parse(encryptedBytes).id;
@@ -160,7 +160,7 @@ export class DocumentDecryptionService {
             txBytes,
           });
 
-          logger.log(`✅ Decryption successful for ${doc.file_name}`);
+          logger.log(` Decryption successful for ${doc.file_name}`);
 
           // Step 3: Create blob URL for decrypted data
           const mimeType = this.getMimeType(doc.file_name);
@@ -191,7 +191,7 @@ export class DocumentDecryptionService {
       };
 
     } catch (error) {
-      logger.error('❌ Decryption process failed:', error);
+      logger.error(' Decryption process failed:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error)
@@ -268,7 +268,7 @@ export class DocumentDecryptionService {
       'https://walrusagg.testnet.pops.one'
     ].filter(Boolean); // Remove any undefined/null values
 
-    logger.log(`📡 Trying ${reliableAggregators.length} aggregators for blob ${blobId}`);
+    logger.log(` Trying ${reliableAggregators.length} aggregators for blob ${blobId}`);
 
     for (let i = 0; i < reliableAggregators.length; i++) {
       const aggregatorBase = reliableAggregators[i];
@@ -295,21 +295,21 @@ export class DocumentDecryptionService {
         clearTimeout(timeout);
 
         if (response.ok) {
-          logger.log(`✅ Successfully downloaded from ${aggregatorBase} (${response.status})`);
-          onProgress?.(`✅ Download successful from ${aggregatorBase}`);
+          logger.log(` Successfully downloaded from ${aggregatorBase} (${response.status})`);
+          onProgress?.(` Download successful from ${aggregatorBase}`);
           return await response.arrayBuffer();
         } else {
-          logger.log(`❌ Failed from ${aggregatorBase}: ${response.status} ${response.statusText}`);
+          logger.log(` Failed from ${aggregatorBase}: ${response.status} ${response.statusText}`);
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        logger.log(`❌ Failed from ${aggregatorBase}: ${errorMsg}`);
+        logger.log(` Failed from ${aggregatorBase}: ${errorMsg}`);
         continue;
       }
     }
 
-    logger.error(`❌ All ${reliableAggregators.length} download attempts failed for blob ${blobId}`);
-    onProgress?.(`❌ All ${reliableAggregators.length} aggregators failed for blob ${blobId}`);
+    logger.error(` All ${reliableAggregators.length} download attempts failed for blob ${blobId}`);
+    onProgress?.(` All ${reliableAggregators.length} aggregators failed for blob ${blobId}`);
     return null;
   }
 

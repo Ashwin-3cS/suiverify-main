@@ -51,10 +51,10 @@ export const setVerificationCallback = (callback: (eventData: VerificationComple
 
 // Event handlers for DID Registry events
 const handleDIDRegistryEvents = async (events: SuiEvent[], type: string): Promise<void> => {
-    console.log(`📋 Processing ${events.length} DID Registry events from ${type}`);
+    console.log(` Processing ${events.length} DID Registry events from ${type}`);
     
     for (const event of events) {
-        console.log(`🔔 DID Registry Event Detected:`);
+        console.log(` DID Registry Event Detected:`);
         console.log(`   - Event Type: ${event.type}`);
         console.log(`   - Transaction Digest: ${event.id.txDigest}`);
         console.log(`   - Sender: ${event.sender}`);
@@ -77,14 +77,14 @@ const processDIDEvent = async (event: SuiEvent): Promise<void> => {
         
         // Handle VerificationCompleted events
         if (eventType.includes('::VerificationCompleted')) {
-            console.log(`🎉 VERIFICATION COMPLETED EVENT!`);
-            console.log(`📍 User Address: ${eventData.user_address}`);
+            console.log(` VERIFICATION COMPLETED EVENT!`);
+            console.log(` User Address: ${eventData.user_address}`);
             console.log(`🆔 DID Type: ${eventData.did_type} (${getDIDTypeName(eventData.did_type)})`);
-            console.log(`✅ Status: ${eventData.status} (${getStatusName(eventData.status)})`);
-            console.log(`🔐 Nautilus Signature: ${eventData.nautilus_signature ? 'Present' : 'Missing'}`);
-            console.log(`🎯 User DID ID: ${eventData.user_did_id}`);
-            console.log(`📅 Signature Timestamp: ${eventData.signature_timestamp_ms || 'N/A'}`);
-            console.log(`🔍 Evidence Hash: ${eventData.evidence_hash ? 'Present' : 'Missing'}`);
+            console.log(` Status: ${eventData.status} (${getStatusName(eventData.status)})`);
+            console.log(` Nautilus Signature: ${eventData.nautilus_signature ? 'Present' : 'Missing'}`);
+            console.log(` User DID ID: ${eventData.user_did_id}`);
+            console.log(` Signature Timestamp: ${eventData.signature_timestamp_ms || 'N/A'}`);
+            console.log(` Evidence Hash: ${eventData.evidence_hash ? 'Present' : 'Missing'}`);
             
             // Create enhanced event data object
             const enhancedEventData: VerificationCompletedEventData = {
@@ -107,19 +107,19 @@ const processDIDEvent = async (event: SuiEvent): Promise<void> => {
             await handleVerificationCompleted(eventData);
             
         } else if (eventType.includes('::VerificationStarted')) {
-            console.log(`🚀 VERIFICATION STARTED EVENT!`);
-            console.log(`📍 User Address: ${eventData.user_address}`);
+            console.log(` VERIFICATION STARTED EVENT!`);
+            console.log(` User Address: ${eventData.user_address}`);
             console.log(`🆔 DID Type: ${eventData.did_type} (${getDIDTypeName(eventData.did_type)})`);
-            console.log(`🎯 User DID ID: ${eventData.user_did_id}`);
+            console.log(` User DID ID: ${eventData.user_did_id}`);
             
         } else if (eventType.includes('::DIDClaimed')) {
-            console.log(`🏆 DID NFT CLAIMED EVENT!`);
-            console.log(`📍 User Address: ${eventData.user_address}`);
-            console.log(`🎨 NFT ID: ${eventData.nft_id}`);
+            console.log(` DID NFT CLAIMED EVENT!`);
+            console.log(` User Address: ${eventData.user_address}`);
+            console.log(` NFT ID: ${eventData.nft_id}`);
         }
         
     } catch (error) {
-        console.error(`❌ Error processing DID event ${event.id.txDigest}:`, error);
+        console.error(` Error processing DID event ${event.id.txDigest}:`, error);
     }
 };
 
@@ -144,16 +144,16 @@ const getStatusName = (status: number): string => {
 // Custom handler for verification completed events
 const handleVerificationCompleted = async (eventData: VerificationCompletedEventData): Promise<void> => {
     try {
-        console.log(`🔄 Processing verification completion for user ${eventData.user_address}`);
+        console.log(` Processing verification completion for user ${eventData.user_address}`);
         
         if (eventData.status === 1) { // STATUS_VERIFIED
-            console.log(`✅ User ${eventData.user_address} successfully verified!`);
+            console.log(` User ${eventData.user_address} successfully verified!`);
         } else if (eventData.status === 2) { // STATUS_REJECTED
-            console.log(`❌ User ${eventData.user_address} verification rejected`);
+            console.log(` User ${eventData.user_address} verification rejected`);
         }
         
     } catch (error) {
-        console.error(`❌ Error handling verification completion:`, error);
+        console.error(` Error handling verification completion:`, error);
     }
 };
 
@@ -185,7 +185,7 @@ const executeEventJob = async (
         });
         
         if (data.length > 0) {
-            console.log(`📋 Found ${data.length} new events for ${tracker.type}`);
+            console.log(` Found ${data.length} new events for ${tracker.type}`);
             
             // Handle the events
             await tracker.callback(data, tracker.type);
@@ -201,7 +201,7 @@ const executeEventJob = async (
         }
         
     } catch (error) {
-        console.error(`❌ Error in executeEventJob for ${tracker.type}:`, error);
+        console.error(` Error in executeEventJob for ${tracker.type}:`, error);
     }
     
     return {
@@ -230,40 +230,40 @@ const getLatestCursor = async (tracker: EventTracker): Promise<SuiEventsCursor> 
 // Save the latest cursor for an event tracker
 const saveLatestCursor = async (tracker: EventTracker, cursor: EventId): Promise<void> => {
     cursors.set(tracker.type, cursor);
-    console.log(`💾 Saved cursor for ${tracker.type}: ${cursor.eventSeq}`);
+    console.log(` Saved cursor for ${tracker.type}: ${cursor.eventSeq}`);
 };
 
 // Start the event listener
 export const startEventListener = async (): Promise<void> => {
-    console.log('🚀 Starting Sui Event Listener for user verification...');
+    console.log(' Starting Sui Event Listener for user verification...');
     
     try {
         // Test connection
         const latestCheckpoint = await client.getLatestCheckpointSequenceNumber();
-        console.log(`✅ Connected to Sui network. Latest checkpoint: ${latestCheckpoint}`);
+        console.log(` Connected to Sui network. Latest checkpoint: ${latestCheckpoint}`);
         
-        console.log('⚙️ Configuration:');
+        console.log(' Configuration:');
         console.log(`   - Package ID: ${packageId}`);
         console.log(`   - Polling Interval: ${POLLING_INTERVAL_MS}ms`);
         
         // Start listening for events
         for (const event of EVENTS_TO_TRACK) {
-            console.log(`🎯 Starting listener for: ${event.type}`);
+            console.log(` Starting listener for: ${event.type}`);
             const cursor = await getLatestCursor(event);
             runEventJob(client, event, cursor);
         }
         
-        console.log('✅ Event listener is now running');
+        console.log(' Event listener is now running');
         
     } catch (error) {
-        console.error('❌ Failed to start event listener:', error);
+        console.error(' Failed to start event listener:', error);
         throw error;
     }
 };
 
 // Stop the event listener
 export const stopEventListener = () => {
-    console.log('🛑 Stopping Sui Event Listener...');
+    console.log(' Stopping Sui Event Listener...');
     // Clear all cursors
     cursors.clear();
     verificationCallback = null;

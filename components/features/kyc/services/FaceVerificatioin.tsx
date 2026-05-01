@@ -55,7 +55,7 @@ const FaceVerification: React.FC<FaceVerificationProps> = ({ onNext, onBack, aad
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center">
             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              ✓
+              
             </div>
             <div className="w-16 h-1 bg-[#00BFFF] mx-2"></div>
             <div className="w-8 h-8 bg-[#00BFFF] rounded-full flex items-center justify-center text-white text-sm font-medium">

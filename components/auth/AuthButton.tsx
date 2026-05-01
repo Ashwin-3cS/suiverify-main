@@ -20,19 +20,19 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
   const handleSignIn = async () => {
     setIsLoggingIn(true);
     try {
-      console.log('🔐 Starting zkLogin flow...');
+      console.log(' Starting zkLogin flow...');
 
       // Initialize session and get nonce for OAuth
       const { nonce } = await ZkLoginService.initializeSession();
-      console.log('✅ Session initialized with nonce');
+      console.log(' Session initialized with nonce');
 
       // Get OAuth URL and redirect
       const oauthUrl = ZkLoginService.getOAuthUrl(nonce);
-      console.log('🔗 Redirecting to OAuth provider...');
+      console.log(' Redirecting to OAuth provider...');
 
       window.location.href = oauthUrl;
     } catch (error) {
-      console.error('❌ Sign-in error:', error);
+      console.error(' Sign-in error:', error);
       setIsLoggingIn(false);
     }
   };

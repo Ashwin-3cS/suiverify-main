@@ -52,27 +52,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const checkAuth = () => {
-    logger.log('🔍 Checking authentication status...');
+    logger.log(' Checking authentication status...');
 
     // Debug: Log all localStorage keys
-    logger.log('📦 LocalStorage keys:', Object.keys(localStorage));
-    logger.log('📦 zkLoginProofCache exists?', localStorage.getItem('zkLoginProofCache') !== null);
-    logger.log('📦 zkLoginSession exists?', localStorage.getItem('zkLoginSession') !== null);
+    logger.log(' LocalStorage keys:', Object.keys(localStorage));
+    logger.log(' zkLoginProofCache exists?', localStorage.getItem('zkLoginProofCache') !== null);
+    logger.log(' zkLoginSession exists?', localStorage.getItem('zkLoginSession') !== null);
 
     try {
       const isAuth = SessionManager.isAuthenticated();
-      logger.log('🔐 SessionManager.isAuthenticated():', isAuth);
+      logger.log(' SessionManager.isAuthenticated():', isAuth);
 
       if (isAuth) {
         const cachedProof = SessionManager.getCachedProof();
-        logger.log('📋 Cached proof data:', cachedProof);
+        logger.log(' Cached proof data:', cachedProof);
 
         if (cachedProof && cachedProof.address) {
-          logger.log('✅ User is authenticated (cached address valid)');
-          logger.log('📍 Address:', cachedProof.address);
-          logger.log('⚠️ Note: Sensitive data (JWT, keys) must be in React context');
+          logger.log(' User is authenticated (cached address valid)');
+          logger.log(' Address:', cachedProof.address);
+          logger.log(' Note: Sensitive data (JWT, keys) must be in React context');
 
-          // ⚠️ IMPORTANT: Only restore address from cache
+          //  IMPORTANT: Only restore address from cache
           // Sensitive data (jwtToken, ephemeralPrivateKey, userSalt, etc)
           // MUST be retrieved from React context on the callback page
           // or re-derived from email on next login
@@ -88,10 +88,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Log cache TTL for debugging
           logger.log(`⏰ Address cache valid for: ${SessionManager.getFormattedTTL()}`);
         } else {
-          logger.log('⚠️ isAuth=true but no cached proof or address');
+          logger.log(' isAuth=true but no cached proof or address');
         }
       } else {
-        logger.log('❌ User is not authenticated (no valid cached address)');
+        logger.log(' User is not authenticated (no valid cached address)');
         setAddress(null);
         setZkProof(null);
         setJwtToken(null);
@@ -129,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    logger.log('🔓 Logging out...');
+    logger.log(' Logging out...');
     try {
       ZkLoginService.clearSession();
       SessionManager.clearSession();
@@ -143,7 +143,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setRandomness(null);
       setIsAuthenticated(false);
 
-      logger.log('✅ Logout successful');
+      logger.log(' Logout successful');
     } catch (error) {
       logger.error('Error during logout:', error);
     }

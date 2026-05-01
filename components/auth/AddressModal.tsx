@@ -91,7 +91,7 @@ const AddressModal: React.FC<AddressModalProps> = ({
                     title="Copy address"
                   >
                     {copied ? (
-                      <span className="text-sm font-bold text-success">✓</span>
+                      <span className="text-sm font-bold text-success"></span>
                     ) : (
                       <Copy className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                     )}

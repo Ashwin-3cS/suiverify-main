@@ -115,8 +115,8 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
       // Auto-set DID based on verification type (0 for above18, 1 for citizenship)
       formData.append('did', getDid().toString());
 
-      console.log(`🔍 Frontend: Sending OTP verification with DID: ${getDid()} for verification type: ${verificationType}`);
-      console.log(`🔍 Frontend: Using placeholder wallet address`);
+      console.log(` Frontend: Sending OTP verification with DID: ${getDid()} for verification type: ${verificationType}`);
+      console.log(` Frontend: Using placeholder wallet address`);
 
       // Add Aadhaar data if available
       if (aadhaarData) {
@@ -159,7 +159,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
         }
 
         // Show success message
-        console.log('✅ OTP Verification Successful:', result.message);
+        console.log(' OTP Verification Successful:', result.message);
 
         onNext();
       } else {

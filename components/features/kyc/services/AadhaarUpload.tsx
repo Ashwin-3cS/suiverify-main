@@ -146,7 +146,7 @@ const AadhaarUpload: React.FC<AadhaarUploadProps> = ({ onNext, onBack }) => {
                 </div>
               </div>
               
-              <p className="text-success mb-4">✓ Aadhaar card uploaded successfully</p>
+              <p className="text-success mb-4"> Aadhaar card uploaded successfully</p>
               
               <button
                 onClick={() => {

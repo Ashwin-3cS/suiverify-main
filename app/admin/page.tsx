@@ -53,8 +53,8 @@ function GovernmentDecryptionPage() {
     setError(null);
 
     try {
-      console.log('🔍 Fetching decryption data for user:', userAddress);
-      console.log('🏛️ Government wallet:', currentAccount.address);
+      console.log(' Fetching decryption data for user:', userAddress);
+      console.log(' Government wallet:', currentAccount.address);
 
       const response = await fetch(
         buildApiUrl(API_ENDPOINTS.ENCRYPTION_GOVERNMENT_DECRYPTION_DATA(userAddress, currentAccount.address)),
@@ -73,10 +73,10 @@ function GovernmentDecryptionPage() {
 
       const data: DecryptionData = await response.json();
       setDecryptionData(data);
-      console.log('📊 Decryption data loaded:', data);
+      console.log(' Decryption data loaded:', data);
 
     } catch (error) {
-      console.error('❌ Failed to fetch decryption data:', error);
+      console.error(' Failed to fetch decryption data:', error);
       setError(error instanceof Error ? error.message : 'Failed to fetch decryption data');
     } finally {
       setLoading(false);
@@ -102,16 +102,16 @@ function GovernmentDecryptionPage() {
       setError(null);
       setDecryptionProgress('Preparing decryption...');
       
-      console.log('🔓 Starting decryption process...');
-      console.log('📄 Selected documents:', selectedDocuments.length);
-      console.log('🏛️ Government wallet:', currentAccount.address);
+      console.log(' Starting decryption process...');
+      console.log(' Selected documents:', selectedDocuments.length);
+      console.log(' Government wallet:', currentAccount.address);
       
       // Filter selected documents from the full list
       const documentsToDecrypt = decryptionData.documents.filter(
         doc => selectedDocuments.includes(doc.blob_id)
       );
       
-      console.log('📋 Documents to decrypt:', documentsToDecrypt.map(d => ({
+      console.log(' Documents to decrypt:', documentsToDecrypt.map(d => ({
         file_name: d.file_name,
         blob_id: d.blob_id,
         encryption_id: d.encryption_id
@@ -120,7 +120,7 @@ function GovernmentDecryptionPage() {
       // Check if we have a valid session key that hasn't expired
       if (currentSessionKey && !currentSessionKey.isExpired() && 
           currentSessionKey.getAddress() === currentAccount.address) {
-        console.log('✅ Using existing session key');
+        console.log(' Using existing session key');
         
         // Use existing session key
         const result = await documentDecryptionService.downloadAndDecryptDocuments(
@@ -130,7 +130,7 @@ function GovernmentDecryptionPage() {
         );
         
         if (result.success && result.decryptedFileUrls) {
-          console.log('🎉 Decryption completed successfully!');
+          console.log(' Decryption completed successfully!');
           setDecryptedFileUrls(result.decryptedFileUrls);
           setIsDialogOpen(true);
           setDecryptionProgress('Decryption completed!');
@@ -139,7 +139,7 @@ function GovernmentDecryptionPage() {
         }
       } else {
         // Need to create and sign a new session key
-        console.log('🔑 Creating new session key...');
+        console.log(' Creating new session key...');
         setDecryptionProgress('Creating session key for decryption...');
         
         const sessionKey = await documentDecryptionService.createSessionKey(currentAccount.address);
@@ -152,7 +152,7 @@ function GovernmentDecryptionPage() {
           {
             onSuccess: async (result) => {
               try {
-                console.log('✅ Personal message signed successfully');
+                console.log(' Personal message signed successfully');
                 setDecryptionProgress('Signature obtained, starting decryption...');
                 
                 // Set the signature on the session key
@@ -167,8 +167,8 @@ function GovernmentDecryptionPage() {
                 );
                 
                 if (decryptResult.success && decryptResult.decryptedFileUrls) {
-                  console.log('🎉 Decryption completed successfully!');
-                  console.log('📁 Decrypted files:', decryptResult.decryptedFileUrls.length);
+                  console.log(' Decryption completed successfully!');
+                  console.log(' Decrypted files:', decryptResult.decryptedFileUrls.length);
                   setDecryptedFileUrls(decryptResult.decryptedFileUrls);
                   setIsDialogOpen(true);
                   setDecryptionProgress('Decryption completed!');
@@ -176,13 +176,13 @@ function GovernmentDecryptionPage() {
                   throw new Error(decryptResult.error || 'Decryption failed');
                 }
               } catch (error) {
-                console.error('❌ Error after signature:', error);
+                console.error(' Error after signature:', error);
                 setError(`Error during decryption: ${error instanceof Error ? error.message : String(error)}`);
                 setDecryptionProgress('');
               }
             },
             onError: (error) => {
-              console.error('❌ Error during signing:', error);
+              console.error(' Error during signing:', error);
               setError(`Error during signing: ${error.message}`);
               setDecryptionProgress('');
               setIsDecrypting(false);
@@ -192,7 +192,7 @@ function GovernmentDecryptionPage() {
       }
       
     } catch (error) {
-      console.error('❌ Decryption failed:', error);
+      console.error(' Decryption failed:', error);
       setError(error instanceof Error ? error.message : 'Decryption failed');
       setDecryptionProgress('');
     } finally {
