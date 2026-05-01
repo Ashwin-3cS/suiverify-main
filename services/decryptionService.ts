@@ -1,4 +1,5 @@
 import { SuiClient } from '@mysten/sui/client';
+import { logger } from '@/lib/logger';
 import { Transaction } from '@mysten/sui/transactions';
 import { SealClient, SessionKey, EncryptedObject } from '@mysten/seal';
 import { fromHex } from '@mysten/sui/utils';
@@ -97,8 +98,8 @@ export class DocumentDecryptionService {
     onProgress?: (progress: string) => void
   ): Promise<DecryptionResult> {
     try {
-      console.log('🔓 Starting document decryption process...');
-      console.log('📄 Documents to decrypt:', documents.length);
+      logger.log('🔓 Starting document decryption process...');
+      logger.log('📄 Documents to decrypt:', documents.length);
 
       if (!documents.length) {
         return {
@@ -128,25 +129,25 @@ export class DocumentDecryptionService {
           const encryptedData = await this.downloadEncryptedFile(doc.blob_id, onProgress);
 
           if (!encryptedData) {
-            console.error(`Failed to download blob ${doc.blob_id}`);
+            logger.error(`Failed to download blob ${doc.blob_id}`);
             continue;
           }
 
           // Step 2: Parse encrypted object and decrypt using Seal SDK
-          console.log(`🔓 Decrypting with Seal SDK for blob ${doc.blob_id}`);
-          console.log(`🔑 Using encryption ID: ${doc.encryption_id}`);
-          console.log(`📦 Encrypted data size: ${encryptedData.byteLength} bytes`);
+          logger.log(`🔓 Decrypting with Seal SDK for blob ${doc.blob_id}`);
+          logger.log(`🔑 Using encryption ID: ${doc.encryption_id}`);
+          logger.log(`📦 Encrypted data size: ${encryptedData.byteLength} bytes`);
 
           // Convert ArrayBuffer to Uint8Array if needed
           const encryptedBytes = encryptedData instanceof ArrayBuffer
             ? new Uint8Array(encryptedData)
             : encryptedData;
 
-          console.log(`📦 Encrypted bytes length: ${encryptedBytes.length}`);
+          logger.log(`📦 Encrypted bytes length: ${encryptedBytes.length}`);
 
           // Parse the encrypted object to get the full ID (same as main frontend)
           const fullId = EncryptedObject.parse(encryptedBytes).id;
-          console.log(`🆔 Full ID from encrypted object: ${fullId}`);
+          logger.log(`🆔 Full ID from encrypted object: ${fullId}`);
 
           // Create transaction for move call (same as main frontend)
           const tx = new Transaction();
@@ -159,7 +160,7 @@ export class DocumentDecryptionService {
             txBytes,
           });
 
-          console.log(`✅ Decryption successful for ${doc.file_name}`);
+          logger.log(`✅ Decryption successful for ${doc.file_name}`);
 
           // Step 3: Create blob URL for decrypted data
           const mimeType = this.getMimeType(doc.file_name);
@@ -169,7 +170,7 @@ export class DocumentDecryptionService {
           decryptedFileUrls.push(url);
 
         } catch (error) {
-          console.error(`Failed to decrypt ${doc.file_name}:`, error);
+          logger.error(`Failed to decrypt ${doc.file_name}:`, error);
           // Continue with other documents even if one fails
         }
       }
@@ -190,7 +191,7 @@ export class DocumentDecryptionService {
       };
 
     } catch (error) {
-      console.error('❌ Decryption process failed:', error);
+      logger.error('❌ Decryption process failed:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error)
@@ -267,7 +268,7 @@ export class DocumentDecryptionService {
       'https://walrusagg.testnet.pops.one'
     ].filter(Boolean); // Remove any undefined/null values
 
-    console.log(`📡 Trying ${reliableAggregators.length} aggregators for blob ${blobId}`);
+    logger.log(`📡 Trying ${reliableAggregators.length} aggregators for blob ${blobId}`);
 
     for (let i = 0; i < reliableAggregators.length; i++) {
       const aggregatorBase = reliableAggregators[i];
@@ -280,7 +281,7 @@ export class DocumentDecryptionService {
         const timeout = setTimeout(() => controller.abort(), 15000); // Increased timeout
 
         const aggregatorUrl = `${aggregatorBase}/v1/blobs/${blobId}`;
-        console.log(`[${i + 1}/${reliableAggregators.length}] Attempting download from ${aggregatorBase}`);
+        logger.log(`[${i + 1}/${reliableAggregators.length}] Attempting download from ${aggregatorBase}`);
         onProgress?.(`Trying aggregator ${i + 1}/${reliableAggregators.length}: ${aggregatorBase}`);
 
         const response = await fetch(aggregatorUrl, {
@@ -294,20 +295,20 @@ export class DocumentDecryptionService {
         clearTimeout(timeout);
 
         if (response.ok) {
-          console.log(`✅ Successfully downloaded from ${aggregatorBase} (${response.status})`);
+          logger.log(`✅ Successfully downloaded from ${aggregatorBase} (${response.status})`);
           onProgress?.(`✅ Download successful from ${aggregatorBase}`);
           return await response.arrayBuffer();
         } else {
-          console.log(`❌ Failed from ${aggregatorBase}: ${response.status} ${response.statusText}`);
+          logger.log(`❌ Failed from ${aggregatorBase}: ${response.status} ${response.statusText}`);
         }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        console.log(`❌ Failed from ${aggregatorBase}: ${errorMsg}`);
+        logger.log(`❌ Failed from ${aggregatorBase}: ${errorMsg}`);
         continue;
       }
     }
 
-    console.error(`❌ All ${reliableAggregators.length} download attempts failed for blob ${blobId}`);
+    logger.error(`❌ All ${reliableAggregators.length} download attempts failed for blob ${blobId}`);
     onProgress?.(`❌ All ${reliableAggregators.length} aggregators failed for blob ${blobId}`);
     return null;
   }

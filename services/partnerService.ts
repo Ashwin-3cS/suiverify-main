@@ -88,7 +88,7 @@ export const partnerService = {
    */
   buildRedirectUrl(
     ctx: PartnerCtx,
-    args: { nft_id: string; owner: string; status: 'success' | 'error'; reason?: string },
+    args: { nft_id: string; owner: string; status: 'success' | 'error'; is_new?: boolean; reason?: string },
   ): string {
     const u = new URL(ctx.redirect_uri);
     u.searchParams.set('status', args.status);
@@ -96,6 +96,7 @@ export const partnerService = {
     if (args.status === 'success') {
       u.searchParams.set('nft_id', args.nft_id);
       u.searchParams.set('owner', args.owner);
+      u.searchParams.set('is_new', args.is_new ? 'true' : 'false');
     } else if (args.reason) {
       u.searchParams.set('reason', args.reason);
     }

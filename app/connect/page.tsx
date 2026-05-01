@@ -130,6 +130,7 @@ function ConnectInner() {
             nft_id: match.nftId,
             owner: address,
             status: 'success',
+            is_new: false,
           });
           setPhase('redirecting');
           window.location.replace(url);

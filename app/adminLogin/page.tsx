@@ -14,42 +14,35 @@ const AdminLogin: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    // Get admin credentials from environment variables
-    const ADMIN_USERNAME = process.env.NEXT_PUBLIC_ADMIN_USERNAME;
-    const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_KEY;
-
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                // Store authentication in localStorage
-                localStorage.setItem('adminAuthenticated', 'true');
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+            if (res.ok) {
                 localStorage.setItem('adminUsername', username);
-
-                // Navigate to admin dashboard
                 router.push('/admin');
             } else {
                 setError('Invalid username or password');
             }
-        } catch (error) {
-            setError(`${error},Login failed. Please try again.`);
+        } catch {
+            setError('Login failed. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    // Check if already authenticated
+    // Check if admin session cookie exists via a lightweight probe
     useEffect(() => {
-        const isAuthenticated = localStorage.getItem('adminAuthenticated');
-        if (isAuthenticated === 'true') {
-            router.push('/admin');
-        }
+        fetch('/api/admin/login', { method: 'GET' }).then((r) => {
+            if (r.status === 200) router.push('/admin');
+        });
     }, [router]);
 
     return (

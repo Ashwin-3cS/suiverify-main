@@ -598,6 +598,7 @@ function KycContent() {
             nft_id: nftId,
             owner: zkLoginAddress,
             status: 'success',
+            is_new: true,
           });
           window.location.replace(url);
         }

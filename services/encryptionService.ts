@@ -2,6 +2,7 @@ import { SuiClient } from '@mysten/sui/client';
 import { SealClient } from '@mysten/seal';
 import { fromHex, toHex } from '@mysten/sui/utils';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { logger } from '@/lib/logger';
 import { getCurrentPackageId, getCurrentRpcEndpoint, SHARED_OBJECTS } from '@/config/contracts';
 
 // Configuration for Walrus and Seal
@@ -114,7 +115,7 @@ export class DocumentEncryptionService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async tryPublisher(publisherUrl: string, encryptedData: Uint8Array): Promise<any> {
     const url = `${publisherUrl}/v1/blobs?epochs=${NUM_EPOCH}`;
-    console.log(`📤 Trying publisher: ${publisherUrl}`);
+    logger.log(`📤 Trying publisher: ${publisherUrl}`);
 
     const response = await fetch(url, {
       method: 'PUT',
@@ -128,7 +129,7 @@ export class DocumentEncryptionService {
 
     if (response.status === 200) {
       const result = await response.json();
-      console.log(`✅ Success with publisher: ${publisherUrl}`);
+      logger.log(`✅ Success with publisher: ${publisherUrl}`);
       return { info: result, publisherUsed: publisherUrl };
     } else {
       const errorText = await response.text();
@@ -138,7 +139,7 @@ export class DocumentEncryptionService {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async storeBlob(encryptedData: Uint8Array): Promise<any> {
-    console.log(`📤 Uploading ${encryptedData.length} bytes to Walrus with fallback...`);
+    logger.log(`📤 Uploading ${encryptedData.length} bytes to Walrus with fallback...`);
 
     let lastError: Error | null = null;
 
@@ -146,10 +147,10 @@ export class DocumentEncryptionService {
     for (const publisher of WALRUS_PUBLISHERS) {
       try {
         const result = await this.tryPublisher(publisher, encryptedData);
-        console.log(`🎉 Successfully uploaded using: ${publisher}`);
+        logger.log(`🎉 Successfully uploaded using: ${publisher}`);
         return result;
       } catch (error) {
-        console.warn(`⚠️ Publisher ${publisher} failed:`, error instanceof Error ? error.message : String(error));
+        logger.warn(`⚠️ Publisher ${publisher} failed:`, error instanceof Error ? error.message : String(error));
         lastError = error instanceof Error ? error : new Error(String(error));
 
         // Continue to next publisher
@@ -158,32 +159,32 @@ export class DocumentEncryptionService {
     }
 
     // If all publishers failed, throw the last error
-    console.error('❌ All publishers failed');
+    logger.error('❌ All publishers failed');
     throw new Error(`All Walrus publishers failed. Last error: ${lastError?.message || 'Unknown error'}`);
   }
 
   async encryptAndUploadDocument(file: File, userAddress: string): Promise<EncryptionResult> {
     try {
-      console.log('🔐 Starting document encryption process...');
-      console.log('📄 File:', file.name, file.size, 'bytes');
-      console.log('👤 User Address:', userAddress);
-      console.log('🏛️ Government Whitelist ID:', GOVERNMENT_WHITELIST_ID);
+      logger.log('🔐 Starting document encryption process...');
+      logger.log('📄 File:', file.name, file.size, 'bytes');
+      logger.log('👤 User Address:', userAddress);
+      logger.log('🏛️ Government Whitelist ID:', GOVERNMENT_WHITELIST_ID);
 
       // Step 1: Generate encryption ID
       const nonce = crypto.getRandomValues(new Uint8Array(5));
       const policyObjectBytes = fromHex(GOVERNMENT_WHITELIST_ID);
       const encryptionId = toHex(new Uint8Array([...policyObjectBytes, ...nonce]));
 
-      console.log('🔑 Generated Encryption ID:', encryptionId);
+      logger.log('🔑 Generated Encryption ID:', encryptionId);
 
       // Step 2: Convert file to ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
       const fileData = new Uint8Array(arrayBuffer);
 
-      console.log('📊 File converted to Uint8Array:', fileData.length, 'bytes');
+      logger.log('📊 File converted to Uint8Array:', fileData.length, 'bytes');
 
       // Step 3: Encrypt with Seal
-      console.log('🔒 Encrypting with Seal protocol...');
+      logger.log('🔒 Encrypting with Seal protocol...');
       const { encryptedObject: encryptedBytes } = await sealClient.encrypt({
         threshold: 2,
         packageId: PACKAGE_ID,
@@ -191,18 +192,18 @@ export class DocumentEncryptionService {
         data: fileData,
       });
 
-      console.log('✅ Document encrypted successfully');
-      console.log('📦 Encrypted data size:', encryptedBytes.length, 'bytes');
+      logger.log('✅ Document encrypted successfully');
+      logger.log('📦 Encrypted data size:', encryptedBytes.length, 'bytes');
 
       // Step 4: Upload to Walrus with fallback
-      console.log('☁️ Uploading to Walrus storage with fallback...');
+      logger.log('☁️ Uploading to Walrus storage with fallback...');
       const storageInfo = await this.storeBlob(encryptedBytes);
 
       if (!storageInfo) {
         throw new Error('Failed to upload to any Walrus publisher');
       }
 
-      console.log('🎉 Upload completed successfully!');
+      logger.log('🎉 Upload completed successfully!');
 
       // Step 5: Extract blob information
       let blobId: string;
@@ -211,20 +212,20 @@ export class DocumentEncryptionService {
       if ('alreadyCertified' in storageInfo.info) {
         blobId = storageInfo.info.alreadyCertified.blobId;
         suiRef = storageInfo.info.alreadyCertified.event.txDigest;
-        console.log('📋 Status: Already certified');
+        logger.log('📋 Status: Already certified');
       } else if ('newlyCreated' in storageInfo.info) {
         blobId = storageInfo.info.newlyCreated.blobObject.blobId;
         suiRef = storageInfo.info.newlyCreated.blobObject.id;
-        console.log('📋 Status: Newly created');
+        logger.log('📋 Status: Newly created');
       } else {
-        console.error('Unhandled successful response!', storageInfo);
+        logger.error('Unhandled successful response!', storageInfo);
         throw new Error('Unexpected storage response format');
       }
 
-      console.log('🆔 Blob ID:', blobId);
-      console.log('🔗 Sui Reference:', suiRef);
-      console.log('🔐 Encryption ID:', encryptionId);
-      console.log('📡 Publisher Used:', storageInfo.publisherUsed);
+      logger.log('🆔 Blob ID:', blobId);
+      logger.log('🔗 Sui Reference:', suiRef);
+      logger.log('🔐 Encryption ID:', encryptionId);
+      logger.log('📡 Publisher Used:', storageInfo.publisherUsed);
 
       // Store encryption metadata in database
       try {
@@ -240,9 +241,9 @@ export class DocumentEncryptionService {
           sui_ref: suiRef,
           government_whitelist_id: GOVERNMENT_WHITELIST_ID
         });
-        console.log('✅ Encryption metadata stored in database');
+        logger.log('✅ Encryption metadata stored in database');
       } catch (metadataError) {
-        console.warn('⚠️ Failed to store encryption metadata:', metadataError);
+        logger.warn('⚠️ Failed to store encryption metadata:', metadataError);
       }
 
       return {
@@ -254,7 +255,7 @@ export class DocumentEncryptionService {
       };
 
     } catch (error) {
-      console.error('❌ Encryption failed:', error);
+      logger.error('❌ Encryption failed:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error)
@@ -290,9 +291,9 @@ export class DocumentEncryptionService {
       }
 
       const result = await response.json();
-      console.log('📊 Metadata stored:', result);
+      logger.log('📊 Metadata stored:', result);
     } catch (error) {
-      console.error('❌ Failed to store encryption metadata:', error);
+      logger.error('❌ Failed to store encryption metadata:', error);
       throw error;
     }
   }

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { logger } from '@/lib/logger';
 import {
   generateNonce,
   generateRandomness,
@@ -30,7 +31,7 @@ export class ZkLoginService {
     maxEpoch: number;
     userSalt: string;
   }> {
-    console.log("🔄 Initializing new session...");
+    logger.log("🔄 Initializing new session...");
 
     // Generate ephemeral key pair
     const ephemeralKeyPair = new Ed25519Keypair();
@@ -49,7 +50,7 @@ export class ZkLoginService {
       .getPublicKey()
       .toSuiPublicKey();
 
-    console.log("🌐 Requesting nonce from Enoki API...");
+    logger.log("🌐 Requesting nonce from Enoki API...");
     const nonceResponse = await fetch(
       process.env.NEXT_PUBLIC_ENOKI_NONCE_URL!,
       {
@@ -68,7 +69,7 @@ export class ZkLoginService {
 
     if (!nonceResponse.ok) {
       const errorText = await nonceResponse.text();
-      console.error("Enoki nonce API error:", errorText);
+      logger.error("Enoki nonce API error:", errorText);
       throw new Error(
         `Failed to get nonce from Enoki: ${nonceResponse.status}`
       );
@@ -77,14 +78,14 @@ export class ZkLoginService {
     const nonceData = await nonceResponse.json();
     const { nonce, randomness, maxEpoch } = nonceData.data;
 
-    console.log("=== Session Initialization ===");
-    console.log("Nonce generated:", nonce);
-    console.log("Max epoch:", maxEpoch);
-    console.log("Randomness:", randomness);
+    logger.log("=== Session Initialization ===");
+    logger.log("Nonce generated:", nonce);
+    logger.log("Max epoch:", maxEpoch);
+    logger.log("Randomness:", randomness);
 
     // Get the secret key as Bech32 string (suiprivkey1...)
     const secretKey = ephemeralKeyPair.getSecretKey();
-    console.log("Secret key (Bech32):", secretKey.substring(0, 20) + "...");
+    logger.log("Secret key (Bech32):", secretKey.substring(0, 20) + "...");
 
     // Store session data
     const sessionData: ZkLoginSession = {
@@ -100,8 +101,8 @@ export class ZkLoginService {
     // Verify storage
     const stored = localStorage.getItem(this.STORAGE_KEY);
     const parsed = JSON.parse(stored!);
-    console.log("✅ Session stored successfully");
-    console.log("Stored nonce:", parsed.nonce);
+    logger.log("✅ Session stored successfully");
+    logger.log("Stored nonce:", parsed.nonce);
 
     return {
       ephemeralKeyPair,
@@ -139,11 +140,11 @@ export class ZkLoginService {
 
     try {
       const session = JSON.parse(sessionStr);
-      console.log("📦 Session loaded:");
-      console.log("  - Has key:", !!session.ephemeralPrivateKey);
-      console.log("  - Nonce:", session.nonce);
-      console.log("  - Max epoch:", session.maxEpoch);
-      console.log("  - Randomness:", session.randomness);
+      logger.log("📦 Session loaded:");
+      logger.log("  - Has key:", !!session.ephemeralPrivateKey);
+      logger.log("  - Nonce:", session.nonce);
+      logger.log("  - Max epoch:", session.maxEpoch);
+      logger.log("  - Randomness:", session.randomness);
       return session;
     } catch {
       return null;
@@ -156,13 +157,13 @@ export class ZkLoginService {
   static computeAddress(jwtToken: string, userSalt: string): string {
     try {
       const address = jwtToAddress(jwtToken, userSalt);
-      console.log("🏠 Computed zkLogin address:", address);
-      console.log("  Using salt:", userSalt);
+      logger.log("🏠 Computed zkLogin address:", address);
+      logger.log("  Using salt:", userSalt);
       return address;
     } catch (error) {
-      console.error("❌ Failed to compute address:", error);
-      console.error("  JWT token (first 50 chars):", jwtToken.substring(0, 50));
-      console.error("  User salt:", userSalt);
+      logger.error("❌ Failed to compute address:", error);
+      logger.error("  JWT token (first 50 chars):", jwtToken.substring(0, 50));
+      logger.error("  User salt:", userSalt);
       throw error;
     }
   }
@@ -178,16 +179,16 @@ export class ZkLoginService {
    * Recreate ephemeral key pair from stored Bech32 secret key
    */
   static recreateKeyPair(secretKeyBech32: string): Ed25519Keypair {
-    console.log("=== Recreating KeyPair ===");
-    console.log("Bech32 key:", secretKeyBech32.substring(0, 20) + "...");
+    logger.log("=== Recreating KeyPair ===");
+    logger.log("Bech32 key:", secretKeyBech32.substring(0, 20) + "...");
 
     // Create keypair from Bech32 secret key string
     const keypair = Ed25519Keypair.fromSecretKey(secretKeyBech32);
 
     // Verify the public key
     const publicKey = keypair.getPublicKey();
-    console.log("Recreated public key:", publicKey.toSuiAddress());
-    console.log("✅ KeyPair recreated successfully");
+    logger.log("Recreated public key:", publicKey.toSuiAddress());
+    logger.log("✅ KeyPair recreated successfully");
 
     return keypair;
   }
@@ -206,20 +207,20 @@ export class ZkLoginService {
     const { jwtToken, ephemeralKeyPair, randomness, maxEpoch, userSalt } =
       params;
 
-    console.log("=== Generating ZK Proof via Enoki API ===");
-    console.log("Using randomness:", randomness);
-    console.log("Using maxEpoch:", maxEpoch);
+    logger.log("=== Generating ZK Proof via Enoki API ===");
+    logger.log("Using randomness:", randomness);
+    logger.log("Using maxEpoch:", maxEpoch);
 
     // Get serialized ephemeral public key (same format as nonce endpoint)
     const ephemeralPublicKeyBase64 = ephemeralKeyPair
       .getPublicKey()
       .toSuiPublicKey();
 
-    console.log("Ephemeral public key (Base64):", ephemeralPublicKeyBase64);
+    logger.log("Ephemeral public key (Base64):", ephemeralPublicKeyBase64);
 
     // Decode JWT to verify nonce
     const decodedJWT = this.decodeJWT(jwtToken);
-    console.log("JWT nonce:", decodedJWT.nonce);
+    logger.log("JWT nonce:", decodedJWT.nonce);
 
     // Verify the nonce matches what we expect
     const expectedNonce = generateNonce(
@@ -227,16 +228,16 @@ export class ZkLoginService {
       maxEpoch,
       randomness
     );
-    console.log("Expected nonce (recalculated):", expectedNonce);
-    console.log("JWT nonce:", decodedJWT.nonce);
-    console.log("Nonces match:", expectedNonce === decodedJWT.nonce);
+    logger.log("Expected nonce (recalculated):", expectedNonce);
+    logger.log("JWT nonce:", decodedJWT.nonce);
+    logger.log("Nonces match:", expectedNonce === decodedJWT.nonce);
 
     if (expectedNonce !== decodedJWT.nonce) {
-      console.error("❌ NONCE MISMATCH!");
-      console.error("Expected:", expectedNonce);
-      console.error("Got:", decodedJWT.nonce);
-      console.error("Randomness used:", randomness);
-      console.error("MaxEpoch used:", maxEpoch);
+      logger.error("❌ NONCE MISMATCH!");
+      logger.error("Expected:", expectedNonce);
+      logger.error("Got:", decodedJWT.nonce);
+      logger.error("Randomness used:", randomness);
+      logger.error("MaxEpoch used:", maxEpoch);
 
       throw new Error(
         `Nonce mismatch! Expected: ${expectedNonce}, Got: ${decodedJWT.nonce}. ` +
@@ -244,9 +245,9 @@ export class ZkLoginService {
       );
     }
 
-    console.log("✅ Nonce verification passed!");
+    logger.log("✅ Nonce verification passed!");
 
-    console.log(
+    logger.log(
       "🌐 Sending ZKP request to Enoki API:",
       process.env.NEXT_PUBLIC_ENOKI_ZKP_URL
     );
@@ -269,14 +270,14 @@ export class ZkLoginService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Enoki ZKP API error response:", errorText);
+      logger.error("Enoki ZKP API error response:", errorText);
       throw new Error(
         `Enoki ZKP service error: ${response.status} - ${errorText}`
       );
     }
 
     const zkpData = await response.json();
-    console.log("✅ ZK Proof received successfully from Enoki");
+    logger.log("✅ ZK Proof received successfully from Enoki");
 
     // Enoki returns the proof in a data wrapper
     return zkpData.data || zkpData;
@@ -292,10 +293,10 @@ export class ZkLoginService {
     jwtToken: string;
     userSalt: string;
   }): string {
-    console.log("=== Creating zkLogin Signature ===");
-    console.log("zkProof keys:", Object.keys(params.zkProof));
-    console.log("maxEpoch:", params.maxEpoch);
-    console.log("ephemeralSignature type:", typeof params.ephemeralSignature);
+    logger.log("=== Creating zkLogin Signature ===");
+    logger.log("zkProof keys:", Object.keys(params.zkProof));
+    logger.log("maxEpoch:", params.maxEpoch);
+    logger.log("ephemeralSignature type:", typeof params.ephemeralSignature);
 
     try {
       // Decode JWT to get claim info
@@ -307,13 +308,13 @@ export class ZkLoginService {
         ? decodedJWT.aud[0] // Use first element if array
         : decodedJWT.aud; // Use as-is if string
 
-      console.log("JWT aud (normalized):", aud);
-      console.log("JWT sub:", decodedJWT.sub);
-      console.log("User salt:", params.userSalt);
+      logger.log("JWT aud (normalized):", aud);
+      logger.log("JWT sub:", decodedJWT.sub);
+      logger.log("User salt:", params.userSalt);
 
       // Log Enoki's addressSeed (if present)
       if (params.zkProof.addressSeed) {
-        console.log("⚠️ Enoki's addressSeed:", params.zkProof.addressSeed);
+        logger.log("⚠️ Enoki's addressSeed:", params.zkProof.addressSeed);
       }
 
       // IMPORTANT: Extract only the proof components, NOT the addressSeed from Enoki
@@ -332,11 +333,11 @@ export class ZkLoginService {
         aud // normalized aud (string, not array)
       ).toString();
 
-      console.log("🔑 Our computed addressSeed:", ourAddressSeed);
+      logger.log("🔑 Our computed addressSeed:", ourAddressSeed);
 
       // Note: Enoki's addressSeed may differ from ours (expected - Enoki uses Mysten's salt service)
       if (params.zkProof.addressSeed && params.zkProof.addressSeed !== ourAddressSeed) {
-        console.log("ℹ️ Using Enoki's addressSeed (expected behavior)");
+        logger.log("ℹ️ Using Enoki's addressSeed (expected behavior)");
       }
 
       // CRITICAL: ALWAYS use Enoki's addressSeed if present
@@ -345,12 +346,12 @@ export class ZkLoginService {
       const finalAddressSeed = params.zkProof.addressSeed || ourAddressSeed;
 
       if (params.zkProof.addressSeed && params.zkProof.addressSeed !== ourAddressSeed) {
-        console.warn("⚠️  USING ENOKI'S ADDRESSSEED (proof is tied to it)");
-        console.warn("   Enoki's:", params.zkProof.addressSeed);
-        console.warn("   Ours:    ", ourAddressSeed);
-        console.warn("   This is expected - Enoki uses Mysten's salt service");
+        logger.warn("⚠️  USING ENOKI'S ADDRESSSEED (proof is tied to it)");
+        logger.warn("   Enoki's:", params.zkProof.addressSeed);
+        logger.warn("   Ours:    ", ourAddressSeed);
+        logger.warn("   This is expected - Enoki uses Mysten's salt service");
       } else {
-        console.log("✅ Using addressSeed:", finalAddressSeed);
+        logger.log("✅ Using addressSeed:", finalAddressSeed);
       }
 
       // Create complete zkProof with the final addressSeed
@@ -359,7 +360,7 @@ export class ZkLoginService {
         addressSeed: finalAddressSeed,
       };
 
-      console.log(
+      logger.log(
         "Complete zkProof with addressSeed:",
         Object.keys(completeZkProof)
       );
@@ -370,11 +371,11 @@ export class ZkLoginService {
         userSignature: params.ephemeralSignature,
       });
 
-      console.log("✅ zkLogin signature created successfully");
+      logger.log("✅ zkLogin signature created successfully");
       return signature;
     } catch (error) {
-      console.error("❌ Failed to create zkLogin signature:", error);
-      console.error(
+      logger.error("❌ Failed to create zkLogin signature:", error);
+      logger.error(
         "zkProof content:",
         JSON.stringify(params.zkProof, null, 2)
       );
@@ -389,7 +390,7 @@ export class ZkLoginService {
     if (typeof window === "undefined") return;
     localStorage.removeItem(this.STORAGE_KEY);
     SessionManager.clearSession();
-    console.log("🗑️ Session cleared");
+    logger.log("🗑️ Session cleared");
   }
 
   /**
@@ -400,7 +401,7 @@ export class ZkLoginService {
    */
   static deriveSaltFromJWT(jwtToken: string): string {
     const decodedJWT = this.decodeJWT(jwtToken);
-    console.log("📧 Deriving deterministic salt from email:", decodedJWT.email);
+    logger.log("📧 Deriving deterministic salt from email:", decodedJWT.email);
 
     // Use email to create a deterministic salt
     // This ensures same email = same salt = same address across devices
@@ -413,7 +414,7 @@ export class ZkLoginService {
     }
 
     const salt = Math.abs(hash).toString();
-    console.log("✅ Deterministic salt created:", salt);
+    logger.log("✅ Deterministic salt created:", salt);
     return salt;
   }
 
@@ -436,11 +437,11 @@ export class ZkLoginService {
     maxEpoch: number;
     randomness: string;
   }> {
-    console.log("=== Starting Streamlined zkLogin Flow ===");
+    logger.log("=== Starting Streamlined zkLogin Flow ===");
 
     // Decode JWT first to get email
     const decodedJWT = this.decodeJWT(jwtToken);
-    console.log("📧 Email:", decodedJWT.email);
+    logger.log("📧 Email:", decodedJWT.email);
 
     // Derive salt from email (deterministic across devices)
     const userSalt = this.deriveSaltFromJWT(jwtToken);
@@ -453,12 +454,12 @@ export class ZkLoginService {
       cachedProof.ephemeralPrivateKey &&
       cachedProof.randomness
     ) {
-      console.log("👤 EXISTING USER - Using cached data");
-      console.log(
+      logger.log("👤 EXISTING USER - Using cached data");
+      logger.log(
         "✅ Cached proof still valid (",
         SessionManager.getFormattedTTL() + ")"
       );
-      console.log("📧 Same email → Same address:", cachedProof.address);
+      logger.log("📧 Same email → Same address:", cachedProof.address);
 
       return {
         address: cachedProof.address!,
@@ -478,12 +479,12 @@ export class ZkLoginService {
       };
     }
 
-    console.log("🆕 NEW USER - Generating fresh proof");
+    logger.log("🆕 NEW USER - Generating fresh proof");
 
     // Load or create session
     let session = this.loadSession();
     if (!session) {
-      console.log("📦 Creating new session...");
+      logger.log("📦 Creating new session...");
       const initResult = await this.initializeSession();
       session = {
         ephemeralPrivateKey: initResult.ephemeralKeyPair.getSecretKey(),
@@ -503,7 +504,7 @@ export class ZkLoginService {
     const ephemeralKeyPair = this.recreateKeyPair(session.ephemeralPrivateKey);
 
     // Generate ZK Proof
-    console.log("🔐 Generating ZK proof...");
+    logger.log("🔐 Generating ZK proof...");
     const zkProof = await this.generateZkProof({
       jwtToken,
       ephemeralKeyPair,
@@ -512,19 +513,19 @@ export class ZkLoginService {
       userSalt: session.userSalt,
     });
 
-    console.log("✅ ZK Proof generated successfully");
+    logger.log("✅ ZK Proof generated successfully");
 
     // CRITICAL: Compute address from Enoki's addressSeed (if present)
     // The zkProof is cryptographically tied to Enoki's addressSeed
     // We MUST use the address derived from that addressSeed, not our local salt
     let address: string;
     if (zkProof.addressSeed) {
-      console.log("🔑 Computing address from Enoki's addressSeed...");
-      console.log("  Enoki's addressSeed:", zkProof.addressSeed);
+      logger.log("🔑 Computing address from Enoki's addressSeed...");
+      logger.log("  Enoki's addressSeed:", zkProof.addressSeed);
 
       // Decode JWT to get the issuer (iss) - required for address computation
       const decodedJWT = this.decodeJWT(jwtToken);
-      console.log("  JWT issuer:", decodedJWT.iss);
+      logger.log("  JWT issuer:", decodedJWT.iss);
 
       // Compute address from Enoki's addressSeed + issuer
       // The issuer (iss) is needed to derive the correct zkLogin address
@@ -532,13 +533,13 @@ export class ZkLoginService {
         BigInt(zkProof.addressSeed),
         decodedJWT.iss! // Use the issuer from JWT, not "sub"
       );
-      console.log("✅ Address computed from Enoki's addressSeed:", address);
-      console.log("💾 This address matches the zkProof and will work for transactions");
+      logger.log("✅ Address computed from Enoki's addressSeed:", address);
+      logger.log("💾 This address matches the zkProof and will work for transactions");
     } else {
       // Fallback: compute with user salt (for non-Enoki flows)
-      console.log("⚠️ No addressSeed in proof, using local salt");
+      logger.log("⚠️ No addressSeed in proof, using local salt");
       address = this.computeAddress(jwtToken, session.userSalt);
-      console.log("✅ Address computed from local salt:", address);
+      logger.log("✅ Address computed from local salt:", address);
     }
 
     // Cache the proof for 24h (for both new and existing users)
@@ -552,10 +553,10 @@ export class ZkLoginService {
       ephemeralPrivateKey: session.ephemeralPrivateKey,
     });
 
-    console.log("✅ NEW USER REGISTERED");
-    console.log("📧 Email:", decodedJWT.email);
-    console.log("💾 Address:", address);
-    console.log("⏰ Proof cached for 24h");
+    logger.log("✅ NEW USER REGISTERED");
+    logger.log("📧 Email:", decodedJWT.email);
+    logger.log("💾 Address:", address);
+    logger.log("⏰ Proof cached for 24h");
 
     return {
       address,
