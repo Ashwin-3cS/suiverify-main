@@ -52,29 +52,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [maxEpoch, setMaxEpoch] = useState<number | null>(null);
   const [randomness, setRandomness] = useState<string | null>(null);
 
-  // Wallet connection takes priority over zkLogin
+  // Stable string — only changes when wallet actually connects/disconnects
+  const walletAddress = currentAccount?.address ?? null;
+
+  // Wallet connection takes priority over zkLogin.
+  // Depend on walletAddress (string) not currentAccount (new object ref each render).
   useEffect(() => {
-    if (currentAccount) {
-      setAddress(currentAccount.address);
+    if (walletAddress) {
+      setAddress(walletAddress);
       setAuthMode('wallet');
       setIsAuthenticated(true);
       setIsLoading(false);
-    } else if (authMode === 'wallet') {
-      // Wallet was disconnected — fall back to zkLogin check
-      setAuthMode(null);
-      setAddress(null);
-      setIsAuthenticated(false);
+    } else {
+      // No wallet — check zkLogin cache once
       checkAuth();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentAccount]);
-
-  // Check for existing cached authentication on component mount
-  useEffect(() => {
-    if (!currentAccount) {
-      checkAuth();
-    }
-  }, []);
+  }, [walletAddress]);
 
   const checkAuth = () => {
     logger.log(' Checking authentication status...');
