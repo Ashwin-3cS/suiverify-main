@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-// Commented out EOA wallet imports - using zkLogin instead
-// import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
+import { useSignTransaction } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
 import { suiClient } from '@/lib/sui-client';
 import { ZkLoginService } from '@/lib/zklogin';
@@ -95,9 +94,8 @@ function KycContent() {
   } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  // Commented out EOA wallet hook - using zkLogin instead
-  // const currentAccount = useCurrentAccount();
-  const { address: zkLoginAddress } = useAuth();
+  const { address: zkLoginAddress, authMode } = useAuth();
+  const { mutateAsync: signTransaction } = useSignTransaction();
   const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener();
 
   // Get verification type from URL parameters or default
@@ -368,10 +366,11 @@ function KycContent() {
     }
   }, [verificationStatus.isVerified, otpVerified, step, verificationStatus.userDidId, verificationStatus.eventData, handleDocumentEncryption]);
 
-  // NFT Claiming function - using zkLogin
+  // NFT Claiming function - supports zkLogin and wallet modes
   const claimDidNft = async () => {
-    if (!encryptionResult?.blobId || !zkLoginAddress) {
-      console.error('Missing blob ID or zkLogin address');
+    const senderAddress = zkLoginAddress;
+    if (!encryptionResult?.blobId || !senderAddress) {
+      console.error('Missing blob ID or address');
       return;
     }
 
@@ -383,80 +382,50 @@ function KycContent() {
 
     try {
       setIsClaimingNft(true);
-      logger.log('Starting DID NFT claim process with zkLogin...');
-      logger.log('Using UserDID object ID from event:', userDidId);
-      logger.log('zkLogin Address:', zkLoginAddress);
+      logger.log(`Starting DID NFT claim process (${authMode} mode)...`);
 
-      // Get cached zkLogin proof
-      const cached = SessionManager.getCachedProof();
-      if (!cached || !cached.address) {
-        throw new Error('No zkLogin session found. Please sign in first.');
-      }
-
-      if (!cached.ephemeralPrivateKey) {
-        throw new Error('Cached proof missing ephemeral private key. Please sign in again.');
-      }
-
-      // Log enhanced verification data available for future SDK integration
-      if (verificationStatus.eventData) {
-        logger.log('Enhanced verification data available:');
-        logger.log('   Signature Timestamp (ms):', verificationStatus.eventData.signature_timestamp_ms);
-        logger.log('   Nautilus Signature Available:', verificationStatus.eventData.nautilus_signature.length > 0);
-        logger.log('   Evidence Hash Available:', verificationStatus.eventData.evidence_hash.length > 0);
-        logger.log('   DID Type:', verificationStatus.eventData.did_type);
-      }
-
-      // Recreate ephemeral key pair from cached proof
-      const ephemeralKeyPair = ZkLoginService.recreateKeyPair(cached.ephemeralPrivateKey);
-
-      // Create transaction
+      // Build transaction (same for both auth modes)
       const tx = new Transaction();
       tx.moveCall({
         target: CONTRACT_FUNCTIONS.DID_REGISTRY.CLAIM_DID_NFT,
         arguments: [
-          tx.object(SHARED_OBJECTS.DID_REGISTRY), // registry
-          tx.object(userDidId), // user_did object (from verification event)
-          tx.pure.string(encryptionResult.blobId), // blob_id
-          tx.object(CLOCK_ID), // clock
+          tx.object(SHARED_OBJECTS.DID_REGISTRY),
+          tx.object(userDidId),
+          tx.pure.string(encryptionResult.blobId),
+          tx.object(CLOCK_ID),
         ],
       });
+      tx.setSender(senderAddress);
 
-      // Note: Gas budget not needed for sponsored transactions
-      // tx.setGasBudget(GAS_CONFIG.NFT_CLAIM_GAS_BUDGET);
-
-      // Set sender to zkLogin address
-      tx.setSender(cached.address);
-
-      // Build the transaction with onlyTransactionKind flag for sponsorship
       logger.log('Building transaction for sponsorship...');
       const transactionBlockKindBytes = await tx.build({
         client: suiClient,
-        onlyTransactionKind: true // Required for sponsored transactions
+        onlyTransactionKind: true,
       });
-
-      // Convert Uint8Array to base64 string (required by Enoki API)
       const base64TxBytes = btoa(
         String.fromCharCode.apply(null, Array.from(transactionBlockKindBytes))
       );
 
-      logger.log('Transaction bytes (base64):', base64TxBytes.substring(0, 50) + '...');
-
       // Step 1: Create sponsored transaction via backend
       logger.log('Requesting sponsored transaction from backend...');
+
+      let sponsorBody: Record<string, unknown> = {
+        transactionBlockKindBytes: base64TxBytes,
+        sender: senderAddress,
+        allowedAddresses: [senderAddress],
+        allowedMoveCallTargets: [CONTRACT_FUNCTIONS.DID_REGISTRY.CLAIM_DID_NFT],
+      };
+
+      if (authMode === 'zklogin') {
+        const cached = SessionManager.getCachedProof();
+        if (!cached?.ephemeralPrivateKey) throw new Error('No zkLogin session. Please sign in again.');
+        sponsorBody = { ...sponsorBody, jwtToken: cached.jwtToken };
+      }
+
       const sponsorCreateResponse = await fetch('/api/transactions/sponsor-create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          transactionBlockKindBytes: base64TxBytes,
-          sender: cached.address,
-          jwtToken: cached.jwtToken, // Include JWT for zkLogin authentication
-          // Whitelist: Only allow this user's address
-          allowedAddresses: [cached.address],
-          // Whitelist: Only allow claim_did_nft function call
-          allowedMoveCallTargets: [CONTRACT_FUNCTIONS.DID_REGISTRY.CLAIM_DID_NFT],
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sponsorBody),
       });
 
       if (!sponsorCreateResponse.ok) {
@@ -466,44 +435,49 @@ function KycContent() {
 
       const sponsorCreateData = await sponsorCreateResponse.json();
       const { digest, bytes } = sponsorCreateData.data;
+      logger.log('Sponsored transaction created, digest:', digest);
 
-      logger.log('Sponsored transaction created');
-      logger.log('   Digest:', digest);
-
-      // Step 2: Sign the sponsored transaction bytes
-      logger.log('Signing sponsored transaction with ephemeral key...');
-      // Convert base64 to Uint8Array (browser-compatible)
+      // Convert sponsored bytes for signing
       const binaryString = atob(bytes);
       const sponsoredTxBytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
         sponsoredTxBytes[i] = binaryString.charCodeAt(i);
       }
 
-      const { signature: ephemeralSignature } = await ephemeralKeyPair.signTransaction(sponsoredTxBytes);
+      let finalSignature: string;
 
-      // Verify cached data
-      if (!cached.jwtToken || !cached.userSalt) {
-        throw new Error('Cached proof is missing JWT token or user salt. Please sign in again.');
+      if (authMode === 'wallet') {
+        // Wallet path: sign sponsored tx bytes with connected wallet
+        logger.log('Signing sponsored transaction with wallet...');
+        const sponsoredTx = Transaction.from(sponsoredTxBytes);
+        const { signature } = await signTransaction({ transaction: sponsoredTx });
+        finalSignature = signature;
+      } else {
+        // zkLogin path: sign with ephemeral key + wrap in zkLogin signature
+        const cached = SessionManager.getCachedProof();
+        if (!cached?.ephemeralPrivateKey) throw new Error('No zkLogin session. Please sign in again.');
+
+        logger.log('Signing sponsored transaction with ephemeral key...');
+        const ephemeralKeyPair = ZkLoginService.recreateKeyPair(cached.ephemeralPrivateKey);
+        const { signature: ephemeralSignature } = await ephemeralKeyPair.signTransaction(sponsoredTxBytes);
+
+        if (!cached.jwtToken || !cached.userSalt) {
+          throw new Error('Cached proof missing JWT or salt. Please sign in again.');
+        }
+        // Create zkLogin signature using cached proof data
+        logger.log('Creating zkLogin signature from cached proof...');
+        finalSignature = ZkLoginService.getTransactionSignature({
+          ephemeralSignature,
+          useCache: true,
+        });
       }
-
-      // Create zkLogin signature using cached proof data
-      logger.log('Creating zkLogin signature from cached proof...');
-      const zkLoginSignature = ZkLoginService.getTransactionSignature({
-        ephemeralSignature,
-        useCache: true, // Use cached proof data
-      });
 
       // Step 3: Submit signed transaction to backend for execution
       logger.log('Submitting signed transaction to backend...');
       const sponsorSubmitResponse = await fetch('/api/transactions/sponsor-submit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          digest: digest,
-          signature: zkLoginSignature,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ digest, signature: finalSignature }),
       });
 
       if (!sponsorSubmitResponse.ok) {

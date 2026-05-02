@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { ZkLoginService } from '@/lib/zklogin';
+import { ConnectModal } from '@mysten/dapp-kit';
 import { Button } from '@/components/ui/button';
-import { Loader2, User, Copy, LogOut, UserRound } from 'lucide-react';
+import { Loader2, User, Copy, LogOut, UserRound, Wallet } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { buildExplorerUrl } from '@/config/contracts';
 import { logger } from '@/lib/logger';
@@ -17,6 +18,8 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
   const router = useRouter();
   const { address, isAuthenticated, isLoading, logout } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showLoginOptions, setShowLoginOptions] = useState(false);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
 
   const handleSignIn = async () => {
     setIsLoggingIn(true);
@@ -87,12 +90,36 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
     );
   }
 
-  // Not authenticated - show Sign In button
+  // Not authenticated - show Sign In button with options
   if (!isAuthenticated) {
     return (
-      <>
+      <div className="relative">
+        <ConnectModal
+          open={walletModalOpen}
+          onOpenChange={setWalletModalOpen}
+          trigger={<span />}
+        />
+        {showLoginOptions ? (
+          <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex flex-col gap-1 min-w-[200px]">
+            <button
+              onClick={() => { setShowLoginOptions(false); handleSignIn(); }}
+              disabled={isLoggingIn}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium text-charcoal-text transition-colors"
+            >
+              {isLoggingIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserRound className="w-4 h-4" />}
+              Continue with Google
+            </button>
+            <button
+              onClick={() => { setShowLoginOptions(false); setWalletModalOpen(true); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium text-charcoal-text transition-colors"
+            >
+              <Wallet className="w-4 h-4" />
+              Connect Wallet
+            </button>
+          </div>
+        ) : null}
         <Button
-          onClick={handleSignIn}
+          onClick={() => setShowLoginOptions(v => !v)}
           disabled={isLoggingIn}
           variant="primary"
           className={className}
@@ -100,7 +127,7 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
           {isLoggingIn && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
           {isLoggingIn ? 'Signing In...' : <><UserRound className="w-4 h-4 mr-1" /> Sign In</>}
         </Button>
-      </>
+      </div>
     );
   }
 

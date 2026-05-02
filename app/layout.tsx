@@ -71,8 +71,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <WalletProvider>
+        <WalletProvider>
+          <AuthProvider>
             {children}
             <ToastContainer
               position="bottom-right"
@@ -85,8 +85,8 @@ export default function RootLayout({
               draggable
               pauseOnHover
             />
-          </WalletProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </WalletProvider>
       </body>
     </html>
   );

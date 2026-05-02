@@ -2,6 +2,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
 import { logger } from '@/lib/logger';
 import { SessionManager } from '@/lib/session-manager';
 import { ZkLoginService } from '@/lib/zklogin';
@@ -10,6 +11,7 @@ export interface AuthContextType {
   address: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  authMode: 'zklogin' | 'wallet' | null;
   zkProof: any;
   jwtToken: string | null;
   userSalt: string | null;
@@ -36,9 +38,13 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const currentAccount = useCurrentAccount();
+  const { mutate: disconnectWallet } = useDisconnectWallet();
+
   const [address, setAddress] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [authMode, setAuthMode] = useState<'zklogin' | 'wallet' | null>(null);
   const [zkProof, setZkProof] = useState<any>(null);
   const [jwtToken, setJwtToken] = useState<string | null>(null);
   const [userSalt, setUserSalt] = useState<string | null>(null);
@@ -46,9 +52,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [maxEpoch, setMaxEpoch] = useState<number | null>(null);
   const [randomness, setRandomness] = useState<string | null>(null);
 
+  // Wallet connection takes priority over zkLogin
+  useEffect(() => {
+    if (currentAccount) {
+      setAddress(currentAccount.address);
+      setAuthMode('wallet');
+      setIsAuthenticated(true);
+      setIsLoading(false);
+    } else if (authMode === 'wallet') {
+      // Wallet was disconnected — fall back to zkLogin check
+      setAuthMode(null);
+      setAddress(null);
+      setIsAuthenticated(false);
+      checkAuth();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAccount]);
+
   // Check for existing cached authentication on component mount
   useEffect(() => {
-    checkAuth();
+    if (!currentAccount) {
+      checkAuth();
+    }
   }, []);
 
   const checkAuth = () => {
@@ -77,6 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // MUST be retrieved from React context on the callback page
           // or re-derived from email on next login
           setAddress(cachedProof.address);
+          setAuthMode('zklogin');
           setZkProof(null); // Don't load from cache - context only
           setJwtToken(null); // Don't load from cache - context only
           setUserSalt(null); // Don't load from cache - context only
@@ -93,6 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         logger.log(' User is not authenticated (no valid cached address)');
         setAddress(null);
+        setAuthMode(null);
         setZkProof(null);
         setJwtToken(null);
         setUserSalt(null);
@@ -119,6 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     randomness: string;
   }) => {
     setAddress(data.address);
+    setAuthMode('zklogin');
     setZkProof(data.zkProof);
     setJwtToken(data.jwtToken);
     setUserSalt(data.userSalt);
@@ -131,10 +159,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     logger.log(' Logging out...');
     try {
-      ZkLoginService.clearSession();
-      SessionManager.clearSession();
+      if (authMode === 'wallet') {
+        disconnectWallet();
+      } else {
+        ZkLoginService.clearSession();
+        SessionManager.clearSession();
+      }
 
       setAddress(null);
+      setAuthMode(null);
       setZkProof(null);
       setJwtToken(null);
       setUserSalt(null);
@@ -153,6 +186,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     address,
     isAuthenticated,
     isLoading,
+    authMode,
     zkProof,
     jwtToken,
     userSalt,
