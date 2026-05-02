@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 const COOKIE = 'suiverify_gate';
 const PASSCODE = process.env.SITE_PASSCODE ?? '';
 
-function hash(v: string) {
-  return crypto.createHash('sha256').update(v).digest('hex');
+async function hash(v: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 const PUBLIC_PREFIXES = ['/gate', '/api/gate', '/_next', '/favicon', '/connect', '/callback'];
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   // Gate disabled if no passcode configured
   if (!PASSCODE) return NextResponse.next();
 
@@ -18,7 +18,8 @@ export function middleware(req: NextRequest) {
   if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) return NextResponse.next();
 
   const cookie = req.cookies.get(COOKIE)?.value;
-  if (cookie === hash(PASSCODE)) return NextResponse.next();
+  const expected = await hash(PASSCODE);
+  if (cookie === expected) return NextResponse.next();
 
   const gateUrl = req.nextUrl.clone();
   gateUrl.pathname = '/gate';
