@@ -77,7 +77,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // MUST be retrieved from React context on the callback page
           // or re-derived from email on next login
           setAddress(cachedProof.address);
-          setAuthMode('zklogin');
           setZkProof(null); // Don't load from cache - context only
           setJwtToken(null); // Don't load from cache - context only
           setUserSalt(null); // Don't load from cache - context only
