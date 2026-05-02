@@ -100,20 +100,20 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
           trigger={<span />}
         />
         {showLoginOptions ? (
-          <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex flex-col gap-1 min-w-[200px]">
+          <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex flex-col gap-1 w-max min-w-full">
             <button
               onClick={() => { setShowLoginOptions(false); handleSignIn(); }}
               disabled={isLoggingIn}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium text-charcoal-text transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium text-charcoal-text transition-colors whitespace-nowrap w-full"
             >
-              {isLoggingIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserRound className="w-4 h-4" />}
+              {isLoggingIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserRound className="w-4 h-4 flex-shrink-0" />}
               Continue with Google
             </button>
             <button
               onClick={() => { setShowLoginOptions(false); setWalletModalOpen(true); }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium text-charcoal-text transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium text-charcoal-text transition-colors whitespace-nowrap w-full"
             >
-              <Wallet className="w-4 h-4" />
+              <Wallet className="w-4 h-4 flex-shrink-0" />
               Connect Wallet
             </button>
           </div>
