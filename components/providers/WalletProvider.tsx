@@ -27,23 +27,25 @@ interface WalletProviderProps {
   children: ReactNode;
 }
 
-// Create a query client instance
+// Stable constants — defined outside component to avoid new references on every render
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: false,
     },
   },
 });
 
+const networks = {
+  testnet: { url: getFullnodeUrl('testnet') },
+  mainnet: { url: getFullnodeUrl('mainnet') },
+};
+
 export const WalletProvider = ({ children }: WalletProviderProps) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={{
-        testnet: { url: getFullnodeUrl('testnet') },
-        mainnet: { url: getFullnodeUrl('mainnet') },
-      }} defaultNetwork="testnet">
+      <SuiClientProvider networks={networks} defaultNetwork="testnet">
         <SuiWalletProvider
           storageKey="sui-wallet-kit"
           storage={typeof window !== 'undefined' ? window.localStorage : undefined}
