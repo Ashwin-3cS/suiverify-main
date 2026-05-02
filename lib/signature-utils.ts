@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { logger } from '@/lib/logger';
+
 /**
  * Signature utilities for zkLogin validation and debugging
  */
