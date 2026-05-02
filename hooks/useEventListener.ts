@@ -1,7 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-// Commented out EOA wallet import - using zkLogin instead
-// import { useCurrentAccount } from '@mysten/dapp-kit';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { startEventListener, setVerificationCallback, stopEventListener, type VerificationCompletedEventData } from '@/services/eventListener';
 import { toast } from 'react-toastify';
 import { logger } from '@/lib/logger';
@@ -16,9 +13,7 @@ export interface VerificationStatus {
     eventData: VerificationCompletedEventData | null;
 }
 
-export const useVerificationListener = () => {
-    // Use zkLogin address instead of EOA wallet
-    const { address: zkLoginAddress } = useUnifiedAuth();
+export const useVerificationListener = (zkLoginAddress: string | null) => {
     const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>({
         isListening: false,
         isVerified: false,

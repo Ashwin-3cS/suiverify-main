@@ -23,13 +23,18 @@ import DashboardHeader from "@/components/ui/DashboardHeader";
 import ZkLoginTransactionTest from "@/components/zklogin/ZkLoginTransactionTest";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
-import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 const User: React.FC = () => {
     const router = useRouter();
-    const { address, isAuthenticated } = useUnifiedAuth();
+    const { address: zkAddress, isAuthenticated: zkAuthenticated } = useAuth();
+    const walletAccount = useCurrentAccount();
+    const address = zkAddress || walletAccount?.address || null;
+    const isAuthenticated = zkAuthenticated || !!walletAccount;
     const [activeNav, setActiveNav] = useState("verifications");
     const [searchQuery, setSearchQuery] = useState("");
+    const fetchedForRef = React.useRef<string | null>(null);
 
     // Format date to match the display format
     const formatIssuedDate = (dateString: string): string => {
@@ -92,9 +97,10 @@ const User: React.FC = () => {
 
     // Fetch credentials from backend
     useEffect(() => {
-        const fetchCredentials = async () => {
-            if (!address) return;
+        if (!address || address === fetchedForRef.current) return;
+        fetchedForRef.current = address;
 
+        const fetchCredentials = async () => {
             setLoading(true);
             setError(null);
 

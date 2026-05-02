@@ -96,7 +96,7 @@ function KycContent() {
   const searchParams = useSearchParams();
   const { address: zkLoginAddress, authMode } = useUnifiedAuth();
   const { mutateAsync: signTransaction } = useSignTransaction();
-  const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener();
+  const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener(zkLoginAddress);
 
   // Get verification type from URL parameters or default
   // const verificationType = searchParams.get('type') || 'Verify Above 18'; // Commented out - not used
