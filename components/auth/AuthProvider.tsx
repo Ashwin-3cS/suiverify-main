@@ -2,7 +2,6 @@
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
 import { logger } from '@/lib/logger';
 import { SessionManager } from '@/lib/session-manager';
 import { ZkLoginService } from '@/lib/zklogin';
@@ -11,7 +10,6 @@ export interface AuthContextType {
   address: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  authMode: 'zklogin' | 'wallet' | null;
   zkProof: any;
   jwtToken: string | null;
   userSalt: string | null;
@@ -38,13 +36,9 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const currentAccount = useCurrentAccount();
-  const { mutate: disconnectWallet } = useDisconnectWallet();
-
   const [address, setAddress] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [authMode, setAuthMode] = useState<'zklogin' | 'wallet' | null>(null);
   const [zkProof, setZkProof] = useState<any>(null);
   const [jwtToken, setJwtToken] = useState<string | null>(null);
   const [userSalt, setUserSalt] = useState<string | null>(null);
@@ -52,23 +46,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [maxEpoch, setMaxEpoch] = useState<number | null>(null);
   const [randomness, setRandomness] = useState<string | null>(null);
 
-  // Stable string — only changes when wallet actually connects/disconnects
-  const walletAddress = currentAccount?.address ?? null;
-
-  // Wallet connection takes priority over zkLogin.
-  // Depend on walletAddress (string) not currentAccount (new object ref each render).
   useEffect(() => {
-    if (walletAddress) {
-      setAddress(walletAddress);
-      setAuthMode('wallet');
-      setIsAuthenticated(true);
-      setIsLoading(false);
-    } else {
-      // No wallet — check zkLogin cache once
-      checkAuth();
-    }
+    checkAuth();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletAddress]);
+  }, []);
 
   const checkAuth = () => {
     logger.log(' Checking authentication status...');
@@ -113,7 +94,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         logger.log(' User is not authenticated (no valid cached address)');
         setAddress(null);
-        setAuthMode(null);
         setZkProof(null);
         setJwtToken(null);
         setUserSalt(null);
@@ -140,7 +120,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     randomness: string;
   }) => {
     setAddress(data.address);
-    setAuthMode('zklogin');
     setZkProof(data.zkProof);
     setJwtToken(data.jwtToken);
     setUserSalt(data.userSalt);
@@ -153,15 +132,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     logger.log(' Logging out...');
     try {
-      if (authMode === 'wallet') {
-        disconnectWallet();
-      } else {
-        ZkLoginService.clearSession();
-        SessionManager.clearSession();
-      }
+      ZkLoginService.clearSession();
+      SessionManager.clearSession();
 
       setAddress(null);
-      setAuthMode(null);
       setZkProof(null);
       setJwtToken(null);
       setUserSalt(null);
@@ -180,7 +154,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     address,
     isAuthenticated,
     isLoading,
-    authMode,
     zkProof,
     jwtToken,
     userSalt,

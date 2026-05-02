@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { ZkLoginService } from '@/lib/zklogin';
 import { ConnectModal } from '@mysten/dapp-kit';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
   size = 'sm',
 }) => {
   const router = useRouter();
-  const { address, isAuthenticated, isLoading, logout } = useAuth();
+  const { address, isAuthenticated, isLoading, logout } = useUnifiedAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);

@@ -3,11 +3,11 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSignTransaction } from '@mysten/dapp-kit';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Transaction } from '@mysten/sui/transactions';
 import { suiClient } from '@/lib/sui-client';
 import { ZkLoginService } from '@/lib/zklogin';
 import { SessionManager } from '@/lib/session-manager';
-import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { Award, ExternalLink } from 'lucide-react';
 import CountrySelectionStep from '@/components/features/kyc/steps/CountrySelectionStep';
@@ -94,7 +94,7 @@ function KycContent() {
   } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { address: zkLoginAddress, authMode } = useAuth();
+  const { address: zkLoginAddress, authMode } = useUnifiedAuth();
   const { mutateAsync: signTransaction } = useSignTransaction();
   const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener();
 
