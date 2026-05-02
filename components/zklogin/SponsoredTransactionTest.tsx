@@ -7,6 +7,7 @@ import { ZkLoginService } from "@/lib/zklogin";
 import { SessionManager } from "@/lib/session-manager";
 import { ArrowRight, Send, Zap } from "lucide-react";
 import { colors } from "@/app/brand";
+import { logger } from '@/lib/logger';
 
 export default function SponsoredTransactionTest() {
   const [receiverAddress, setReceiverAddress] = useState("");
@@ -66,12 +67,12 @@ export default function SponsoredTransactionTest() {
       // Convert SUI to MIST (1 SUI = 1e9 MIST)
       const amountInMist = Math.floor(parseFloat(amount) * 1e9);
 
-      console.log(" Sponsored Transaction Test:");
-      console.log("  From:", cached.address);
-      console.log("  To:", receiverAddress);
-      console.log("  Amount:", amount, "SUI");
-      console.log("  Gas: SPONSORED by Enoki ");
-      console.log("  Method: Get coins from sender's balance");
+      logger.log(" Sponsored Transaction Test:");
+      logger.log("  From:", cached.address);
+      logger.log("  To:", receiverAddress);
+      logger.log("  Amount:", amount, "SUI");
+      logger.log("  Gas: SPONSORED by Enoki ");
+      logger.log("  Method: Get coins from sender's balance");
 
       // For sponsored transactions, we need to get coins from sender's balance
       // First, fetch the sender's coin objects
@@ -97,7 +98,7 @@ export default function SponsoredTransactionTest() {
       tx.setSender(cached.address);
 
       // Build the transaction with onlyTransactionKind flag for sponsorship
-      console.log(" Building transaction for sponsorship...");
+      logger.log(" Building transaction for sponsorship...");
       const transactionBlockKindBytes = await tx.build({
         client: suiClient,
         onlyTransactionKind: true, // Required for sponsored transactions
@@ -108,10 +109,10 @@ export default function SponsoredTransactionTest() {
         String.fromCharCode.apply(null, Array.from(transactionBlockKindBytes))
       );
 
-      console.log(" Transaction bytes (base64):", base64TxBytes.substring(0, 50) + "...");
+      logger.log(" Transaction bytes (base64):", base64TxBytes.substring(0, 50) + "...");
 
       // Step 1: Create sponsored transaction via backend
-      console.log(" Requesting sponsored transaction from backend...");
+      logger.log(" Requesting sponsored transaction from backend...");
       const sponsorCreateResponse = await fetch(
         "/api/transactions/sponsor-create",
         {
@@ -140,11 +141,11 @@ export default function SponsoredTransactionTest() {
       const { digest, bytes } = sponsorCreateData.data;
 
       setSponsorDigest(digest);
-      console.log(" Sponsored transaction created");
-      console.log("   Digest:", digest);
+      logger.log(" Sponsored transaction created");
+      logger.log("   Digest:", digest);
 
       // Step 2: Sign the sponsored transaction bytes
-      console.log(" Signing sponsored transaction with ephemeral key...");
+      logger.log(" Signing sponsored transaction with ephemeral key...");
       // Convert base64 to Uint8Array (browser-compatible)
       const binaryString = atob(bytes);
       const sponsoredTxBytes = new Uint8Array(binaryString.length);
@@ -163,14 +164,14 @@ export default function SponsoredTransactionTest() {
       }
 
       // Create zkLogin signature using cached proof data
-      console.log(" Creating zkLogin signature from cached proof...");
+      logger.log(" Creating zkLogin signature from cached proof...");
       const zkLoginSignature = ZkLoginService.getTransactionSignature({
         ephemeralSignature,
         useCache: true, // Use cached proof data
       });
 
       // Step 3: Submit signed transaction to backend for execution
-      console.log(" Submitting signed transaction to backend...");
+      logger.log(" Submitting signed transaction to backend...");
       const sponsorSubmitResponse = await fetch(
         "/api/transactions/sponsor-submit",
         {
@@ -195,11 +196,11 @@ export default function SponsoredTransactionTest() {
       const sponsorSubmitData = await sponsorSubmitResponse.json();
       const transactionDigest = sponsorSubmitData.data.digest;
 
-      console.log(" Sponsored transaction submitted successfully!");
-      console.log("   Transaction Digest:", transactionDigest);
+      logger.log(" Sponsored transaction submitted successfully!");
+      logger.log("   Transaction Digest:", transactionDigest);
 
       // Wait for transaction to be confirmed and get full result
-      console.log("⏳ Waiting for transaction confirmation...");
+      logger.log("⏳ Waiting for transaction confirmation...");
       const result = await suiClient.waitForTransaction({
         digest: transactionDigest,
         options: {
@@ -208,7 +209,7 @@ export default function SponsoredTransactionTest() {
         },
       });
 
-      console.log(" Sponsored Transaction Success:", result);
+      logger.log(" Sponsored Transaction Success:", result);
       setTxDigest(result.digest);
     } catch (err: unknown) {
       console.error(" Sponsored transaction error:", err);

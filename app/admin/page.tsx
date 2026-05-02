@@ -11,6 +11,7 @@ import DashboardHeader from '@/components/ui/DashboardHeader';
 import { Button } from '@/components/ui/button';
 import { documentDecryptionService, DocumentDecryptionService, type DocumentMetadata } from '@/services/decryptionService';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { logger } from '@/lib/logger';
 
 interface DecryptionData {
   user_address: string;
@@ -53,8 +54,8 @@ function GovernmentDecryptionPage() {
     setError(null);
 
     try {
-      console.log(' Fetching decryption data for user:', userAddress);
-      console.log(' Government wallet:', currentAccount.address);
+      logger.log(' Fetching decryption data for user:', userAddress);
+      logger.log(' Government wallet:', currentAccount.address);
 
       const response = await fetch(
         buildApiUrl(API_ENDPOINTS.ENCRYPTION_GOVERNMENT_DECRYPTION_DATA(userAddress, currentAccount.address)),
@@ -73,7 +74,7 @@ function GovernmentDecryptionPage() {
 
       const data: DecryptionData = await response.json();
       setDecryptionData(data);
-      console.log(' Decryption data loaded:', data);
+      logger.log(' Decryption data loaded:', data);
 
     } catch (error) {
       console.error(' Failed to fetch decryption data:', error);
@@ -102,16 +103,16 @@ function GovernmentDecryptionPage() {
       setError(null);
       setDecryptionProgress('Preparing decryption...');
       
-      console.log(' Starting decryption process...');
-      console.log(' Selected documents:', selectedDocuments.length);
-      console.log(' Government wallet:', currentAccount.address);
+      logger.log(' Starting decryption process...');
+      logger.log(' Selected documents:', selectedDocuments.length);
+      logger.log(' Government wallet:', currentAccount.address);
       
       // Filter selected documents from the full list
       const documentsToDecrypt = decryptionData.documents.filter(
         doc => selectedDocuments.includes(doc.blob_id)
       );
       
-      console.log(' Documents to decrypt:', documentsToDecrypt.map(d => ({
+      logger.log(' Documents to decrypt:', documentsToDecrypt.map(d => ({
         file_name: d.file_name,
         blob_id: d.blob_id,
         encryption_id: d.encryption_id
@@ -120,7 +121,7 @@ function GovernmentDecryptionPage() {
       // Check if we have a valid session key that hasn't expired
       if (currentSessionKey && !currentSessionKey.isExpired() && 
           currentSessionKey.getAddress() === currentAccount.address) {
-        console.log(' Using existing session key');
+        logger.log(' Using existing session key');
         
         // Use existing session key
         const result = await documentDecryptionService.downloadAndDecryptDocuments(
@@ -130,7 +131,7 @@ function GovernmentDecryptionPage() {
         );
         
         if (result.success && result.decryptedFileUrls) {
-          console.log(' Decryption completed successfully!');
+          logger.log(' Decryption completed successfully!');
           setDecryptedFileUrls(result.decryptedFileUrls);
           setIsDialogOpen(true);
           setDecryptionProgress('Decryption completed!');
@@ -139,7 +140,7 @@ function GovernmentDecryptionPage() {
         }
       } else {
         // Need to create and sign a new session key
-        console.log(' Creating new session key...');
+        logger.log(' Creating new session key...');
         setDecryptionProgress('Creating session key for decryption...');
         
         const sessionKey = await documentDecryptionService.createSessionKey(currentAccount.address);
@@ -152,7 +153,7 @@ function GovernmentDecryptionPage() {
           {
             onSuccess: async (result) => {
               try {
-                console.log(' Personal message signed successfully');
+                logger.log(' Personal message signed successfully');
                 setDecryptionProgress('Signature obtained, starting decryption...');
                 
                 // Set the signature on the session key
@@ -167,8 +168,8 @@ function GovernmentDecryptionPage() {
                 );
                 
                 if (decryptResult.success && decryptResult.decryptedFileUrls) {
-                  console.log(' Decryption completed successfully!');
-                  console.log(' Decrypted files:', decryptResult.decryptedFileUrls.length);
+                  logger.log(' Decryption completed successfully!');
+                  logger.log(' Decrypted files:', decryptResult.decryptedFileUrls.length);
                   setDecryptedFileUrls(decryptResult.decryptedFileUrls);
                   setIsDialogOpen(true);
                   setDecryptionProgress('Decryption completed!');

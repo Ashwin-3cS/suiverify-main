@@ -7,6 +7,7 @@ import { ZkLoginService } from "@/lib/zklogin";
 import { SessionManager } from "@/lib/session-manager";
 import { ArrowRight, Send } from "lucide-react";
 import { colors } from "@/app/brand";
+import { logger } from '@/lib/logger';
 
 export default function ZkLoginTransactionTest() {
   const [receiverAddress, setReceiverAddress] = useState("");
@@ -70,10 +71,10 @@ export default function ZkLoginTransactionTest() {
       // Convert SUI to MIST (1 SUI = 1e9 MIST)
       const amountInMist = Math.floor(parseFloat(amount) * 1e9);
 
-      console.log(" zkLogin Transaction Test:");
-      console.log("  From:", cached.address);
-      console.log("  To:", receiverAddress);
-      console.log("  Amount:", amount, "SUI");
+      logger.log(" zkLogin Transaction Test:");
+      logger.log("  From:", cached.address);
+      logger.log("  To:", receiverAddress);
+      logger.log("  Amount:", amount, "SUI");
 
       // Split and transfer
       const [coin] = tx.splitCoins(tx.gas, [amountInMist]);
@@ -83,12 +84,12 @@ export default function ZkLoginTransactionTest() {
       tx.setSender(cached.address);
 
       // Build the transaction (don't sign yet)
-      console.log("Building transaction...");
+      logger.log("Building transaction...");
       const txBytes = await tx.build({ client: suiClient });
 
       // Sign with ephemeral key
       // Sign with ephemeral key
-      console.log("Signing with ephemeral key...");
+      logger.log("Signing with ephemeral key...");
       const { signature: ephemeralSignature } =
         await ephemeralKeyPair.signTransaction(txBytes);
 
@@ -102,17 +103,17 @@ export default function ZkLoginTransactionTest() {
       // Note: We don't need to re-verify the address here
       // The address was computed from Enoki's addressSeed during login
       // and is cryptographically tied to the zkProof
-      console.log("Using cached zkLogin address:", cached.address);
+      logger.log("Using cached zkLogin address:", cached.address);
 
       // Create zkLogin signature using cached proof data
-      console.log("Creating zkLogin signature from cached proof...");
+      logger.log("Creating zkLogin signature from cached proof...");
       const zkLoginSignature = ZkLoginService.getTransactionSignature({
         ephemeralSignature,
         useCache: true, // Use cached proof data (includes zkProof, jwtToken, userSalt)
       });
 
       // Execute transaction
-      console.log("Executing transaction on testnet...");
+      logger.log("Executing transaction on testnet...");
       const result = await suiClient.executeTransactionBlock({
         transactionBlock: txBytes,
         signature: zkLoginSignature,
@@ -122,7 +123,7 @@ export default function ZkLoginTransactionTest() {
         },
       });
 
-      console.log(" Transaction successful!");
+      logger.log(" Transaction successful!");
       setTxDigest(result.digest);
     } catch (err: unknown) {
       console.error("Transaction error:", err);

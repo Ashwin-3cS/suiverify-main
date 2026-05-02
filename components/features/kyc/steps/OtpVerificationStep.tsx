@@ -6,6 +6,7 @@ import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { Button } from '@/components/ui/button';
 import { apiFetch } from '@/app/utils/api-client';
+import { logger } from '@/lib/logger';
 
 interface AadhaarData {
   name?: string;
@@ -115,8 +116,8 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
       // Auto-set DID based on verification type (0 for above18, 1 for citizenship)
       formData.append('did', getDid().toString());
 
-      console.log(` Frontend: Sending OTP verification with DID: ${getDid()} for verification type: ${verificationType}`);
-      console.log(` Frontend: Using placeholder wallet address`);
+      logger.log(` Frontend: Sending OTP verification with DID: ${getDid()} for verification type: ${verificationType}`);
+      logger.log(` Frontend: Using placeholder wallet address`);
 
       // Add Aadhaar data if available
       if (aadhaarData) {
@@ -159,7 +160,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({ onNext, onBac
         }
 
         // Show success message
-        console.log(' OTP Verification Successful:', result.message);
+        logger.log(' OTP Verification Successful:', result.message);
 
         onNext();
       } else {

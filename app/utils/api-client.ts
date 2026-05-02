@@ -7,7 +7,7 @@ export const getZkLoginJwt = (): string | null => {
     const config = JSON.parse(configStr);
     return config.jwtToken || config.jwt || null;
   } catch {
-    console.warn("Failed to parse zkLoginProofCache for JWT");
+    logger.warn("Failed to parse zkLoginProofCache for JWT");
     return null;
   }
 };

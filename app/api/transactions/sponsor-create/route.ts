@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /**
  * API Route: Create Sponsored Transaction
@@ -67,8 +68,8 @@ export async function POST(request: NextRequest) {
       ...(allowedMoveCallTargets && { allowedMoveCallTargets }),
     };
 
-    console.log('Calling Enoki sponsor API...');
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+    logger.log('Calling Enoki sponsor API...');
+    logger.log('Request body:', JSON.stringify(requestBody, null, 2));
 
     // Call Enoki sponsor API
     const response = await fetch(enokiUrl, {
@@ -105,8 +106,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Sponsored transaction created successfully');
-    console.log('Digest:', responseData.data.digest);
+    logger.log('Sponsored transaction created successfully');
+    logger.log('Digest:', responseData.data.digest);
 
     // Return sponsored transaction data
     return NextResponse.json({

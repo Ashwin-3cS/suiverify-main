@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
 import { apiPost } from '@/app/utils/api-client';
+import { logger } from '@/lib/logger';
 
 interface PANData {
   pan_number?: string;
@@ -47,7 +48,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
       setIsLoading(true);
       setError(null);
 
-      console.log('Starting PAN verification process...');
+      logger.log('Starting PAN verification process...');
 
       // Send PAN data to Redis stream for enclave processing
       const verificationPayload = {
@@ -63,7 +64,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         timestamp: Date.now()
       };
 
-      console.log('Sending PAN verification to Redis stream:', verificationPayload);
+      logger.log('Sending PAN verification to Redis stream:', verificationPayload);
 
       // Call the verification endpoint that sends to Redis
       const result = await apiPost(
@@ -71,7 +72,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
         verificationPayload
       );
 
-      console.log('PAN verification request sent to enclave:', result);
+      logger.log('PAN verification request sent to enclave:', result);
       toast.success('PAN verification initiated! Waiting for blockchain attestation...');
       onNext(); // Move to waiting step
     } catch (err) {

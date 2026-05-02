@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZkLoginService } from '@/lib/zklogin';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/logger';
 
 function CallbackContent() {
   const router = useRouter();
@@ -15,20 +16,20 @@ function CallbackContent() {
 
   useEffect(() => {
     if (hasProcessedRef.current) {
-      console.log('⏭ Callback already processed - skipping second StrictMode run.');
+      logger.log('⏭ Callback already processed - skipping second StrictMode run.');
       return;
     }
     hasProcessedRef.current = true;
 
     const handleCallback = async () => {
       try {
-        console.log(' Processing OAuth callback...');
-        console.log(' Current URL:', window.location.href);
+        logger.log(' Processing OAuth callback...');
+        logger.log(' Current URL:', window.location.href);
 
         // Extract JWT from URL fragment (#id_token=...)
         const fragment = window.location.hash;
-        console.log(' Fragment length:', fragment.length);
-        console.log(' Fragment preview:', fragment.substring(0, 50) + '...');
+        logger.log(' Fragment length:', fragment.length);
+        logger.log(' Fragment preview:', fragment.substring(0, 50) + '...');
 
         const idTokenMatch = fragment.match(/id_token=([^&]+)/);
         if (!idTokenMatch) {
@@ -38,38 +39,38 @@ function CallbackContent() {
         }
 
         const jwtToken = decodeURIComponent(idTokenMatch[1]);
-        console.log(' JWT token extracted (length:', jwtToken.length, ')');
+        logger.log(' JWT token extracted (length:', jwtToken.length, ')');
 
         // Update status
         setStatus('Generating ZK proof (this takes 2-3 seconds)...');
 
         // Complete the entire zkLogin flow in one step
         // This includes: initialization, proof generation, and caching
-        console.log(' Starting completeZkLoginFlow...');
-        console.log('⏰ Time:', new Date().toISOString());
+        logger.log(' Starting completeZkLoginFlow...');
+        logger.log('⏰ Time:', new Date().toISOString());
 
         const result = await ZkLoginService.completeZkLoginFlow(jwtToken);
 
-        console.log(' zkLogin flow completed successfully!');
-        console.log(' Address:', result.address);
-        console.log(` User type: ${result.isNewUser ? 'NEW' : 'EXISTING'}`);
-        console.log(' Has zkProof:', !!result.zkProof);
-        console.log(' Has jwtToken:', !!result.jwtToken);
-        console.log(' Has userSalt:', !!result.userSalt);
-        console.log(' Has ephemeralPrivateKey:', !!result.ephemeralPrivateKey);
+        logger.log(' zkLogin flow completed successfully!');
+        logger.log(' Address:', result.address);
+        logger.log(` User type: ${result.isNewUser ? 'NEW' : 'EXISTING'}`);
+        logger.log(' Has zkProof:', !!result.zkProof);
+        logger.log(' Has jwtToken:', !!result.jwtToken);
+        logger.log(' Has userSalt:', !!result.userSalt);
+        logger.log(' Has ephemeralPrivateKey:', !!result.ephemeralPrivateKey);
 
         // Verify cache was created
-        console.log(' Checking if proof was cached...');
+        logger.log(' Checking if proof was cached...');
         const cachedProof = localStorage.getItem('zkLoginProofCache');
-        console.log(' zkLoginProofCache exists in localStorage:', cachedProof !== null);
+        logger.log(' zkLoginProofCache exists in localStorage:', cachedProof !== null);
         if (cachedProof) {
-          console.log(' Proof successfully cached!');
+          logger.log(' Proof successfully cached!');
         } else {
           console.error(' WARNING: Proof was NOT cached to localStorage!');
         }
 
         // Store auth data in React context (not localStorage)
-        console.log(' Setting auth data in React context...');
+        logger.log(' Setting auth data in React context...');
         setAuthData({
           address: result.address,
           zkProof: result.zkProof,
@@ -80,7 +81,7 @@ function CallbackContent() {
           randomness: result.randomness,
         });
 
-        console.log(' Calling checkAuth()...');
+        logger.log(' Calling checkAuth()...');
         checkAuth();
 
         setStatus('Authentication successful! Redirecting...');
@@ -95,9 +96,9 @@ function CallbackContent() {
           }
         })();
         const nextRoute = partnerCtx ? '/connect?step=resume' : '/dashboard';
-        console.log(`Redirecting to ${nextRoute} in 1.2s...`);
+        logger.log(`Redirecting to ${nextRoute} in 1.2s...`);
         setTimeout(() => {
-          console.log('Redirecting now...');
+          logger.log('Redirecting now...');
           router.replace(nextRoute);
         }, 1200);
       } catch (err) {

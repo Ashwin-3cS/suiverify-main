@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /**
  * API Route: Submit Sponsored Transaction
@@ -54,8 +55,8 @@ export async function POST(request: NextRequest) {
       signature,
     };
 
-    console.log('Submitting sponsored transaction to Enoki...');
-    console.log('Digest:', digest);
+    logger.log('Submitting sponsored transaction to Enoki...');
+    logger.log('Digest:', digest);
 
     // Call Enoki sponsor submit API
     const response = await fetch(enokiUrl, {
@@ -77,8 +78,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Sponsored transaction submitted successfully');
-    console.log('Transaction digest:', responseData.data.digest);
+    logger.log('Sponsored transaction submitted successfully');
+    logger.log('Transaction digest:', responseData.data.digest);
 
     // Return transaction result
     return NextResponse.json({

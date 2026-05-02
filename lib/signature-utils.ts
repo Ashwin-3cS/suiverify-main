@@ -268,7 +268,7 @@ export function printValidationResults(
   result: ValidationResult
 ): void {
   console.group(`Validation: ${name}`);
-  console.log("Valid:", result.valid);
+  logger.log("Valid:", result.valid);
 
   if (result.errors.length > 0) {
     console.error(" Errors:");
@@ -276,12 +276,12 @@ export function printValidationResults(
   }
 
   if (result.warnings.length > 0) {
-    console.warn(" Warnings:");
-    result.warnings.forEach((warn) => console.warn(`  - ${warn}`));
+    logger.warn(" Warnings:");
+    result.warnings.forEach((warn) => logger.warn(`  - ${warn}`));
   }
 
   if (result.valid && result.warnings.length === 0) {
-    console.log(" All validations passed!");
+    logger.log(" All validations passed!");
   }
 
   console.groupEnd();
@@ -292,11 +292,11 @@ export function printValidationResults(
  */
 export function compareSignatures(sig1: string, sig2: string): void {
   console.group("Signature Comparison");
-  console.log("Signature 1 length:", sig1.length);
-  console.log("Signature 2 length:", sig2.length);
-  console.log("Are equal:", sig1 === sig2);
-  console.log("Signature 1 (first 50):", sig1.substring(0, 50) + "...");
-  console.log("Signature 2 (first 50):", sig2.substring(0, 50) + "...");
+  logger.log("Signature 1 length:", sig1.length);
+  logger.log("Signature 2 length:", sig2.length);
+  logger.log("Are equal:", sig1 === sig2);
+  logger.log("Signature 1 (first 50):", sig1.substring(0, 50) + "...");
+  logger.log("Signature 2 (first 50):", sig2.substring(0, 50) + "...");
   console.groupEnd();
 }
 
@@ -311,24 +311,24 @@ export function debugAuthenticationData(
 ): void {
   console.group(" Authentication Data Debug");
 
-  console.log("--- Session ---");
+  logger.log("--- Session ---");
   const sessionValidation = validateSession(session);
   printValidationResults("Session", sessionValidation);
 
-  console.log("\n--- ZK Proof ---");
+  logger.log("\n--- ZK Proof ---");
   const proofValidation = validateZkProof(zkProof);
   printValidationResults("ZK Proof", proofValidation);
 
-  console.log("\n--- Ephemeral Signature ---");
+  logger.log("\n--- Ephemeral Signature ---");
   const sigValidation = validateEphemeralSignature(ephemeralSignature);
   printValidationResults("Ephemeral Signature", sigValidation);
 
-  console.log("\n--- JWT Token ---");
-  console.log("JWT length:", jwtToken.length);
-  console.log("JWT (first 50):", jwtToken.substring(0, 50) + "...");
+  logger.log("\n--- JWT Token ---");
+  logger.log("JWT length:", jwtToken.length);
+  logger.log("JWT (first 50):", jwtToken.substring(0, 50) + "...");
 
-  console.log("\n--- Summary ---");
-  console.log(
+  logger.log("\n--- Summary ---");
+  logger.log(
     "All valid:",
     sessionValidation.valid &&
       proofValidation.valid &&

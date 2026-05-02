@@ -6,6 +6,7 @@ import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
 import { apiFetch } from '@/app/utils/api-client';
 import { ExtractedDataModal } from '../modals/ExtractedDataModal';
+import { logger } from '@/lib/logger';
 
 interface AadhaarData {
   name?: string;
@@ -64,7 +65,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
     setError(null);
 
     try {
-      console.log(' Processing file:', file.name, file.size, 'bytes');
+      logger.log(' Processing file:', file.name, file.size, 'bytes');
 
       // STEP 1: Convert uploaded file to base64 (full size) - run in parallel with API call
       const reader = new FileReader();
@@ -72,15 +73,15 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
         reader.onload = (e) => {
           const base64String = e.target?.result as string;
           const base64Data = base64String.split(',')[1]; // Remove data:image/jpeg;base64, prefix
-          console.log(' Full image base64 created:', base64Data.length, 'characters');
-          console.log(' Full image decoded size:', Math.floor(base64Data.length * 0.75), 'bytes');
+          logger.log(' Full image base64 created:', base64Data.length, 'characters');
+          logger.log(' Full image decoded size:', Math.floor(base64Data.length * 0.75), 'bytes');
           resolve(base64Data);
         };
         reader.readAsDataURL(file);
       });
 
       // STEP 2: Call backend API to extract Aadhaar text data (name, DOB, etc.)
-      console.log(' Calling backend API to extract Aadhaar data...');
+      logger.log(' Calling backend API to extract Aadhaar data...');
       const formData = new FormData();
       formData.append('file', file);
       const result = await handleApiCall(buildApiUrl(API_ENDPOINTS.EXTRACT_AADHAAR_DATA), formData);
@@ -88,8 +89,8 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
       // STEP 3: Wait for full image base64 to complete
       const fullImageBase64 = await base64Promise;
 
-      console.log(' Backend API returned extracted data');
-      console.log(' Replacing backend image with full-size uploaded image');
+      logger.log(' Backend API returned extracted data');
+      logger.log(' Replacing backend image with full-size uploaded image');
 
       if (result.data) {
         const data = result.data as AadhaarData;
@@ -100,7 +101,7 @@ const AadhaarUploadStep: React.FC<AadhaarUploadStepProps> = ({ onNext, onBack, o
           aadhaar_photo_base64: fullImageBase64  // Replace with full-size image!
         };
 
-        console.log(' Complete Aadhaar data prepared:', {
+        logger.log(' Complete Aadhaar data prepared:', {
           name: completeData.name,
           dob: completeData.dob,
           phone_number: completeData.phone_number,

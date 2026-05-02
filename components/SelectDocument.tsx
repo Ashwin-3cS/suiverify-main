@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface Country {
   code: string;
@@ -77,8 +78,8 @@ const SelectDocument: React.FC<SelectDocumentProps> = ({ onNext }) => {
       if (selectedCountryObj) {
         localStorage.setItem('selectedCountryName', selectedCountryObj.name);
         localStorage.setItem('documentType', documentType);
-        console.log('Selected country:', selectedCountryObj.name);
-        console.log('Selected document type:', documentType);
+        logger.log('Selected country:', selectedCountryObj.name);
+        logger.log('Selected document type:', documentType);
       }
       onNext();
     }

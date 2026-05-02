@@ -30,6 +30,7 @@ import StepIndicator from '@/components/ui/StepIndicator';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 import DashboardHeader from '@/components/ui/DashboardHeader';
+import { logger } from '@/lib/logger';
 
 interface Country {
   code: string;
@@ -225,7 +226,7 @@ function KycContent() {
 
   const encryptAndUploadDocument = useCallback(async (file: File) => {
     try {
-      console.log('Starting real encryption and upload process...');
+      logger.log('Starting real encryption and upload process...');
 
       const result = await documentEncryptionService.encryptAndUploadDocument(
         file,
@@ -233,8 +234,8 @@ function KycContent() {
       );
 
       if (result.success) {
-        console.log('Encryption and upload successful');
-        console.log('Results:', result);
+        logger.log('Encryption and upload successful');
+        logger.log('Results:', result);
 
         // Store the encryption results
         setEncryptionResult({
@@ -271,10 +272,10 @@ function KycContent() {
   }, [zkLoginAddress]);
 
   const handleDocumentEncryption = useCallback(async () => {
-    console.log('handleDocumentEncryption called');
-    console.log('zkLoginAddress:', zkLoginAddress);
-    console.log('zkLoginAddress type:', typeof zkLoginAddress);
-    console.log('zkLoginAddress is truthy:', !!zkLoginAddress);
+    logger.log('handleDocumentEncryption called');
+    logger.log('zkLoginAddress:', zkLoginAddress);
+    logger.log('zkLoginAddress type:', typeof zkLoginAddress);
+    logger.log('zkLoginAddress is truthy:', !!zkLoginAddress);
 
     const documentBase64 = selectedDocumentType?.id === 'digilocker_pan'
       ? panData?.document_content_base64
@@ -282,8 +283,8 @@ function KycContent() {
       ? panData?.pan_photo_base64
       : aadhaarData?.aadhaar_photo_base64;
 
-    console.log('documentBase64 exists:', !!documentBase64);
-    console.log('documentBase64 length:', documentBase64?.length || 0);
+    logger.log('documentBase64 exists:', !!documentBase64);
+    logger.log('documentBase64 length:', documentBase64?.length || 0);
 
     if (!documentBase64 || !zkLoginAddress) {
       console.error('Missing document data or zkLogin address');
@@ -299,23 +300,23 @@ function KycContent() {
     }
 
     try {
-      console.log('Starting document encryption and upload process...');
+      logger.log('Starting document encryption and upload process...');
       setStep('encrypting');
 
       // Convert base64 to File object for encryption
       const base64Data = documentBase64;
-      console.log('Base64 data received:', base64Data.length, 'characters');
+      logger.log('Base64 data received:', base64Data.length, 'characters');
 
       const byteCharacters = atob(base64Data);
-      console.log('Decoded byte characters:', byteCharacters.length, 'bytes');
+      logger.log('Decoded byte characters:', byteCharacters.length, 'bytes');
 
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      console.log('Byte array created:', byteArray.length, 'bytes');
-      console.log('First 20 bytes:', Array.from(byteArray.slice(0, 20)));
+      logger.log('Byte array created:', byteArray.length, 'bytes');
+      logger.log('First 20 bytes:', Array.from(byteArray.slice(0, 20)));
 
       const fileName = selectedDocumentType?.id === 'digilocker_pan'
         ? (panData?.document_file_name || 'digilocker-pan-document')
@@ -327,8 +328,8 @@ function KycContent() {
         : 'image/jpeg';
       const file = new File([byteArray], fileName, { type: fileType });
 
-      console.log('Document converted to file:', file.name, file.size, 'bytes');
-      console.log('Ready to encrypt full size image:', file.size, 'bytes');
+      logger.log('Document converted to file:', file.name, file.size, 'bytes');
+      logger.log('Ready to encrypt full size image:', file.size, 'bytes');
 
       // Use the encryption logic from EncryptAndUpload.tsx
       await encryptAndUploadDocument(file);
@@ -346,17 +347,17 @@ function KycContent() {
       // Store the UserDID object ID from the verification event
       if (verificationStatus.userDidId) {
         setUserDidId(verificationStatus.userDidId);
-        console.log('UserDID object ID captured from event:', verificationStatus.userDidId);
+        logger.log('UserDID object ID captured from event:', verificationStatus.userDidId);
       }
 
       // Log enhanced event data for SDK verification
       if (verificationStatus.eventData) {
-        console.log('Enhanced event data available:');
-        console.log('   Nautilus Signature Length:', verificationStatus.eventData.nautilus_signature.length);
-        console.log('   Signature Timestamp:', verificationStatus.eventData.signature_timestamp_ms);
-        console.log('   Evidence Hash Length:', verificationStatus.eventData.evidence_hash.length);
-        console.log('   DID Type:', verificationStatus.eventData.did_type);
-        console.log('   Registry ID:', verificationStatus.eventData.registry_id);
+        logger.log('Enhanced event data available:');
+        logger.log('   Nautilus Signature Length:', verificationStatus.eventData.nautilus_signature.length);
+        logger.log('   Signature Timestamp:', verificationStatus.eventData.signature_timestamp_ms);
+        logger.log('   Evidence Hash Length:', verificationStatus.eventData.evidence_hash.length);
+        logger.log('   DID Type:', verificationStatus.eventData.did_type);
+        logger.log('   Registry ID:', verificationStatus.eventData.registry_id);
 
         // This enhanced data can now be used for SDK verification calls
         // Example: await enclave.verify_signature(enclave_id, 1, parseInt(eventData.signature_timestamp_ms), payload, eventData.nautilus_signature);
@@ -382,9 +383,9 @@ function KycContent() {
 
     try {
       setIsClaimingNft(true);
-      console.log('Starting DID NFT claim process with zkLogin...');
-      console.log('Using UserDID object ID from event:', userDidId);
-      console.log('zkLogin Address:', zkLoginAddress);
+      logger.log('Starting DID NFT claim process with zkLogin...');
+      logger.log('Using UserDID object ID from event:', userDidId);
+      logger.log('zkLogin Address:', zkLoginAddress);
 
       // Get cached zkLogin proof
       const cached = SessionManager.getCachedProof();
@@ -398,11 +399,11 @@ function KycContent() {
 
       // Log enhanced verification data available for future SDK integration
       if (verificationStatus.eventData) {
-        console.log('Enhanced verification data available:');
-        console.log('   Signature Timestamp (ms):', verificationStatus.eventData.signature_timestamp_ms);
-        console.log('   Nautilus Signature Available:', verificationStatus.eventData.nautilus_signature.length > 0);
-        console.log('   Evidence Hash Available:', verificationStatus.eventData.evidence_hash.length > 0);
-        console.log('   DID Type:', verificationStatus.eventData.did_type);
+        logger.log('Enhanced verification data available:');
+        logger.log('   Signature Timestamp (ms):', verificationStatus.eventData.signature_timestamp_ms);
+        logger.log('   Nautilus Signature Available:', verificationStatus.eventData.nautilus_signature.length > 0);
+        logger.log('   Evidence Hash Available:', verificationStatus.eventData.evidence_hash.length > 0);
+        logger.log('   DID Type:', verificationStatus.eventData.did_type);
       }
 
       // Recreate ephemeral key pair from cached proof
@@ -427,7 +428,7 @@ function KycContent() {
       tx.setSender(cached.address);
 
       // Build the transaction with onlyTransactionKind flag for sponsorship
-      console.log('Building transaction for sponsorship...');
+      logger.log('Building transaction for sponsorship...');
       const transactionBlockKindBytes = await tx.build({
         client: suiClient,
         onlyTransactionKind: true // Required for sponsored transactions
@@ -438,10 +439,10 @@ function KycContent() {
         String.fromCharCode.apply(null, Array.from(transactionBlockKindBytes))
       );
 
-      console.log('Transaction bytes (base64):', base64TxBytes.substring(0, 50) + '...');
+      logger.log('Transaction bytes (base64):', base64TxBytes.substring(0, 50) + '...');
 
       // Step 1: Create sponsored transaction via backend
-      console.log('Requesting sponsored transaction from backend...');
+      logger.log('Requesting sponsored transaction from backend...');
       const sponsorCreateResponse = await fetch('/api/transactions/sponsor-create', {
         method: 'POST',
         headers: {
@@ -466,11 +467,11 @@ function KycContent() {
       const sponsorCreateData = await sponsorCreateResponse.json();
       const { digest, bytes } = sponsorCreateData.data;
 
-      console.log('Sponsored transaction created');
-      console.log('   Digest:', digest);
+      logger.log('Sponsored transaction created');
+      logger.log('   Digest:', digest);
 
       // Step 2: Sign the sponsored transaction bytes
-      console.log('Signing sponsored transaction with ephemeral key...');
+      logger.log('Signing sponsored transaction with ephemeral key...');
       // Convert base64 to Uint8Array (browser-compatible)
       const binaryString = atob(bytes);
       const sponsoredTxBytes = new Uint8Array(binaryString.length);
@@ -486,14 +487,14 @@ function KycContent() {
       }
 
       // Create zkLogin signature using cached proof data
-      console.log('Creating zkLogin signature from cached proof...');
+      logger.log('Creating zkLogin signature from cached proof...');
       const zkLoginSignature = ZkLoginService.getTransactionSignature({
         ephemeralSignature,
         useCache: true, // Use cached proof data
       });
 
       // Step 3: Submit signed transaction to backend for execution
-      console.log('Submitting signed transaction to backend...');
+      logger.log('Submitting signed transaction to backend...');
       const sponsorSubmitResponse = await fetch('/api/transactions/sponsor-submit', {
         method: 'POST',
         headers: {
@@ -513,11 +514,11 @@ function KycContent() {
       const sponsorSubmitData = await sponsorSubmitResponse.json();
       const transactionDigest = sponsorSubmitData.data.digest;
 
-      console.log('Sponsored transaction submitted successfully');
-      console.log('   Transaction Digest:', transactionDigest);
+      logger.log('Sponsored transaction submitted successfully');
+      logger.log('   Transaction Digest:', transactionDigest);
 
       // Wait for transaction to be confirmed and get full result
-      console.log('Waiting for transaction confirmation...');
+      logger.log('Waiting for transaction confirmation...');
       const result = await suiClient.waitForTransaction({
         digest: transactionDigest,
         options: {
@@ -526,7 +527,7 @@ function KycContent() {
         },
       });
 
-      console.log('NFT claim transaction success:', result);
+      logger.log('NFT claim transaction success:', result);
 
       // Extract the NFT object ID from the transaction result
       const nftObject = result.effects?.created?.find(
@@ -537,10 +538,10 @@ function KycContent() {
       );
       const nftId = nftObject?.reference?.objectId;
 
-      console.log('DID NFT created:', nftId);
+      logger.log('DID NFT created:', nftId);
 
       if (nftId) {
-        console.log('NFT claimed successfully, saving to backend...');
+        logger.log('NFT claimed successfully, saving to backend...');
 
         // Prepare NFT data for modal and backend
         const nftData = {
@@ -568,7 +569,7 @@ function KycContent() {
           });
 
           if (saveResult.success) {
-            console.log('NFT credential saved to backend:', saveResult.credentialId);
+            logger.log('NFT credential saved to backend:', saveResult.credentialId);
           } else {
             console.error('Failed to save NFT credential:', saveResult.error);
           }

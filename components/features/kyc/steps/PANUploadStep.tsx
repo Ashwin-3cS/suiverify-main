@@ -18,6 +18,7 @@ import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { ExtractedDataModal } from "../modals/ExtractedDataModal";
 import { apiFetch, apiPost } from "@/app/utils/api-client";
+import { logger } from '@/lib/logger';
 
 interface PANData {
   pan_number?: string;
@@ -87,19 +88,19 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
     setError(null);
 
     try {
-      console.log(" Processing PAN file:", file.name, file.size, "bytes");
+      logger.log(" Processing PAN file:", file.name, file.size, "bytes");
 
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve) => {
         reader.onload = (e) => {
           const base64String = e.target?.result as string;
           const base64Data = base64String.split(",")[1];
-          console.log(
+          logger.log(
             " Full PAN image base64 created:",
             base64Data.length,
             "characters",
           );
-          console.log(
+          logger.log(
             " Full PAN image decoded size:",
             Math.floor(base64Data.length * 0.75),
             "bytes",
@@ -109,7 +110,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
         reader.readAsDataURL(file);
       });
 
-      console.log(" Calling backend API to extract PAN data...");
+      logger.log(" Calling backend API to extract PAN data...");
       const formData = new FormData();
       formData.append("file", file);
       const result = await handleApiCall(
@@ -119,8 +120,8 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
 
       const fullImageBase64 = await base64Promise;
 
-      console.log(" Backend API returned extracted PAN data");
-      console.log(" Replacing backend image with full-size uploaded image");
+      logger.log(" Backend API returned extracted PAN data");
+      logger.log(" Replacing backend image with full-size uploaded image");
 
       if (result.data) {
         const data = result.data as PANData;
@@ -130,7 +131,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
           pan_photo_base64: fullImageBase64,
         };
 
-        console.log(" Complete PAN data prepared:", {
+        logger.log(" Complete PAN data prepared:", {
           pan_number: completeData.pan_number,
           name: completeData.name,
           father_name: completeData.father_name,
@@ -202,7 +203,7 @@ const PANUploadStep: React.FC<PANUploadStepProps> = ({
         pan_photo_base64: panData?.pan_photo_base64,
       };
 
-      console.log(" Sending corrected PAN data to backend...");
+      logger.log(" Sending corrected PAN data to backend...");
 
       const result = await apiPost(
         buildApiUrl(API_ENDPOINTS.CORRECT_PAN_DATA),

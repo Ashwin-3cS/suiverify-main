@@ -1,6 +1,7 @@
 import { SuiClient } from '@mysten/sui/client';
 import type { EventId, SuiEvent, SuiEventFilter } from '@mysten/sui/client';
 import { getCurrentPackageId, getCurrentRpcEndpoint } from '@/config/contracts';
+import { logger } from '@/lib/logger';
 
 // Sui Configuration - Using centralized contract config
 const fullnode = getCurrentRpcEndpoint();
@@ -51,17 +52,17 @@ export const setVerificationCallback = (callback: (eventData: VerificationComple
 
 // Event handlers for DID Registry events
 const handleDIDRegistryEvents = async (events: SuiEvent[], type: string): Promise<void> => {
-    console.log(` Processing ${events.length} DID Registry events from ${type}`);
+    logger.log(` Processing ${events.length} DID Registry events from ${type}`);
     
     for (const event of events) {
-        console.log(` DID Registry Event Detected:`);
-        console.log(`   - Event Type: ${event.type}`);
-        console.log(`   - Transaction Digest: ${event.id.txDigest}`);
-        console.log(`   - Sender: ${event.sender}`);
-        console.log(`   - Timestamp: ${event.timestampMs ? new Date(parseInt(event.timestampMs)) : 'N/A'}`);
+        logger.log(` DID Registry Event Detected:`);
+        logger.log(`   - Event Type: ${event.type}`);
+        logger.log(`   - Transaction Digest: ${event.id.txDigest}`);
+        logger.log(`   - Sender: ${event.sender}`);
+        logger.log(`   - Timestamp: ${event.timestampMs ? new Date(parseInt(event.timestampMs)) : 'N/A'}`);
         
         if (event.parsedJson) {
-            console.log(`   - Event Data:`, JSON.stringify(event.parsedJson, null, 2));
+            logger.log(`   - Event Data:`, JSON.stringify(event.parsedJson, null, 2));
         }
         
         // Process the DID event
@@ -77,14 +78,14 @@ const processDIDEvent = async (event: SuiEvent): Promise<void> => {
         
         // Handle VerificationCompleted events
         if (eventType.includes('::VerificationCompleted')) {
-            console.log(` VERIFICATION COMPLETED EVENT!`);
-            console.log(` User Address: ${eventData.user_address}`);
-            console.log(`🆔 DID Type: ${eventData.did_type} (${getDIDTypeName(eventData.did_type)})`);
-            console.log(` Status: ${eventData.status} (${getStatusName(eventData.status)})`);
-            console.log(` Nautilus Signature: ${eventData.nautilus_signature ? 'Present' : 'Missing'}`);
-            console.log(` User DID ID: ${eventData.user_did_id}`);
-            console.log(` Signature Timestamp: ${eventData.signature_timestamp_ms || 'N/A'}`);
-            console.log(` Evidence Hash: ${eventData.evidence_hash ? 'Present' : 'Missing'}`);
+            logger.log(` VERIFICATION COMPLETED EVENT!`);
+            logger.log(` User Address: ${eventData.user_address}`);
+            logger.log(`🆔 DID Type: ${eventData.did_type} (${getDIDTypeName(eventData.did_type)})`);
+            logger.log(` Status: ${eventData.status} (${getStatusName(eventData.status)})`);
+            logger.log(` Nautilus Signature: ${eventData.nautilus_signature ? 'Present' : 'Missing'}`);
+            logger.log(` User DID ID: ${eventData.user_did_id}`);
+            logger.log(` Signature Timestamp: ${eventData.signature_timestamp_ms || 'N/A'}`);
+            logger.log(` Evidence Hash: ${eventData.evidence_hash ? 'Present' : 'Missing'}`);
             
             // Create enhanced event data object
             const enhancedEventData: VerificationCompletedEventData = {
@@ -107,15 +108,15 @@ const processDIDEvent = async (event: SuiEvent): Promise<void> => {
             await handleVerificationCompleted(eventData);
             
         } else if (eventType.includes('::VerificationStarted')) {
-            console.log(` VERIFICATION STARTED EVENT!`);
-            console.log(` User Address: ${eventData.user_address}`);
-            console.log(`🆔 DID Type: ${eventData.did_type} (${getDIDTypeName(eventData.did_type)})`);
-            console.log(` User DID ID: ${eventData.user_did_id}`);
+            logger.log(` VERIFICATION STARTED EVENT!`);
+            logger.log(` User Address: ${eventData.user_address}`);
+            logger.log(`🆔 DID Type: ${eventData.did_type} (${getDIDTypeName(eventData.did_type)})`);
+            logger.log(` User DID ID: ${eventData.user_did_id}`);
             
         } else if (eventType.includes('::DIDClaimed')) {
-            console.log(` DID NFT CLAIMED EVENT!`);
-            console.log(` User Address: ${eventData.user_address}`);
-            console.log(` NFT ID: ${eventData.nft_id}`);
+            logger.log(` DID NFT CLAIMED EVENT!`);
+            logger.log(` User Address: ${eventData.user_address}`);
+            logger.log(` NFT ID: ${eventData.nft_id}`);
         }
         
     } catch (error) {
@@ -144,12 +145,12 @@ const getStatusName = (status: number): string => {
 // Custom handler for verification completed events
 const handleVerificationCompleted = async (eventData: VerificationCompletedEventData): Promise<void> => {
     try {
-        console.log(` Processing verification completion for user ${eventData.user_address}`);
+        logger.log(` Processing verification completion for user ${eventData.user_address}`);
         
         if (eventData.status === 1) { // STATUS_VERIFIED
-            console.log(` User ${eventData.user_address} successfully verified!`);
+            logger.log(` User ${eventData.user_address} successfully verified!`);
         } else if (eventData.status === 2) { // STATUS_REJECTED
-            console.log(` User ${eventData.user_address} verification rejected`);
+            logger.log(` User ${eventData.user_address} verification rejected`);
         }
         
     } catch (error) {
@@ -185,7 +186,7 @@ const executeEventJob = async (
         });
         
         if (data.length > 0) {
-            console.log(` Found ${data.length} new events for ${tracker.type}`);
+            logger.log(` Found ${data.length} new events for ${tracker.type}`);
             
             // Handle the events
             await tracker.callback(data, tracker.type);
@@ -230,30 +231,30 @@ const getLatestCursor = async (tracker: EventTracker): Promise<SuiEventsCursor> 
 // Save the latest cursor for an event tracker
 const saveLatestCursor = async (tracker: EventTracker, cursor: EventId): Promise<void> => {
     cursors.set(tracker.type, cursor);
-    console.log(` Saved cursor for ${tracker.type}: ${cursor.eventSeq}`);
+    logger.log(` Saved cursor for ${tracker.type}: ${cursor.eventSeq}`);
 };
 
 // Start the event listener
 export const startEventListener = async (): Promise<void> => {
-    console.log(' Starting Sui Event Listener for user verification...');
+    logger.log(' Starting Sui Event Listener for user verification...');
     
     try {
         // Test connection
         const latestCheckpoint = await client.getLatestCheckpointSequenceNumber();
-        console.log(` Connected to Sui network. Latest checkpoint: ${latestCheckpoint}`);
+        logger.log(` Connected to Sui network. Latest checkpoint: ${latestCheckpoint}`);
         
-        console.log(' Configuration:');
-        console.log(`   - Package ID: ${packageId}`);
-        console.log(`   - Polling Interval: ${POLLING_INTERVAL_MS}ms`);
+        logger.log(' Configuration:');
+        logger.log(`   - Package ID: ${packageId}`);
+        logger.log(`   - Polling Interval: ${POLLING_INTERVAL_MS}ms`);
         
         // Start listening for events
         for (const event of EVENTS_TO_TRACK) {
-            console.log(` Starting listener for: ${event.type}`);
+            logger.log(` Starting listener for: ${event.type}`);
             const cursor = await getLatestCursor(event);
             runEventJob(client, event, cursor);
         }
         
-        console.log(' Event listener is now running');
+        logger.log(' Event listener is now running');
         
     } catch (error) {
         console.error(' Failed to start event listener:', error);
@@ -263,7 +264,7 @@ export const startEventListener = async (): Promise<void> => {
 
 // Stop the event listener
 export const stopEventListener = () => {
-    console.log(' Stopping Sui Event Listener...');
+    logger.log(' Stopping Sui Event Listener...');
     // Clear all cursors
     cursors.clear();
     verificationCallback = null;

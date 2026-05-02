@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, User, Copy, LogOut, UserRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { buildExplorerUrl } from '@/config/contracts';
+import { logger } from '@/lib/logger';
 
 export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' | 'lg' }> = ({
   className = '',
@@ -20,15 +21,15 @@ export const AuthButton: React.FC<{ className?: string; size?: 'sm' | 'default' 
   const handleSignIn = async () => {
     setIsLoggingIn(true);
     try {
-      console.log(' Starting zkLogin flow...');
+      logger.log(' Starting zkLogin flow...');
 
       // Initialize session and get nonce for OAuth
       const { nonce } = await ZkLoginService.initializeSession();
-      console.log(' Session initialized with nonce');
+      logger.log(' Session initialized with nonce');
 
       // Get OAuth URL and redirect
       const oauthUrl = ZkLoginService.getOAuthUrl(nonce);
-      console.log(' Redirecting to OAuth provider...');
+      logger.log(' Redirecting to OAuth provider...');
 
       window.location.href = oauthUrl;
     } catch (error) {
