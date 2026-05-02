@@ -32,9 +32,16 @@ const handleApiError = async (response: Response) => {
 
   if (response.status === 401) {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("zkLoginProofCache");
-      localStorage.removeItem("zkLoginSession");
-      window.location.href = "/dashboard";
+      // Only zkLogin users get force-redirected on 401 (their JWT expired —
+      // bounce them to /dashboard to re-login). Wallet-mode users have no
+      // zkLogin cache; redirecting them caused an infinite reload loop since
+      // they never had a JWT to begin with. They just see the thrown error.
+      const isZkLoginSession = localStorage.getItem("zkLoginProofCache") !== null;
+      if (isZkLoginSession) {
+        localStorage.removeItem("zkLoginProofCache");
+        localStorage.removeItem("zkLoginSession");
+        window.location.href = "/dashboard";
+      }
     }
     throw new Error("Authentication expired. Please log in again.");
   }
