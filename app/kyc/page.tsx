@@ -448,9 +448,9 @@ function KycContent() {
 
       if (authMode === 'wallet') {
         // Wallet path: sign sponsored tx bytes with connected wallet
+        // Pass base64 bytes string directly — avoids @mysten/sui version mismatch
         logger.log('Signing sponsored transaction with wallet...');
-        const sponsoredTx = Transaction.from(sponsoredTxBytes);
-        const { signature } = await signTransaction({ transaction: sponsoredTx });
+        const { signature } = await signTransaction({ transaction: bytes });
         finalSignature = signature;
       } else {
         // zkLogin path: sign with ephemeral key + wrap in zkLogin signature
