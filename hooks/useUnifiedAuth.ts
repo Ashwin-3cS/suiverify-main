@@ -43,7 +43,7 @@ export function useUnifiedAuth(): UnifiedAuth {
     return {
       address: walletAccount.address,
       isAuthenticated: true,
-      isLoading: false,
+      isLoading: zkAuth.isLoading,
       authMode: 'wallet',
       zkProof: null,
       jwtToken: null,

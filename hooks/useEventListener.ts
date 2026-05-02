@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { startEventListener, setVerificationCallback, stopEventListener, type VerificationCompletedEventData } from '@/services/eventListener';
 import { toast } from 'react-toastify';
 import { logger } from '@/lib/logger';
@@ -132,18 +132,21 @@ export const useVerificationListener = (zkLoginAddress: string | null) => {
     }, []);
 
     // Auto-start listener when zkLogin address is available
+    // Use ref to avoid stale-closure double-start on transient address flips
+    const isListeningRef = useRef(false);
     useEffect(() => {
-        if (zkLoginAddress && !verificationStatus.isListening) {
-            startListening();
-        }
+        if (!zkLoginAddress) return;
+        if (isListeningRef.current) return;
+        isListeningRef.current = true;
+        startListening();
 
-        // Cleanup on unmount or address change
         return () => {
-            if (verificationStatus.isListening) {
+            if (isListeningRef.current) {
+                isListeningRef.current = false;
                 stopListening();
             }
         };
-    }, [zkLoginAddress]);
+    }, [zkLoginAddress, startListening, stopListening]);
 
     // Update user address when zkLogin address changes
     useEffect(() => {

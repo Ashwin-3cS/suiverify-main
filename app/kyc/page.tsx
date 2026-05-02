@@ -94,7 +94,7 @@ function KycContent() {
   } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { address: zkLoginAddress, authMode } = useUnifiedAuth();
+  const { address: zkLoginAddress, authMode, isLoading: authIsLoading } = useUnifiedAuth();
   const { mutateAsync: signTransaction } = useSignTransaction();
   const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener(zkLoginAddress);
 
@@ -164,9 +164,13 @@ function KycContent() {
   }, [step, resetVerification, stopListening]);
 
   // Check wallet connection on mount and when account changes
+  // Debounced: ignore transient nulls from dapp-kit autoConnect / zkLogin hydration
   useEffect(() => {
-    // If wallet disconnects while in verification flow, reset to country selection
-    if (!zkLoginAddress && step !== 'country') {
+    if (authIsLoading) return;
+    if (zkLoginAddress) return;
+    if (step === 'country') return;
+
+    const t = setTimeout(() => {
       toast.error('Please connect wallet to continue verification', {
         position: "bottom-right",
         autoClose: 3000,
@@ -176,8 +180,9 @@ function KycContent() {
         draggable: true,
       });
       setStep('country');
-    }
-  }, [zkLoginAddress, step]);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [zkLoginAddress, step, authIsLoading]);
 
   const handleCountrySelect = (country: Country) => {
     // Check wallet connection before proceeding
