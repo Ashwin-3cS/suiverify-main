@@ -23,11 +23,11 @@ import DashboardHeader from "@/components/ui/DashboardHeader";
 import ZkLoginTransactionTest from "@/components/zklogin/ZkLoginTransactionTest";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 
 const User: React.FC = () => {
     const router = useRouter();
-    const { address, isAuthenticated } = useAuth();
+    const { address, isAuthenticated } = useUnifiedAuth();
     const [activeNav, setActiveNav] = useState("verifications");
     const [searchQuery, setSearchQuery] = useState("");
 

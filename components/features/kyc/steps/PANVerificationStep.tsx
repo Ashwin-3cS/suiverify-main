@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, Loader2, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
 import { colors } from '@/app/brand';
 import { toast } from 'react-toastify';
-import { useAuth } from '@/hooks/useAuth';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 import { Button } from '@/components/ui/button';
 import { apiPost } from '@/app/utils/api-client';
@@ -31,7 +31,7 @@ const PANVerificationStep: React.FC<PANVerificationStepProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { address } = useAuth();
+  const { address } = useUnifiedAuth();
 
   // Auto-set DID based on verification type
   const getDid = () => {

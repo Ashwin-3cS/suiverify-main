@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { apiGet, apiPost } from "@/app/utils/api-client";
 import { buildApiUrl, API_ENDPOINTS } from "@/config/api";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 
 type DigiLockerPanPayload = {
   session_id: string;
@@ -42,7 +42,7 @@ interface DigiLockerPANStepProps {
 type Phase = "idle" | "starting" | "awaiting_consent" | "polling" | "attesting" | "done" | "error";
 
 const DigiLockerPANStep: React.FC<DigiLockerPANStepProps> = ({ onNext, onBack, onDataReady }) => {
-  const { address } = useAuth();
+  const { address } = useUnifiedAuth();
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);

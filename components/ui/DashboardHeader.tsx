@@ -5,7 +5,7 @@ import { LogOut } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { useAuth } from "@/hooks/useAuth";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { Button } from "@/components/ui/button";
 import Logo from "@/public/head_logo.png";
 import AuthButton from "@/components/auth/AuthButton";
@@ -13,7 +13,7 @@ import AuthButton from "@/components/auth/AuthButton";
 const DashboardHeader = () => {
     const router = useRouter();
     const pathname = usePathname();
-    const { address } = useAuth();
+    const { address } = useUnifiedAuth();
     const previousAddressRef = useRef<string | null | undefined>(undefined);
     const isInitialMount = useRef(true);
 
