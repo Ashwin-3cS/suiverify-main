@@ -4,8 +4,16 @@ import { createContext, useContext, ReactNode } from 'react';
 import { WalletProvider as SuiWalletProvider, SuiClientProvider } from '@mysten/dapp-kit';
 import { getFullnodeUrl } from '@mysten/sui/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
 // Try alternative CSS import paths
 import '@mysten/dapp-kit/dist/index.css';
+
+// Inner client component — runs SIWS once per wallet connection. Mounted
+// inside SuiWalletProvider so dapp-kit hooks resolve correctly.
+const WalletAuthBootstrap = () => {
+  useWalletAuth();
+  return null;
+};
 
 // Create a custom context for wallet state
 interface WalletContextType {
@@ -52,6 +60,7 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
           autoConnect={true}
         >
           <WalletContext.Provider value={{}}>
+            <WalletAuthBootstrap />
             {children}
           </WalletContext.Provider>
         </SuiWalletProvider>

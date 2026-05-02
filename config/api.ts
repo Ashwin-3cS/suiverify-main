@@ -54,4 +54,8 @@ export const API_ENDPOINTS = {
 
   // Credential endpoints
   CREDENTIALS: "/api/credentials",
+
+  // Wallet auth (SIWS)
+  WALLET_NONCE: "/api/auth/wallet-nonce",
+  WALLET_LOGIN: "/api/auth/wallet-login",
 } as const;

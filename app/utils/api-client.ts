@@ -14,6 +14,24 @@ export const getZkLoginJwt = (): string | null => {
   }
 };
 
+const getWalletJwt = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("walletAuthToken");
+  const expRaw = localStorage.getItem("walletAuthTokenExp");
+  if (!token || !expRaw) return null;
+  const exp = parseInt(expRaw, 10);
+  if (!Number.isFinite(exp)) return null;
+  if (exp - Math.floor(Date.now() / 1000) < 30) return null; // expiring soon
+  return token;
+};
+
+/**
+ * Returns either the wallet-issued backend JWT (SIWS) or the zkLogin Google
+ * JWT, whichever is present and fresh. Wallet token takes priority — matches
+ * useUnifiedAuth's "wallet wins if both present" rule.
+ */
+export const getAuthToken = (): string | null => getWalletJwt() ?? getZkLoginJwt();
+
 const isLikelyJwt = (token: string): boolean => {
   const trimmed = token.trim();
   const parts = trimmed.split(".");
@@ -32,15 +50,16 @@ const handleApiError = async (response: Response) => {
 
   if (response.status === 401) {
     if (typeof window !== "undefined") {
-      // Only zkLogin users get force-redirected on 401 (their JWT expired —
-      // bounce them to /dashboard to re-login). Wallet-mode users have no
-      // zkLogin cache; redirecting them caused an infinite reload loop since
-      // they never had a JWT to begin with. They just see the thrown error.
-      const isZkLoginSession = localStorage.getItem("zkLoginProofCache") !== null;
-      if (isZkLoginSession) {
+      // Just clear stale tokens; UI surfaces the error. No force-reload —
+      // it caused an infinite loop on /dashboard for wallet users.
+      if (localStorage.getItem("zkLoginProofCache")) {
         localStorage.removeItem("zkLoginProofCache");
         localStorage.removeItem("zkLoginSession");
-        window.location.href = "/dashboard";
+      }
+      if (localStorage.getItem("walletAuthToken")) {
+        localStorage.removeItem("walletAuthToken");
+        localStorage.removeItem("walletAuthTokenExp");
+        localStorage.removeItem("walletAuthTokenAddr");
       }
     }
     throw new Error("Authentication expired. Please log in again.");
@@ -55,14 +74,17 @@ export const apiFetch = async (
   url: string,
   options: RequestInit = {},
 ): Promise<Response> => {
-  const jwt = getZkLoginJwt();
+  const jwt = getAuthToken();
 
   const headers = new Headers(options.headers || {});
   if (jwt) {
     if (!isLikelyJwt(jwt)) {
+      // Token is malformed — clear and let caller handle the resulting 401.
       localStorage.removeItem("zkLoginProofCache");
       localStorage.removeItem("zkLoginSession");
-      window.location.href = "/dashboard";
+      localStorage.removeItem("walletAuthToken");
+      localStorage.removeItem("walletAuthTokenExp");
+      localStorage.removeItem("walletAuthTokenAddr");
       throw new Error("Authentication token is invalid. Please log in again.");
     }
     headers.set("Authorization", `Bearer ${jwt}`);
