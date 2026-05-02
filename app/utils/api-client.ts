@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export const getZkLoginJwt = (): string | null => {
   if (typeof window === "undefined") return null;
   const configStr = localStorage.getItem("zkLoginProofCache");
