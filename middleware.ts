@@ -8,7 +8,7 @@ function hash(v: string) {
   return crypto.createHash('sha256').update(v).digest('hex');
 }
 
-const PUBLIC_PREFIXES = ['/gate', '/api/gate', '/_next', '/favicon'];
+const PUBLIC_PREFIXES = ['/gate', '/api/gate', '/_next', '/favicon', '/connect', '/callback'];
 
 export function middleware(req: NextRequest) {
   // Gate disabled if no passcode configured
