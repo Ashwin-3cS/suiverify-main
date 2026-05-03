@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSignTransaction } from '@mysten/dapp-kit';
+import { useSignTransaction, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+import { getSelfPayGas } from '@/lib/gasPreference';
 import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Transaction } from '@mysten/sui/transactions';
 import { suiClient } from '@/lib/sui-client';
@@ -96,6 +97,7 @@ function KycContent() {
   const searchParams = useSearchParams();
   const { address: zkLoginAddress, authMode, isLoading: authIsLoading } = useUnifiedAuth();
   const { mutateAsync: signTransaction } = useSignTransaction();
+  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction();
   const { verificationStatus, startListening, stopListening, resetVerification } = useVerificationListener(zkLoginAddress);
 
   // Get verification type from URL parameters or default
@@ -387,7 +389,8 @@ function KycContent() {
 
     try {
       setIsClaimingNft(true);
-      logger.log(`Starting DID NFT claim process (${authMode} mode)...`);
+      const selfPay = authMode === 'wallet' && getSelfPayGas();
+      logger.log(`Starting DID NFT claim process (${authMode} mode, selfPay=${selfPay})...`);
 
       // Build transaction (same for both auth modes)
       const tx = new Transaction();
@@ -401,6 +404,95 @@ function KycContent() {
         ],
       });
       tx.setSender(senderAddress);
+
+      // Self-pay branch: skip Enoki entirely, wallet signs + pays gas.
+      if (selfPay) {
+        // Pre-flight balance check (~0.008 SUI per claim, require 0.02 for safety)
+        try {
+          const bal = await suiClient.getBalance({ owner: senderAddress });
+          if (BigInt(bal.totalBalance) < BigInt(20_000_000)) {
+            alert('Insufficient SUI for gas. Top up your wallet (~0.02 SUI) or disable "Pay own gas" in nav.');
+            setIsClaimingNft(false);
+            return;
+          }
+        } catch (e) {
+          logger.warn('Balance check failed, proceeding to wallet:', e);
+        }
+
+        logger.log('Self-pay: signing + executing with wallet...');
+        const execResult = await signAndExecuteTransaction({ transaction: tx });
+
+        const result = await suiClient.waitForTransaction({
+          digest: execResult.digest,
+          options: { showEffects: true, showObjectChanges: true },
+        });
+
+        const nftObject = result.effects?.created?.find((item) => {
+          if (!item.owner || typeof item.owner !== 'object') return false;
+          return 'AddressOwner' in item.owner;
+        });
+        const nftId = nftObject?.reference?.objectId;
+        logger.log('DID NFT created (self-pay):', nftId);
+
+        if (nftId) {
+          const nftData = {
+            nftId,
+            title: 'Age Verification NFT',
+            description: 'Verified above 18 years using Aadhaar document',
+            suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
+            walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
+            transactionHash: result.digest,
+            userAddress: senderAddress,
+          };
+
+          try {
+            const saveResult = await credentialService.saveNFTCredential({
+              userAddress: senderAddress,
+              nftId,
+              didType: userDidId || '1',
+              title: 'Age Verification NFT',
+              description: 'Verified above 18 years using Aadhaar document',
+              suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
+              walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
+              blobId: encryptionResult.blobId,
+              transactionHash: result.digest,
+            });
+            if (saveResult.success) {
+              logger.log('NFT credential saved (self-pay):', saveResult.credentialId);
+            } else {
+              console.error('Failed to save NFT credential:', saveResult.error);
+            }
+          } catch (error) {
+            console.error('Error saving NFT credential to backend:', error);
+          }
+
+          setNftClaimData(nftData);
+          setShowSuccessModal(true);
+          setStep('nft-claimed');
+
+          const partnerCtx = partnerService.loadCtx();
+          if (partnerCtx) {
+            await partnerService.recordEvent({
+              client_id: partnerCtx.client_id,
+              user_wallet: senderAddress,
+              nft_id: nftId,
+              did_type: partnerCtx.did_type,
+              reused_existing: false,
+              state: partnerCtx.state,
+            });
+            partnerService.clearCtx();
+            const url = partnerService.buildRedirectUrl(partnerCtx, {
+              nft_id: nftId,
+              owner: senderAddress,
+              status: 'success',
+              is_new: true,
+            });
+            window.location.replace(url);
+          }
+        }
+        setIsClaimingNft(false);
+        return;
+      }
 
       logger.log('Building transaction for sponsorship...');
       const transactionBlockKindBytes = await tx.build({

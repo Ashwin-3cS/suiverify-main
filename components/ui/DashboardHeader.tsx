@@ -9,6 +9,7 @@ import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { Button } from "@/components/ui/button";
 import Logo from "@/public/head_logo.png";
 import AuthButton from "@/components/auth/AuthButton";
+import SelfPayGasToggle from "@/components/ui/SelfPayGasToggle";
 
 const DashboardHeader = () => {
     const router = useRouter();
@@ -90,6 +91,9 @@ const DashboardHeader = () => {
                                 <span className="hidden sm:inline">Logout</span>
                             </Button>
                         )}
+
+                        {/* Self-pay gas toggle (wallet mode only) */}
+                        <SelfPayGasToggle />
 
                         {/* zkLogin Sign In Button */}
                         <AuthButton size="sm" />
