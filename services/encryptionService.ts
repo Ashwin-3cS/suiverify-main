@@ -71,21 +71,18 @@ const WALRUS_AGGREGATORS = [
   'https://wal-aggregator-testnet.staketab.org'
 ];
 
-// Seal server configurations
-const serverObjectIds = [
-  '0x73d05d62c18d9374e3ea529e8e0ed6161da1a141a94d3f76ae3fe4e99356db75', // mysten-testnet-1
-  '0xf5d14a81a982144ae441cd7d64b09027f116a468bd36e7eca494f750591623c8', // mysten-testnet-2
-  '0x6068c0acb197dddbacd4746a9de7f025b2ed5a5b6c1b1ab44dade4426d141da2', // Ruby Nodes
-  '0x5466b7df5c15b508678d51496ada8afab0d6f70a01c10613123382b1b8131007'  // NodeInfra
-];
+// Seal server config — single key server from env (Ruby Nodes open server on mainnet).
+// Threshold 1 since only one server is configured.
+const SEAL_OBJECT_ID = process.env.NEXT_PUBLIC_SEAL_OBJECT_ID;
+if (!SEAL_OBJECT_ID) {
+  throw new Error('NEXT_PUBLIC_SEAL_OBJECT_ID env var is required');
+}
+const SEAL_THRESHOLD = 1;
 
 const sealClient = new SealClient({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   suiClient: SUI_CLIENT as any,
-  serverConfigs: serverObjectIds.map((id) => ({
-    objectId: id,
-    weight: 1,
-  })),
+  serverConfigs: [{ objectId: SEAL_OBJECT_ID, weight: 1 }],
   verifyKeyServers: false,
 });
 
@@ -186,7 +183,7 @@ export class DocumentEncryptionService {
       // Step 3: Encrypt with Seal
       logger.log(' Encrypting with Seal protocol...');
       const { encryptedObject: encryptedBytes } = await sealClient.encrypt({
-        threshold: 2,
+        threshold: SEAL_THRESHOLD,
         packageId: PACKAGE_ID,
         id: encryptionId,
         data: fileData,

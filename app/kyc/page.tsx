@@ -419,8 +419,10 @@ function KycContent() {
           logger.warn('Balance check failed, proceeding to wallet:', e);
         }
 
-        logger.log('Self-pay: signing + executing with wallet...');
-        const execResult = await signAndExecuteTransaction({ transaction: tx });
+        logger.log('Self-pay: building + signing + executing with wallet...');
+        const builtBytes = await tx.build({ client: suiClient });
+        const base64BuiltTx = btoa(String.fromCharCode.apply(null, Array.from(builtBytes)));
+        const execResult = await signAndExecuteTransaction({ transaction: base64BuiltTx });
 
         const result = await suiClient.waitForTransaction({
           digest: execResult.digest,
