@@ -390,7 +390,9 @@ function KycContent() {
     try {
       setIsClaimingNft(true);
       const selfPay = authMode === 'wallet' && getSelfPayGas();
-      logger.log(`Starting DID NFT claim process (${authMode} mode, selfPay=${selfPay})...`);
+      const docLabel = (selectedDocumentType?.id === 'pan' || selectedDocumentType?.id === 'digilocker_pan') ? 'PAN' : 'Aadhaar';
+      const nftDescription = `Verified above 18 years using ${docLabel} document`;
+      logger.log(`Starting DID NFT claim process (${authMode} mode, selfPay=${selfPay}, doc=${docLabel})...`);
 
       // Build transaction (same for both auth modes)
       const tx = new Transaction();
@@ -440,7 +442,7 @@ function KycContent() {
           const nftData = {
             nftId,
             title: 'Age Verification NFT',
-            description: 'Verified above 18 years using Aadhaar document',
+            description: nftDescription,
             suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
             walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
             transactionHash: result.digest,
@@ -453,7 +455,7 @@ function KycContent() {
               nftId,
               didType: userDidId || '1',
               title: 'Age Verification NFT',
-              description: 'Verified above 18 years using Aadhaar document',
+              description: nftDescription,
               suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
               walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
               blobId: encryptionResult.blobId,
@@ -620,7 +622,7 @@ function KycContent() {
         const nftData = {
           nftId,
           title: 'Age Verification NFT',
-          description: 'Verified above 18 years using Aadhaar document',
+          description: nftDescription,
           suiExplorerUrl: `https://suiscan.xyz/testnet/object/${nftId}`,
           walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
           transactionHash: result.digest,
@@ -634,7 +636,7 @@ function KycContent() {
             nftId,
             didType: userDidId || '1',
             title: 'Age Verification NFT',
-            description: 'Verified above 18 years using Aadhaar document',
+            description: nftDescription,
             suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
             walrusUrl: encryptionResult.blobId ? `https://walrus.site/blob/${encryptionResult.blobId}` : undefined,
             blobId: encryptionResult.blobId,
