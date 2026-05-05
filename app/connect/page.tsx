@@ -8,6 +8,7 @@ import { ZkLoginService } from '@/lib/zklogin';
 import { Button } from '@/components/ui/button';
 import { partnerService, type PartnerCtx } from '@/services/partnerService';
 import { credentialService } from '@/services/credentialService';
+import { ConnectModal } from '@mysten/dapp-kit';
 
 type Phase =
   | 'validating'
@@ -28,6 +29,7 @@ function ConnectInner() {
   const [partnerName, setPartnerName] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [ctx, setCtx] = useState<PartnerCtx | null>(null);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
 
   const isResume = searchParams.get('step') === 'resume';
 
@@ -212,11 +214,19 @@ function ConnectInner() {
         {phase === 'awaiting-login' && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Sign in with Google to verify your identity. We&apos;ll create a
+              Sign in to verify your identity. We&apos;ll create a
               wallet-bound credential and send you back to {partnerName} when done.
             </p>
             <Button onClick={handleSignIn} className="w-full">Continue with Google</Button>
+            <Button onClick={() => setWalletModalOpen(true)} variant="secondary" className="w-full">
+              Connect Wallet instead
+            </Button>
             <Button onClick={handleCancel} variant="outline" className="w-full">Cancel</Button>
+            <ConnectModal
+              trigger={<span />}
+              open={walletModalOpen}
+              onOpenChange={setWalletModalOpen}
+            />
           </div>
         )}
 
