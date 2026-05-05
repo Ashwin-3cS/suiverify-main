@@ -352,14 +352,14 @@ const User: React.FC = () => {
                                                                 className={`font-semibold ${isPrimary ? "text-primary" : "text-secondary"
                                                                     }`}
                                                             >
-                                                                Alphafi
+                                                                b2f
                                                             </span>
                                                             <span className="text-charcoal-text/40">•</span>
                                                             <span
                                                                 className={`font-semibold ${isPrimary ? "text-primary" : "text-secondary"
                                                                     }`}
                                                             >
-                                                                Suilend
+                                                                WalDrop
                                                             </span>
                                                         </div>
                                                     </div>
