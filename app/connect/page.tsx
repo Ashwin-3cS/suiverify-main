@@ -8,7 +8,8 @@ import { ZkLoginService } from '@/lib/zklogin';
 import { Button } from '@/components/ui/button';
 import { partnerService, type PartnerCtx } from '@/services/partnerService';
 import { credentialService } from '@/services/credentialService';
-import { ConnectModal } from '@mysten/dapp-kit';
+import { ConnectModal, useCurrentAccount } from '@mysten/dapp-kit';
+import { walletAuth } from '@/services/walletAuth';
 
 type Phase =
   | 'validating'
@@ -24,6 +25,9 @@ function ConnectInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { address, isAuthenticated, isLoading: authLoading } = useAuth();
+  const walletAccount = useCurrentAccount();
+  // wallet address takes priority; falls back to zkLogin address from AuthProvider
+  const effectiveAddress = walletAccount?.address || address;
 
   const [phase, setPhase] = useState<Phase>('validating');
   const [partnerName, setPartnerName] = useState<string>('');
@@ -94,12 +98,12 @@ function ConnectInner() {
   // Phase 2: once authenticated, look for existing matching NFT
   useEffect(() => {
     if (phase !== 'checking-existing') return;
-    if (!isAuthenticated || !address || !ctx) return;
+    if (!effectiveAddress || !ctx) return;
 
     let cancelled = false;
     (async () => {
       try {
-        const { credentials } = await credentialService.getUserCredentials(address);
+        const { credentials } = await credentialService.getUserCredentials(effectiveAddress);
         const now = Date.now();
         // Note: backend credentials.did_type currently stores the UserDID
         // object id (a 0x... hex), not the partner's integer did_type. Until
@@ -121,7 +125,7 @@ function ConnectInner() {
         if (match && match.nftId) {
           await partnerService.recordEvent({
             client_id: ctx.client_id,
-            user_wallet: address,
+            user_wallet: effectiveAddress,
             nft_id: match.nftId,
             did_type: ctx.did_type,
             reused_existing: true,
@@ -130,7 +134,7 @@ function ConnectInner() {
           partnerService.clearCtx();
           const url = partnerService.buildRedirectUrl(ctx, {
             nft_id: match.nftId,
-            owner: address,
+            owner: effectiveAddress,
             status: 'success',
             is_new: false,
           });
@@ -152,14 +156,28 @@ function ConnectInner() {
     return () => {
       cancelled = true;
     };
-  }, [phase, isAuthenticated, address, ctx, router]);
+  }, [phase, effectiveAddress, ctx, router]);
 
-  // Phase 3: after auth resolves, advance from awaiting-login → checking-existing
+  // Phase 3: after zkLogin resolves, advance from awaiting-login → checking-existing
   useEffect(() => {
     if (phase === 'awaiting-login' && isAuthenticated && !authLoading) {
       setPhase('checking-existing');
     }
   }, [phase, isAuthenticated, authLoading]);
+
+  // Phase 3 (wallet mode): WalletAuthBootstrap handles SIWS globally.
+  // Poll localStorage until the token appears, then advance.
+  useEffect(() => {
+    const addr = walletAccount?.address;
+    if (!addr || phase !== 'awaiting-login') return;
+    const id = setInterval(() => {
+      if (walletAuth.getToken(addr)) {
+        clearInterval(id);
+        setPhase('checking-existing');
+      }
+    }, 300);
+    return () => clearInterval(id);
+  }, [walletAccount?.address, phase]);
 
   const handleSignIn = async () => {
     setPhase('logging-in');
