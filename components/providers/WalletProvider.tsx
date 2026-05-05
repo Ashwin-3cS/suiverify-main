@@ -50,10 +50,12 @@ const networks = {
   mainnet: { url: getFullnodeUrl('mainnet') },
 };
 
+const defaultNetwork = (process.env.NEXT_PUBLIC_SUI_NETWORK as 'testnet' | 'mainnet') || 'testnet';
+
 export const WalletProvider = ({ children }: WalletProviderProps) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={networks} defaultNetwork="testnet">
+      <SuiClientProvider networks={networks} defaultNetwork={defaultNetwork}>
         <SuiWalletProvider
           storageKey="sui-wallet-kit"
           storage={typeof window !== 'undefined' ? window.localStorage : undefined}
