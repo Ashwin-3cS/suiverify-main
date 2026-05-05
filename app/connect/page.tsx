@@ -4,18 +4,14 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { ZkLoginService } from '@/lib/zklogin';
 import { Button } from '@/components/ui/button';
 import { partnerService, type PartnerCtx } from '@/services/partnerService';
 import { credentialService } from '@/services/credentialService';
-import { ConnectModal, useCurrentAccount } from '@mysten/dapp-kit';
-import { walletAuth } from '@/services/walletAuth';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 
 type Phase =
   | 'validating'
   | 'invalid-partner'
-  | 'awaiting-login'
-  | 'logging-in'
   | 'checking-existing'
   | 'redirecting'
   | 'route-to-kyc'
@@ -24,7 +20,7 @@ type Phase =
 function ConnectInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { address, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { address, isAuthenticated } = useAuth();
   const walletAccount = useCurrentAccount();
   // wallet address takes priority; falls back to zkLogin address from AuthProvider
   const effectiveAddress = walletAccount?.address || address;
@@ -33,7 +29,6 @@ function ConnectInner() {
   const [partnerName, setPartnerName] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [ctx, setCtx] = useState<PartnerCtx | null>(null);
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
 
   const isResume = searchParams.get('step') === 'resume';
 
@@ -87,7 +82,13 @@ function ConnectInner() {
       partnerService.saveCtx(nextCtx);
       setCtx(nextCtx);
       setPartnerName(validation.name);
-      setPhase(isAuthenticated ? 'checking-existing' : 'awaiting-login');
+      if (isAuthenticated || !!walletAccount) {
+        setPhase('checking-existing');
+      } else {
+        // Not authenticated — send to dashboard to sign in (Google or wallet).
+        // Partner ctx is in sessionStorage; dashboard will redirect back here.
+        router.push('/dashboard');
+      }
     })();
     return () => {
       cancelled = true;
@@ -158,39 +159,6 @@ function ConnectInner() {
     };
   }, [phase, effectiveAddress, ctx, router]);
 
-  // Phase 3: after zkLogin resolves, advance from awaiting-login → checking-existing
-  useEffect(() => {
-    if (phase === 'awaiting-login' && isAuthenticated && !authLoading) {
-      setPhase('checking-existing');
-    }
-  }, [phase, isAuthenticated, authLoading]);
-
-  // Phase 3 (wallet mode): WalletAuthBootstrap handles SIWS globally.
-  // Poll localStorage until the token appears, then advance.
-  useEffect(() => {
-    const addr = walletAccount?.address;
-    if (!addr || phase !== 'awaiting-login') return;
-    const id = setInterval(() => {
-      if (walletAuth.getToken(addr)) {
-        clearInterval(id);
-        setPhase('checking-existing');
-      }
-    }, 300);
-    return () => clearInterval(id);
-  }, [walletAccount?.address, phase]);
-
-  const handleSignIn = async () => {
-    setPhase('logging-in');
-    try {
-      const { nonce } = await ZkLoginService.initializeSession();
-      const oauthUrl = ZkLoginService.getOAuthUrl(nonce);
-      window.location.href = oauthUrl;
-    } catch (err) {
-      console.error('sign-in failed', err);
-      setPhase('error');
-      setErrorMsg('Sign-in failed. Try again.');
-    }
-  };
 
   const handleCancel = () => {
     if (!ctx) return;
@@ -229,30 +197,6 @@ function ConnectInner() {
           </div>
         )}
 
-        {phase === 'awaiting-login' && (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Sign in to verify your identity. We&apos;ll create a
-              wallet-bound credential and send you back to {partnerName} when done.
-            </p>
-            <Button onClick={handleSignIn} className="w-full">Continue with Google</Button>
-            <Button onClick={() => setWalletModalOpen(true)} variant="secondary" className="w-full">
-              Connect Wallet instead
-            </Button>
-            <Button onClick={handleCancel} variant="outline" className="w-full">Cancel</Button>
-            <ConnectModal
-              trigger={<span />}
-              open={walletModalOpen}
-              onOpenChange={setWalletModalOpen}
-            />
-          </div>
-        )}
-
-        {phase === 'logging-in' && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" /> Redirecting to sign-in…
-          </div>
-        )}
 
         {phase === 'checking-existing' && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

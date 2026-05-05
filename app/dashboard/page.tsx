@@ -120,6 +120,13 @@ const User: React.FC = () => {
         fetchCredentials();
     }, [address]);
 
+    // If user arrived here from a partner /connect flow, redirect back once authenticated.
+    useEffect(() => {
+        if (!isAuthenticated && !walletAccount) return;
+        const ctx = sessionStorage.getItem('suiverify:partner_ctx');
+        if (ctx) router.push('/connect?step=resume');
+    }, [isAuthenticated, walletAccount, router]);
+
     const getStatusIcon = (status: string) => {
         switch (status) {
             case "verified":
