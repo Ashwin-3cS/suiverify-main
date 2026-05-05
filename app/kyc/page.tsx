@@ -453,7 +453,7 @@ function KycContent() {
             const saveResult = await credentialService.saveNFTCredential({
               userAddress: senderAddress,
               nftId,
-              didType: userDidId || '1',
+              didType: String(verificationStatus.eventData?.did_type ?? 1),
               title: 'Age Verification NFT',
               description: nftDescription,
               suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
@@ -634,7 +634,7 @@ function KycContent() {
           const saveResult = await credentialService.saveNFTCredential({
             userAddress: zkLoginAddress,
             nftId,
-            didType: userDidId || '1',
+            didType: String(verificationStatus.eventData?.did_type ?? 1),
             title: 'Age Verification NFT',
             description: nftDescription,
             suiExplorerUrl: buildExplorerUrl(nftId, 'object'),
