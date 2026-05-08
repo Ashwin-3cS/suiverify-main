@@ -8,11 +8,14 @@ import { Button } from '@/components/ui/button';
 import { partnerService, type PartnerCtx } from '@/services/partnerService';
 import { credentialService } from '@/services/credentialService';
 import { useCurrentAccount } from '@mysten/dapp-kit';
+import { useWalletAuth } from '@/hooks/useWalletAuth';
+import { walletAuth } from '@/services/walletAuth';
 
 type Phase =
   | 'validating'
   | 'invalid-partner'
   | 'checking-existing'
+  | 'waiting-wallet-auth'
   | 'redirecting'
   | 'route-to-kyc'
   | 'error';
@@ -22,6 +25,7 @@ function ConnectInner() {
   const searchParams = useSearchParams();
   const { address, isAuthenticated } = useAuth();
   const walletAccount = useCurrentAccount();
+  const { status: walletAuthStatus } = useWalletAuth();
   // wallet address takes priority; falls back to zkLogin address from AuthProvider
   const effectiveAddress = walletAccount?.address || address;
 
@@ -82,8 +86,12 @@ function ConnectInner() {
       partnerService.saveCtx(nextCtx);
       setCtx(nextCtx);
       setPartnerName(validation.name);
-      if (isAuthenticated || !!walletAccount) {
+      if (isAuthenticated) {
         setPhase('checking-existing');
+      } else if (!!walletAccount) {
+        // Wallet connected — only proceed if SIWS JWT is already obtained
+        const hasToken = !!walletAuth.getToken(walletAccount.address);
+        setPhase(hasToken ? 'checking-existing' : 'waiting-wallet-auth');
       } else {
         // Not authenticated — send to dashboard to sign in (Google or wallet).
         // Partner ctx is in sessionStorage; dashboard will redirect back here.
@@ -95,6 +103,17 @@ function ConnectInner() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isResume]);
+
+  // Wallet auth gate: advance to checking-existing once SIWS JWT is ready
+  useEffect(() => {
+    if (phase !== 'waiting-wallet-auth') return;
+    if (walletAuthStatus === 'authed') {
+      setPhase('checking-existing');
+    } else if (walletAuthStatus === 'error') {
+      setPhase('error');
+      setErrorMsg('Wallet sign-in failed. Please try again.');
+    }
+  }, [phase, walletAuthStatus]);
 
   // Phase 2: once authenticated, look for existing matching NFT
   useEffect(() => {
@@ -197,6 +216,12 @@ function ConnectInner() {
           </div>
         )}
 
+
+        {phase === 'waiting-wallet-auth' && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" /> Waiting for wallet signature…
+          </div>
+        )}
 
         {phase === 'checking-existing' && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
